@@ -1,0 +1,349 @@
+{
+    "CostGreedyEndpoint": {
+        "MapResolution": 0.05,
+        "HitAndMissedDist": 0.075,
+        "OccupancyThreshold": 0.1,
+        "KernelSize": 1,
+        "StandardDeviation": 0.05,
+        "ScalingFactor": 1.0
+    },
+
+    "CostSquareError": {
+        "CovarianceScale": 1e4
+    },
+
+    "ScorePixelAccurate": {
+    },
+
+    "ScanMatcherHillClimbing": {
+        "Name": "LocalSlam.ScanMatcherHillClimbing",
+        "LinearStep": 0.1,
+        "AngularStep": 0.1,
+        "MaxIterations": 100,
+        "MaxNumOfRefinements": 5,
+        "CostType": "GreedyEndpoint",
+        "CostConfigGroup": "CostGreedyEndpoint"
+    },
+
+    "ScanMatcherLinearSolver": {
+        "Name": "LocalSlam.ScanMatcherLinearSolver",
+        "NumOfIterationsMax": 10,
+        "ConvergenceThreshold": 1e-4,
+        "InitialLambda": 1e-4,
+        "CostType": "SquareError",
+        "CostConfigGroup": "CostSquareError"
+    },
+
+    "ScanMatcherRealTimeCorrelative": {
+        "Name": "LocalSlam.ScanMatcherCorrelative",
+        "LowResolutionMapWinSize": 5,
+        "SearchRangeX": 0.25,
+        "SearchRangeY": 0.25,
+        "SearchRangeTheta": 0.5,
+        "CostType": "SquareError",
+        "CostConfigGroup": "CostSquareError"
+    },
+
+    "ScanOutlierFilter": {
+        "ValidRangeMin": 0.01,
+        "ValidRangeMax": 20.0
+    },
+
+    "ScanAccumulator": {
+        "NumOfAccumulatedScans": 3
+    },
+
+    "ScanInterpolator": {
+        "DistScans": 0.05,
+        "DistThresholdEmpty": 0.25
+    },
+
+    "LoopSearcherNearest": {
+        "TravelDistThreshold": 10.0,
+        "PoseGraphNodeDistMax": 5.0,
+        "NumOfCandidateNodes": 2
+    },
+
+    "LoopDetectorGridSearch": {
+        "LoopDetectorName": "LoopDetector.GridSearch",
+        "ScoreThreshold": 0.55,
+        "KnownRateThreshold": 0.6,
+        "ScanMatcherType": "GridSearch",
+        "ScanMatcherConfigGroup": "LoopDetectorGridSearch.ScanMatcher",
+        "FinalScanMatcherType": "LinearSolver",
+        "FinalScanMatcherConfigGroup":
+            "LoopDetectorGridSearch.FinalScanMatcherLinearSolver",
+        "ScanMatcher": {
+            "Name": "LoopDetector.ScanMatcherGridSearch",
+            "ScoreType": "PixelAccurate",
+            "ScoreConfigGroup": "ScorePixelAccurate",
+            "CostType": "GreedyEndpoint",
+            "CostConfigGroup": "CostGreedyEndpoint",
+            "SearchRangeX": 2.5,
+            "SearchRangeY": 2.5,
+            "SearchRangeTheta": 0.5,
+            "SearchStepX": 0.05,
+            "SearchStepY": 0.05,
+            "SearchStepTheta": 0.005
+        },
+        "FinalScanMatcherLinearSolver": {
+            "Name": "LoopDetector.FinalScanMatcherLinearSolver",
+            "NumOfIterationsMax": 10,
+            "ConvergenceThreshold": 1e-4,
+            "InitialLambda": 1e-4,
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError"
+        }
+    },
+
+    "LoopDetectorRealTimeCorrelative": {
+        "LoopDetectorName": "LoopDetector.Correlative",
+        "ScoreThreshold": 0.55,
+        "KnownRateThreshold": 0.6,
+        "ScanMatcherType": "RealTimeCorrelative",
+        "ScanMatcherConfigGroup":
+            "LoopDetectorRealTimeCorrelative.ScanMatcher",
+        "FinalScanMatcherType": "LinearSolver",
+        "FinalScanMatcherConfigGroup":
+            "LoopDetectorRealTimeCorrelative.FinalScanMatcherLinearSolver",
+        "ScanMatcher": {
+            "Name": "LoopDetector.ScanMatcherCorrelative",
+            "LowResolutionMapWinSize": 5,
+            "SearchRangeX": 2.5,
+            "SearchRangeY": 2.5,
+            "SearchRangeTheta": 0.5,
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError"
+        },
+        "FinalScanMatcherLinearSolver": {
+            "Name": "LoopDetector.FinalScanMatcherLinearSolver",
+            "NumOfIterationsMax": 10,
+            "ConvergenceThreshold": 1e-4,
+            "InitialLambda": 1e-4,
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError"
+        }
+    },
+
+    "LoopDetectorBranchBound": {
+        "LoopDetectorName": "LoopDetector.BranchBound",
+        "ScoreThreshold": 0.55,
+        "KnownRateThreshold": 0.6,
+        "ScanMatcherType": "BranchBound",
+        "ScanMatcherConfigGroup": "LoopDetectorBranchBound.ScanMatcher",
+        "FinalScanMatcherType": "LinearSolver",
+        "FinalScanMatcherConfigGroup":
+            "LoopDetectorBranchBound.FinalScanMatcherLinearSolver",
+        "ScanMatcher": {
+            "Name": "LoopDetector.ScanMatcherBranchBound",
+            "ScoreType": "PixelAccurate",
+            "ScoreConfigGroup": "ScorePixelAccurate",
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError",
+            "NodeHeightMax": 6,
+            "SearchRangeX": 2.5,
+            "SearchRangeY": 2.5,
+            "SearchRangeTheta": 0.5
+        },
+        "FinalScanMatcherLinearSolver": {
+            "Name": "LoopDetector.FinalScanMatcherLinearSolver",
+            "NumOfIterationsMax": 10,
+            "ConvergenceThreshold": 1e-4,
+            "InitialLambda": 1e-4,
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError"
+        }
+    },
+
+    "PoseGraphOptimizerLM": {
+        "SolverType": "ConjugateGradient",
+        "NumOfIterationsMax": 10,
+        "ErrorTolerance": 1e-4,
+        "InitialLambda": 1e-4,
+        "LossFunctionType": "Huber",
+        "LossFunctionConfigGroup": "PoseGraphOptimizerLM.LossHuber",
+        "LossHuber": {
+            "Scale": 0.01
+        }
+    },
+
+    "PoseGraphOptimizerG2O": {
+        "MaxNumOfIterations": 10,
+        "ConvergenceThreshold": 1e-4
+    },
+
+    "GridMapBuilder": {
+        "Map": {
+            "Resolution": 0.05,
+            "PatchSize": 16,
+            "NumOfScansForLatestMap": 10,
+            "TravelDistThresholdForLocalMap": 2.5,
+            "NumOfOverlappedScans": 10
+        },
+        "UsableRangeMin": 0.01,
+        "UsableRangeMax": 20.0,
+        "ProbabilityHit": 0.62,
+        "ProbabilityMiss": 0.46
+    },
+
+    "Hardware": {
+        "EnableHardwareAcceleration": "false",
+        "BitstreamFileName": "design0.bit",
+
+        "Common": {
+            "AxiLiteSApCtrl": "0x00",
+            "AxiLiteSGIE": "0x04",
+            "AxiLiteSIER": "0x08",
+            "AxiLiteSISR": "0x0C",
+            "AxiLiteSNumOfScans": "0x10",
+            "AxiLiteSScanRangeMax": "0x18",
+            "AxiLiteSScoreThreshold": "0x20",
+            "AxiLiteSPoseX": "0x28",
+            "AxiLiteSPoseY": "0x30",
+            "AxiLiteSPoseTheta": "0x38",
+            "AxiLiteSMapSizeX": "0x40",
+            "AxiLiteSMapSizeY": "0x48",
+            "AxiLiteSMapMinX": "0x50",
+            "AxiLiteSMapMinY": "0x58",
+            "AxiLiteSWinX": "0x60",
+            "AxiLiteSWinY": "0x68",
+            "AxiLiteSWinTheta": "0x70",
+            "AxiLiteSStepX": "0x78",
+            "AxiLiteSStepY": "0x80",
+            "AxiLiteSStepTheta": "0x88"
+        },
+
+        "ScanMatcher": {
+            "Name": "LocalSlam.ScanMatcherCorrelativeFPGA",
+            "MaxNumOfScans": 512,
+            "MapResolution": 0.05,
+            "MaxMapSizeX": 320,
+            "MaxMapSizeY": 320,
+            "CoarseMapResolution": 8,
+            "MapBitWidth": 6,
+            "MapChunkWidth": 8,
+
+            "WaitForControlRegister": "true",
+            "WaitForDmaTransfer": "true",
+            "AxiLiteSBaseAddress": "0x43C00000",
+            "AxiLiteSAddressRange": "0x10000",
+            "AxiDmaBaseAddress": "0x40400000",
+            "AxiDmaAddressRange": "0x10000",
+
+            "SearchRangeX": 0.25,
+            "SearchRangeY": 0.25,
+            "SearchRangeTheta": 0.5,
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError"
+        },
+
+        "LoopDetector": {
+            "Name": "LoopDetector.ScanMatcherCorrelativeFPGA",
+            "MaxNumOfScans": 512,
+            "MapResolution": 0.05,
+            "MaxMapSizeX": 320,
+            "MaxMapSizeY": 320,
+            "CoarseMapResolution": 8,
+            "MapBitWidth": 6,
+            "MapChunkWidth": 8,
+
+            "WaitForControlRegister": "true",
+            "WaitForDmaTransfer": "true",
+            "AxiLiteSBaseAddress": "0x43C10000",
+            "AxiLiteSAddressRange": "0x10000",
+            "AxiDmaBaseAddress": "0x40410000",
+            "AxiDmaAddressRange": "0x10000",
+
+            "SearchRangeX": 2.5,
+            "SearchRangeY": 2.5,
+            "SearchRangeTheta": 0.5,
+            "CostType": "SquareError",
+            "CostConfigGroup": "CostSquareError",
+
+            "LoopDetectorName": "LoopDetector.CorrelativeFPGA",
+            "ScoreThreshold": 0.5,
+            "KnownRateThreshold": 0.1,
+
+            "FinalScanMatcherType": "LinearSolver",
+            "FinalScanMatcherConfigGroup":
+                "Hardware.LoopDetector.FinalScanMatcherLinearSolver",
+
+            "FinalScanMatcherLinearSolver": {
+                "Name": "LoopDetector.FinalScanMatcherLinearSolver",
+                "NumOfIterationsMax": 10,
+                "ConvergenceThreshold": 1e-4,
+                "InitialLambda": 1e-4,
+                "CostType": "SquareError",
+                "CostConfigGroup": "CostSquareError"
+            }
+        }
+    },
+
+    "Frontend": {
+        "UseScanOutlierFilter": "true",
+        "ScanOutlierFilterConfigGroup": "ScanOutlierFilter",
+        "UseScanAccumulator": "false",
+        "ScanAccumulatorConfigGroup": "ScanAccumulator",
+        "UseScanInterpolator": "true",
+        "ScanInterpolatorConfigGroup": "ScanInterpolator",
+        "LocalSlam": {
+            "UseHardwareScanMatcher": "false",
+            "ScanMatcherType": "RealTimeCorrelative",
+            "ScanMatcherConfigGroup": "ScanMatcherRealTimeCorrelative",
+            "FinalScanMatcherType": "LinearSolver",
+            "FinalScanMatcherConfigGroup":
+                "Frontend.LocalSlam.FinalScanMatcherLinearSolver",
+            "FinalScanMatcherHillClimbing": {
+                "Name": "LocalSlam.FinalScanMatcherHillClimbing",
+                "LinearStep": 0.01,
+                "AngularStep": 0.01,
+                "MaxIterations": 5,
+                "MaxNumOfRefinements": 2,
+                "CostType": "GreedyEndpoint",
+                "CostConfigGroup": "CostGreedyEndpoint"
+            },
+            "FinalScanMatcherLinearSolver": {
+                "Name": "LocalSlam.FinalScanMatcherLinearSolver",
+                "NumOfIterationsMax": 10,
+                "ConvergenceThreshold": 1e-4,
+                "InitialLambda": 1e-4,
+                "CostType": "SquareError",
+                "CostConfigGroup": "CostSquareError"
+            }
+        },
+        "InitialPose": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Theta": 0.0
+        },
+        "UpdateThresholdTravelDist": 0.5,
+        "UpdateThresholdAngle": 0.5,
+        "UpdateThresholdTime": 5.0,
+        "LoopDetectionThreshold": 2.5,
+        "DegenerationThreshold": 10.0,
+        "OdometryCovarianceScale": 1e2,
+        "FuseOdometryCovariance": "false"
+    },
+
+    "Backend": {
+        "PoseGraphOptimizerType": "G2O",
+        "PoseGraphOptimizerConfigGroup": "PoseGraphOptimizerG2O",
+        "LoopSearcherType": "Nearest",
+        "LoopSearcherConfigGroup": "LoopSearcherNearest",
+        "UseHardwareLoopDetector": "false",
+        "LoopDetectorType": "RealTimeCorrelative",
+        "LoopDetectorConfigGroup": "LoopDetectorRealTimeCorrelative"
+    },
+
+    "LidarGraphSlam": {
+        "GridMapBuilderConfigGroup": "GridMapBuilder",
+        "FrontendConfigGroup": "Frontend",
+        "BackendConfigGroup": "Backend"
+    },
+
+    "Launcher": {
+        "GuiEnabled": "true",
+        "DrawFrameInterval": 5,
+        "WaitForKey": "false"
+    }
+}
