@@ -18,6 +18,10 @@ template <typename T, typename U, typename V>
 class Grid
 {
 public:
+    /* Type definitions */
+    using ProbabilityType = T;
+    using ValueType = U;
+
     /* Constructor with the grid size */
     explicit Grid(const int log2Size);
     /* Destructor */
