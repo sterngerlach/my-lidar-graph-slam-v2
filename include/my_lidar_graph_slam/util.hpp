@@ -42,6 +42,20 @@ inline constexpr T PiReciprocal = static_cast<T>(0.31830988618379067154);
 #define Assert(predicate) \
     XAssert(predicate, nullptr)
 
+/* Assert macro with a custom message enabled in Debug mode only */
+#ifdef DEBUG
+#define DebugXAssert(predicate, message) XAssert(predicate, message)
+#else
+#define DebugXAssert(predicate, message)
+#endif
+
+/* Assert macro enabled in Debug mode only */
+#ifdef DEBUG
+#define DebugAssert(predicate) Assert(predicate)
+#else
+#define DebugAssert(predicate)
+#endif
+
 /* Assert function that is enabled in Release mode */
 inline bool AssertHandler(const char* predicateExpression,
                           const char* fileName,
