@@ -23,7 +23,7 @@ public:
     using ValueType = U;
 
     /* Constructor with the grid size */
-    explicit Grid(const int log2Size);
+    Grid() : mLog2Size(0), mSize(0) { }
     /* Destructor */
     virtual ~Grid() = default;
 
@@ -35,6 +35,15 @@ public:
     Grid(Grid&&) noexcept = default;
     /* Move assignment operator */
     Grid& operator=(Grid&&) noexcept = default;
+
+    /* Initialize with the grid size */
+    void Initialize(const int log2Size);
+    /* Reset to the initial state */
+    void Reset();
+    /* Reset the internal values to unknown */
+    virtual void ResetValues() = 0;
+    /* Check if the grid is allocated */
+    virtual bool IsAllocated() const = 0;
 
     /* Get the base-2 logarithm of the size of this grid */
     inline int Log2Size() const { return this->mLog2Size; }
@@ -110,6 +119,12 @@ public:
     virtual void UpdateUnchecked(const int row, const int col,
                                  const V observation) = 0;
 
+protected:
+    /* Allocate the storage for the internal values */
+    virtual void Allocate() = 0;
+    /* Release the storage for the internal values */
+    virtual void Release() = 0;
+
 public:
     /* Unknown probability value */
     static constexpr T UnknownProbability = static_cast<T>(0);
@@ -123,16 +138,31 @@ protected:
     int mSize;
 };
 
-/* Constructor with the grid size */
+/* Initialize with the grid size */
 template <typename T, typename U, typename V>
-Grid<T, U, V>::Grid(const int log2Size) :
-    mLog2Size(log2Size),
-    mSize(0)
+void Grid<T, U, V>::Initialize(const int log2Size)
 {
     /* Make sure that the specified size is positive */
-    DebugAssert(this->mLog2Size >= 0);
+    DebugAssert(log2Size >= 0);
+
     /* Set the size of this grid */
-    this->mSize = 1 << this->mLog2Size;
+    this->mLog2Size = log2Size;
+    this->mSize = 1 << log2Size;
+    /* Allocate the storage for the internal values */
+    this->Allocate();
+    /* Reset the internal values with unknown */
+    this->Reset();
+}
+
+/* Reset to the initial state */
+template <typename T, typename U, typename V>
+void Grid<T, U, V>::Reset()
+{
+    /* Reset the size of this grid */
+    this->mLog2Size = 0;
+    this->mSize = 0;
+    /* Release the storage for the internal values */
+    this->Release();
 }
 
 /* Check if the index is valid */
