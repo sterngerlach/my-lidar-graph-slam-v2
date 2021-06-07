@@ -22,20 +22,6 @@ const std::vector<double> GridConstant::ValueToOddsLookup =
                              ValueMin, ValueMax,
                              ProbabilityMin, ProbabilityMax);
 
-/* Constructor */
-GridConstant::GridConstant(const int log2Size) :
-    BaseType(log2Size),
-    mValues(nullptr)
-{
-    /* Allocate the storage for grid values */
-    const int numOfValues = 1 << (this->mLog2Size << 1);
-    this->mValues.reset(new std::uint16_t[numOfValues]);
-    Assert(this->mValues != nullptr);
-
-    /* Initialize with the unknown values */
-    std::fill_n(this->mValues.get(), numOfValues, UnknownValue);
-}
-
 /* Copy constructor */
 GridConstant::GridConstant(const GridConstant& other) :
     BaseType(other),
@@ -50,13 +36,17 @@ GridConstant& GridConstant::operator=(const GridConstant& other)
     if (this == &other)
         return *this;
 
+    /* Release the storage if not allocated */
+    if (!other.IsAllocated()) {
+        this->Reset();
+        return *this;
+    }
+
     /* Reallocate the storage if the size is different */
     if (this->mLog2Size != other.mLog2Size) {
-        const int newNumOfValues = 1 << (other.mLog2Size << 1);
         this->mLog2Size = other.mLog2Size;
         this->mSize = other.mSize;
-        this->mValues.reset(new std::uint16_t[newNumOfValues]);
-        Assert(this->mValues != nullptr);
+        this->Allocate();
     }
 
     /* Copy the grid values */
@@ -83,6 +73,28 @@ GridConstant& GridConstant::operator=(GridConstant&& other) noexcept
     this->mValues = std::move(other.mValues);
 
     return *this;
+}
+
+/* Allocate the storage for the internal values */
+void GridConstant::Allocate()
+{
+    /* Allocate the storage for grid values */
+    const int numOfValues = 1 << (this->mLog2Size << 1);
+    this->mValues.reset(new std::uint16_t[numOfValues]);
+    Assert(this->mValues != nullptr);
+}
+
+/* Release the storage for the internal values */
+void GridConstant::Release()
+{
+    this->mValues.reset(nullptr);
+}
+
+/* Reset the internal values to unknown */
+void GridConstant::ResetValues()
+{
+    if (this->IsAllocated())
+        this->FillValue(UnknownValue);
 }
 
 /* Copy the internal values to the given buffer */
