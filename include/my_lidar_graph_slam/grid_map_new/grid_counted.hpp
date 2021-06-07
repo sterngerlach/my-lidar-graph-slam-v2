@@ -23,7 +23,10 @@ public:
     using BaseType = Grid<double, std::uint16_t, bool>;
 
     /* Constructor with the grid size */
-    explicit GridCounted(const int log2Size);
+    GridCounted() : BaseType(),
+                    mValues(nullptr),
+                    mHits(nullptr),
+                    mCounts(nullptr) { }
     /* Destructor */
     ~GridCounted() = default;
 
@@ -35,6 +38,11 @@ public:
     GridCounted(GridCounted&& other) noexcept;
     /* Move assignment operator */
     GridCounted& operator=(GridCounted&& other) noexcept;
+
+    /* Reset the internal values to unknown */
+    void ResetValues() override;
+    /* Check if the grid is allocated */
+    bool IsAllocated() const override { return this->mValues != nullptr; }
 
     /* Get the constant pointer to the storage */
     const std::uint16_t* Data() const override {
@@ -110,6 +118,12 @@ public:
     /* Update the grid value given an observation (hit or miss) */
     void UpdateUnchecked(const int row, const int col,
                          const bool hit) override;
+
+private:
+    /* Allocate the storage for the internal values */
+    void Allocate() override;
+    /* Release the storage for the internal values */
+    void Release() override;
 
 public:
     /* Minimum internal value (0 means unknown) */

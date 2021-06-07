@@ -15,29 +15,6 @@ const std::vector<double> GridCounted::ValueToProbabilityLookup =
                                     ValueMin, ValueMax,
                                     ProbabilityMin, ProbabilityMax);
 
-/* Constructor */
-GridCounted::GridCounted(const int log2Size) :
-    BaseType(log2Size),
-    mValues(nullptr),
-    mHits(nullptr),
-    mCounts(nullptr)
-{
-    /* Allocate the storage for grid values and hit counts */
-    const int numOfValues = 1 << (this->mLog2Size << 1);
-    this->mValues.reset(new std::uint16_t[numOfValues]);
-    this->mHits.reset(new std::uint32_t[numOfValues]);
-    this->mCounts.reset(new std::uint32_t[numOfValues]);
-    Assert(this->mValues != nullptr);
-    Assert(this->mHits != nullptr);
-    Assert(this->mCounts != nullptr);
-
-    /* Initialize with the unknown values */
-    std::fill_n(this->mValues.get(), numOfValues, UnknownValue);
-    /* Initialize with zeros */
-    std::fill_n(this->mHits.get(), numOfValues, 0U);
-    std::fill_n(this->mCounts.get(), numOfValues, 0U);
-}
-
 /* Copy constructor */
 GridCounted::GridCounted(const GridCounted& other) :
     BaseType(other),
@@ -54,17 +31,17 @@ GridCounted& GridCounted::operator=(const GridCounted& other)
     if (this == &other)
         return *this;
 
+    /* Release the storage if not allocated */
+    if (!other.IsAllocated()) {
+        this->Reset();
+        return *this;
+    }
+
     /* Reallocate the storage if the size is different */
     if (this->mLog2Size != other.mLog2Size) {
-        const int newNumOfValues = 1 << (other.mLog2Size << 1);
         this->mLog2Size = other.mLog2Size;
         this->mSize = other.mSize;
-        this->mValues.reset(new std::uint16_t[newNumOfValues]);
-        this->mHits.reset(new std::uint32_t[newNumOfValues]);
-        this->mCounts.reset(new std::uint32_t[newNumOfValues]);
-        Assert(this->mValues != nullptr);
-        Assert(this->mHits != nullptr);
-        Assert(this->mCounts != nullptr);
+        this->Allocate();
     }
 
     /* Copy the grid values and hit counts */
@@ -97,6 +74,40 @@ GridCounted& GridCounted::operator=(GridCounted&& other) noexcept
     this->mCounts = std::move(other.mCounts);
 
     return *this;
+}
+
+/* Allocate the storage for the internal values */
+void GridCounted::Allocate()
+{
+    /* Allocate the storage for grid values and hit counts */
+    const int numOfValues = 1 << (this->mLog2Size << 1);
+
+    this->mValues.reset(new std::uint16_t[numOfValues]);
+    this->mHits.reset(new std::uint32_t[numOfValues]);
+    this->mCounts.reset(new std::uint32_t[numOfValues]);
+
+    Assert(this->mValues != nullptr);
+    Assert(this->mHits != nullptr);
+    Assert(this->mCounts != nullptr);
+}
+
+/* Release the storage for the internal values */
+void GridCounted::Release()
+{
+    this->mValues.reset(nullptr);
+    this->mHits.reset(nullptr);
+    this->mCounts.reset(nullptr);
+}
+
+/* Reset the internal values to unknown */
+void GridCounted::ResetValues()
+{
+    if (this->IsAllocated()) {
+        const int numOfValues = 1 << (this->mLog2Size << 1);
+        std::fill_n(this->mValues.get(), numOfValues, UnknownValue);
+        std::fill_n(this->mHits.get(), numOfValues, 0U);
+        std::fill_n(this->mCounts.get(), numOfValues, 0U);
+    }
 }
 
 /* Copy the internal values to the given buffer */
