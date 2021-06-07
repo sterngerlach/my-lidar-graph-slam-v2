@@ -24,7 +24,7 @@ public:
     using BaseType = Grid<double, std::uint16_t, double>;
 
     /* Constructor with the grid size */
-    explicit GridBinaryBayes(const int log2Size);
+    GridBinaryBayes() : BaseType(), mValues(nullptr) { }
     /* Destructor */
     ~GridBinaryBayes() = default;
 
@@ -36,6 +36,11 @@ public:
     GridBinaryBayes(GridBinaryBayes&& other) noexcept;
     /* Move assignment operator */
     GridBinaryBayes& operator=(GridBinaryBayes&& other) noexcept;
+
+    /* Reset the internal values to unknown */
+    void ResetValues() override;
+    /* Check if the grid is allocated */
+    bool IsAllocated() const override { return this->mValues != nullptr; }
 
     /* Get the constant pointer to the storage */
     const std::uint16_t* Data() const override {
@@ -111,6 +116,12 @@ public:
     /* Update the grid value given an observation (without input checks) */
     void UpdateUnchecked(const int row, const int col,
                          const double prob) override;
+
+private:
+    /* Allocate the storage for the internal values */
+    void Allocate() override;
+    /* Release the storage for the internal values */
+    void Release() override;
 
 public:
     /* Minimum internal value (0 means unknown) */
