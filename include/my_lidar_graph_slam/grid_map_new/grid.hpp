@@ -22,6 +22,7 @@ public:
     /* Type definitions */
     using ProbabilityType = T;
     using ValueType = U;
+    using ObservationType = V;
 
     /* Constructor with the grid size */
     Grid() : mLog2Size(0), mSize(0) { }
