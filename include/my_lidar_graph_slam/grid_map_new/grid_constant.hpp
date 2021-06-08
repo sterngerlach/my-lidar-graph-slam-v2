@@ -82,13 +82,13 @@ public:
                     const int bufferCols) const override;
     /* Copy the internal row values to the given buffer */
     void CopyValues(std::uint16_t* buffer, const int bufferCols,
-                    const int rowMin, const int rowMax) const override;
+                    const BoundingBox<int>& boundingBox) const override;
     /* Copy the internal values as std::uint8_t to the given buffer */
     void CopyValuesU8(std::uint8_t* buffer,
                       const int bufferCols) const override;
     /* Copy the internal values as std::uint8_t to the given buffer */
     void CopyValuesU8(std::uint8_t* buffer, const int bufferCols,
-                      const int rowMin, const int rowMax) const override;
+                      const BoundingBox<int>& boundingBox) const override;
 
     /* Set the internal value of the grid cell */
     void SetValue(const int row, const int col,
@@ -203,14 +203,16 @@ double GridConstant::ProbabilityOr(
 void GridConstant::CopyValues(
     std::uint16_t* buffer, const int bufferCols) const
 {
-    return this->CopyValues(buffer, bufferCols, 0, this->mSize);
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValues(buffer, bufferCols, boundingBox);
 }
 
 /* Copy the internal values as std::uint8_t to the given buffer */
 void GridConstant::CopyValuesU8(
     std::uint8_t* buffer, const int bufferCols) const
 {
-    return this->CopyValuesU8(buffer, bufferCols, 0, this->mSize);
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValuesU8(buffer, bufferCols, boundingBox);
 }
 
 /* Set the internal value of the grid cell */

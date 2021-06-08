@@ -100,17 +100,25 @@ void GridConstant::ResetValues()
 /* Copy the internal values to the given buffer */
 void GridConstant::CopyValues(
     std::uint16_t* buffer, const int bufferCols,
-    const int rowMin, const int rowMax) const
+    const BoundingBox<int>& boundingBox) const
 {
-    Assert(rowMin >= 0);
-    Assert(rowMax < this->mSize);
-    Assert(rowMax >= rowMin);
+    Assert(boundingBox.mMin.mX >= 0);
+    Assert(boundingBox.mMin.mY >= 0);
+    Assert(boundingBox.mMax.mX <= this->mSize);
+    Assert(boundingBox.mMax.mY <= this->mSize);
+    Assert(boundingBox.mMax.mX > boundingBox.mMin.mX);
+    Assert(boundingBox.mMax.mY > boundingBox.mMin.mY);
 
-    const std::uint16_t* srcBuffer = this->Data(rowMin);
+    const int cols = boundingBox.mMax.mX - boundingBox.mMin.mX;
+    const int rowMin = boundingBox.mMin.mY;
+    const int rowMax = boundingBox.mMax.mY;
+
+    const std::uint16_t* srcBuffer =
+        this->Data(boundingBox.mMin.mY, boundingBox.mMin.mX);
     std::uint16_t* dstBuffer = buffer;
 
     for (int row = rowMin; row < rowMax; ++row) {
-        std::copy_n(srcBuffer, this->mSize, dstBuffer);
+        std::copy_n(srcBuffer, cols, dstBuffer);
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
@@ -119,21 +127,28 @@ void GridConstant::CopyValues(
 /* Copy the internal values as std::uint8_t to the given buffer */
 void GridConstant::CopyValuesU8(
     std::uint8_t* buffer, const int bufferCols,
-    const int rowMin, const int rowMax) const
+    const BoundingBox<int>& boundingBox) const
 {
-    Assert(rowMin >= 0);
-    Assert(rowMax < this->mSize);
-    Assert(rowMax >= rowMin);
+    Assert(boundingBox.mMin.mX >= 0);
+    Assert(boundingBox.mMin.mY >= 0);
+    Assert(boundingBox.mMax.mX <= this->mSize);
+    Assert(boundingBox.mMax.mY <= this->mSize);
+    Assert(boundingBox.mMax.mX > boundingBox.mMin.mX);
+    Assert(boundingBox.mMax.mY > boundingBox.mMin.mY);
 
     auto rawToU8 = [](const std::uint16_t value) {
         return static_cast<std::uint8_t>(value >> 8); };
 
-    const std::uint16_t* srcBuffer = this->Data(rowMin);
+    const int cols = boundingBox.mMax.mX - boundingBox.mMin.mX;
+    const int rowMin = boundingBox.mMin.mY;
+    const int rowMax = boundingBox.mMax.mY;
+
+    const std::uint16_t* srcBuffer =
+        this->Data(boundingBox.mMin.mY, boundingBox.mMin.mX);
     std::uint8_t* dstBuffer = buffer;
 
     for (int row = rowMin; row < rowMax; ++row) {
-        std::transform(srcBuffer, srcBuffer + this->mSize,
-                       dstBuffer, rawToU8);
+        std::transform(srcBuffer, srcBuffer + cols, dstBuffer, rawToU8);
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
