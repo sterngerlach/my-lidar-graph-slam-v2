@@ -93,8 +93,7 @@ void GridBinaryBayes::Release()
 /* Reset the internal values to unknown */
 void GridBinaryBayes::ResetValues()
 {
-    if (this->IsAllocated())
-        this->FillValue(UnknownValue);
+    this->FillValue(UnknownValue);
 }
 
 /* Copy the internal values to the given buffer */
