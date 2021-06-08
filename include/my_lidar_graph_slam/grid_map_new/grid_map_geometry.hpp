@@ -11,6 +11,7 @@
 #include "my_lidar_graph_slam/util.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /*
  * GridMapGeometry struct represents geometric information of the grid maps
@@ -85,6 +86,7 @@ struct GridMapGeometry final
     Point2D<double> mPosOffset;
 };
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */
 
 #endif /* MY_LIDAR_GRAPH_SLAM_GRID_MAP_NEW_GRID_MAP_GEOMETRY_HPP */

@@ -11,6 +11,7 @@
 #include "my_lidar_graph_slam/bounding_box.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /*
  * GridConstant class represents small chunk of grid cells whose
@@ -294,6 +295,7 @@ void GridConstant::UpdateUnchecked(
     this->mValues[(row << this->mLog2Size) + col] = ProbabilityToValue(prob);
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */
 
 #endif /* MY_LIDAR_GRAPH_SLAM_GRID_MAP_NEW_GRID_CONSTANT_HPP */

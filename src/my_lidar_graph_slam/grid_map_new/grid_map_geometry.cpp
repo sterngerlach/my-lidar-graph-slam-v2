@@ -4,6 +4,7 @@
 #include "my_lidar_graph_slam/grid_map_new/grid_map_geometry.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /* Default constructor */
 GridMapGeometry::GridMapGeometry() :
@@ -145,4 +146,5 @@ double GridMapGeometry::SquaredDistance(const int row0, const int col0,
     return this->mResolution * this->mResolution * (cols + rows);
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */

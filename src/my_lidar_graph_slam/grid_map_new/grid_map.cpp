@@ -7,6 +7,7 @@
 #include "my_lidar_graph_slam/grid_map_new/grid_counted.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /* Template class declarations */
 template class GridMap<GridBinaryBayes>;
@@ -650,4 +651,5 @@ BoundingBox<int> GridMap<T>::CroppedBoundingBox() const
         (croppedBox.mMax.mY + 1) << this->mLog2BlockSize };
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */

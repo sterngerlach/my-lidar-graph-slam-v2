@@ -12,6 +12,7 @@
 #include "my_lidar_graph_slam/util.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /*
  * GridBinaryBayes class represents small chunk of grid cells whose
@@ -293,6 +294,7 @@ void GridBinaryBayes::Update(
     this->UpdateUnchecked(row, col, prob);
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */
 
 #endif /* MY_LIDAR_GRAPH_SLAM_GRID_MAP_NEW_GRID_BINARY_BAYES_HPP */

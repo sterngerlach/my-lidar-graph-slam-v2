@@ -7,6 +7,7 @@
 #include "my_lidar_graph_slam/grid_map_new/grid_values.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /* Initialize the lookup table for converting from internal values to
  * corresponding probability values */
@@ -203,4 +204,5 @@ std::uint16_t GridConstant::ProbabilityToValue(const double prob)
         prob, ValueMin, ValueMax, ProbabilityMin, ProbabilityMax);
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */

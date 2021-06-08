@@ -13,6 +13,7 @@
 #include "my_lidar_graph_slam/point.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /*
  * GridMap class represents the occupancy grid map and is comprised of
@@ -275,6 +276,7 @@ GridMap<T>& GridMap<T>::operator=(const GridMap<U>& other)
     return *this;
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */
 
 #endif /* MY_LIDAR_GRAPH_SLAM_GRID_MAP_NEW_GRID_MAP_HPP */

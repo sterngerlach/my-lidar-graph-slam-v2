@@ -12,6 +12,7 @@
 #include "my_lidar_graph_slam/util.hpp"
 
 namespace MyLidarGraphSlam {
+namespace GridMapNew {
 
 /*
  * GridCounted class represents small chunk of grid cells whose
@@ -254,6 +255,7 @@ void GridCounted::Update(
     this->UpdateUnchecked(row, col, hit);
 }
 
+} /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */
 
 #endif /* MY_LIDAR_GRAPH_SLAM_GRID_MAP_NEW_GRID_COUNTED_HPP */
