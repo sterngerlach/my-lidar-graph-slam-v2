@@ -153,7 +153,7 @@ void Grid<T, U, V>::Initialize(const int log2Size)
     /* Allocate the storage for the internal values */
     this->Allocate();
     /* Reset the internal values with unknown */
-    this->Reset();
+    this->ResetValues();
 }
 
 /* Reset to the initial state */
