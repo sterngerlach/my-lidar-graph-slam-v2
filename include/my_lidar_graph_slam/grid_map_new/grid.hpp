@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "my_lidar_graph_slam/bounding_box.hpp"
 #include "my_lidar_graph_slam/point.hpp"
 #include "my_lidar_graph_slam/util.hpp"
 
@@ -86,13 +87,13 @@ public:
     virtual void CopyValues(U* buffer, const int bufferCols) const = 0;
     /* Copy the internal values to the given buffer */
     virtual void CopyValues(U* buffer, const int bufferCols,
-                            const int rowMin, const int rowMax) const = 0;
+                            const BoundingBox<int>& boundingBox) const = 0;
     /* Copy the internal values as std::uint8_t to the given buffer */
     virtual void CopyValuesU8(std::uint8_t* buffer,
                               const int bufferCols) const = 0;
     /* Copy the internal values as std::uint8_t to the given buffer */
     virtual void CopyValuesU8(std::uint8_t* buffer, const int bufferCols,
-                              const int rowMin, const int rowMax) const = 0;
+                              const BoundingBox<int>& boundingBox) const = 0;
 
     /* Set the internal value of the grid cell */
     virtual void SetValue(const int row, const int col, const U value) = 0;
