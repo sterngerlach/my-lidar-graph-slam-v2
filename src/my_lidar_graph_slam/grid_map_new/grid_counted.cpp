@@ -102,12 +102,10 @@ void GridCounted::Release()
 /* Reset the internal values to unknown */
 void GridCounted::ResetValues()
 {
-    if (this->IsAllocated()) {
-        const int numOfValues = 1 << (this->mLog2Size << 1);
-        std::fill_n(this->mValues.get(), numOfValues, UnknownValue);
-        std::fill_n(this->mHits.get(), numOfValues, 0U);
-        std::fill_n(this->mCounts.get(), numOfValues, 0U);
-    }
+    const int numOfValues = 1 << (this->mLog2Size << 1);
+    std::fill_n(this->mValues.get(), numOfValues, UnknownValue);
+    std::fill_n(this->mHits.get(), numOfValues, 0U);
+    std::fill_n(this->mCounts.get(), numOfValues, 0U);
 }
 
 /* Copy the internal values to the given buffer */
