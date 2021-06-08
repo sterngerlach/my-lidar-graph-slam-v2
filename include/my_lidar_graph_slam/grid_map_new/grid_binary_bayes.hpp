@@ -8,7 +8,7 @@
 #include <memory>
 #include <limits>
 
-#include "my_lidar_graph_slam/grid_map_new/grid.hpp"
+#include "my_lidar_graph_slam/bounding_box.hpp"
 #include "my_lidar_graph_slam/util.hpp"
 
 namespace MyLidarGraphSlam {
@@ -17,14 +17,18 @@ namespace MyLidarGraphSlam {
  * GridBinaryBayes class represents small chunk of grid cells whose
  * occupancy probabilities are updated via binary Bayes filter
  */
-class GridBinaryBayes final : public Grid<double, std::uint16_t, double>
+class GridBinaryBayes final
 {
 public:
-    /* Base type */
-    using BaseType = Grid<double, std::uint16_t, double>;
+    /* Type definitions */
+    using ProbabilityType = double;
+    using ValueType = std::uint16_t;
+    using ObservationType = double;
 
     /* Constructor with the grid size */
-    GridBinaryBayes() : BaseType(), mValues(nullptr) { }
+    GridBinaryBayes() : mLog2Size(0),
+                        mSize(0),
+                        mValues(nullptr) { }
     /* Destructor */
     ~GridBinaryBayes() = default;
 
@@ -37,93 +41,106 @@ public:
     /* Move assignment operator */
     GridBinaryBayes& operator=(GridBinaryBayes&& other) noexcept;
 
+    /* Initialize with the grid size */
+    void Initialize(const int log2Size);
+    /* Reset to the initial state */
+    void Reset();
     /* Reset the internal values to unknown */
-    void ResetValues() override;
+    void ResetValues();
+
+    /* Get the base-2 logarithm of the size of this grid */
+    inline int Log2Size() const { return this->mLog2Size; }
+    /* Get the size of this grid (2 to the power of `mLog2Size`) */
+    inline int Size() const { return this->mSize; }
+
+    /* Check if the index is valid */
+    inline bool IsInside(const int row, const int col) const {
+        return (row >= 0 && row < this->mSize) &&
+               (col >= 0 && col < this->mSize); }
     /* Check if the grid is allocated */
-    bool IsAllocated() const override { return this->mValues != nullptr; }
+    inline bool IsAllocated() const { return this->mValues != nullptr; }
 
     /* Get the constant pointer to the storage */
-    const std::uint16_t* Data() const override {
+    inline const std::uint16_t* Data() const {
         return this->mValues.get(); }
     /* Get the constant pointer to the row */
-    const std::uint16_t* Data(const int row) const override {
+    inline const std::uint16_t* Data(const int row) const {
         return this->mValues.get() + (row << this->mLog2Size); }
     /* Get the constant pointer to the grid cell */
-    const std::uint16_t* Data(const int row, const int col) const override {
+    inline const std::uint16_t* Data(const int row, const int col) const {
         return this->mValues.get() + (row << this->mLog2Size) + col; }
 
     /* Get the mutable pointer to the storage */
-    std::uint16_t* Data() override {
+    inline std::uint16_t* Data() {
         return this->mValues.get(); }
     /* Get the mutable pointer to the row */
-    std::uint16_t* Data(const int row) override {
+    inline std::uint16_t* Data(const int row) {
         return this->mValues.get() + (row << this->mLog2Size); }
     /* Get the mutable pointer to the grid cell */
-    std::uint16_t* Data(const int row, const int col) override {
+    inline std::uint16_t* Data(const int row, const int col) {
         return this->mValues.get() + (row << this->mLog2Size) + col; }
 
     /* Get the internal value of the grid cell */
-    std::uint16_t Value(const int row, const int col) const override;
+    std::uint16_t Value(const int row, const int col) const;
     /* Get the internal value of the grid cell (index is not checked) */
-    std::uint16_t ValueUnchecked(const int row, const int col) const override;
+    std::uint16_t ValueUnchecked(const int row, const int col) const;
     /* Get the internal value of the grid cell or return the default value */
     std::uint16_t ValueOr(const int row, const int col,
-                          const std::uint16_t value) const override;
+                          const std::uint16_t value) const;
 
     /* Get the probability value of the grid cell */
-    double Probability(const int row, const int col) const override;
+    double Probability(const int row, const int col) const;
     /* Get the probability value of the grid cell (index is not checked) */
-    double ProbabilityUnchecked(const int row, const int col) const override;
+    double ProbabilityUnchecked(const int row, const int col) const;
     /* Get the probability value of the grid cell or return the default value */
     double ProbabilityOr(const int row, const int col,
-                         const double prob) const override;
+                         const double prob) const;
 
     /* Copy the internal values to the given buffer */
-    void CopyValues(std::uint16_t* buffer,
-                    const int bufferCols) const override;
+    void CopyValues(std::uint16_t* buffer, const int bufferCols) const;
     /* Copy the internal row values to the given buffer */
     void CopyValues(std::uint16_t* buffer, const int bufferCols,
-                    const BoundingBox<int>& boundingBox) const override;
+                    const BoundingBox<int>& boundingBox) const;
     /* Copy the internal values as std::uint8_t to the given buffer */
-    void CopyValuesU8(std::uint8_t* buffer,
-                      const int bufferCols) const override;
+    void CopyValuesU8(std::uint8_t* buffer, const int bufferCols) const;
     /* Copy the internal values as std::uint8_t to the given buffer */
     void CopyValuesU8(std::uint8_t* buffer, const int bufferCols,
-                      const BoundingBox<int>& boundingBox) const override;
+                      const BoundingBox<int>& boundingBox) const;
 
     /* Set the internal value of the grid cell */
     void SetValue(const int row, const int col,
-                  const std::uint16_t value) override;
+                  const std::uint16_t value);
     /* Set the internal value of the grid cell (index is not checked) */
     void SetValueUnchecked(const int row, const int col,
-                           const std::uint16_t value) override;
+                           const std::uint16_t value);
 
     /* Set the probability value of the grid cell */
     void SetProbability(const int row, const int col,
-                        const double prob) override;
+                        const double prob);
     /* Set the probability value of the grid cell (index is not checked) */
     void SetProbabilityUnchecked(const int row, const int col,
-                                 const double prob) override;
+                                 const double prob);
 
     /* Fill all grid values with the given internal value */
-    void FillValue(const std::uint16_t value) override;
+    void FillValue(const std::uint16_t value);
     /* Fill all grid values with the given probability value */
-    void FillProbability(const double prob) override;
+    void FillProbability(const double prob);
 
     /* Update the grid value given an observation */
-    void Update(const int row, const int col,
-                const double prob) override;
+    void Update(const int row, const int col, const double prob);
     /* Update the grid value given an observation (without input checks) */
-    void UpdateUnchecked(const int row, const int col,
-                         const double prob) override;
+    void UpdateUnchecked(const int row, const int col, const double prob);
 
 private:
     /* Allocate the storage for the internal values */
-    void Allocate() override;
-    /* Release the storage for the internal values */
-    void Release() override;
+    void Allocate();
 
 public:
+    /* Unknown probability value */
+    static constexpr double UnknownProbability = 0.0;
+    /* Unknown internal grid value */
+    static constexpr std::uint16_t UnknownValue = 0;
+
     /* Minimum internal value (0 means unknown) */
     static constexpr std::uint16_t ValueMin = 1U;
     /* Maximum internal value */
@@ -154,6 +171,10 @@ private:
     static double OddsToProbability(const double odds);
 
 private:
+    /* Base-2 logarithm of the size of this grid */
+    int mLog2Size;
+    /* Size of this grid */
+    int mSize;
     /* Grid values */
     std::unique_ptr<std::uint16_t[]> mValues;
 };
