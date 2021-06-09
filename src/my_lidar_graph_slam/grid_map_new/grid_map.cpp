@@ -643,8 +643,8 @@ void GridMap<T>::Expand(const BoundingBox<int>& boundingBox)
     expandedBox.Expand(boundingBox.mMin.mX, boundingBox.mMin.mY,
                        boundingBox.mMax.mX, boundingBox.mMax.mY);
 
-    /* Expand the grid map */
-    this->Expand(expandedBox);
+    /* Resize the grid map */
+    this->Resize(expandedBox);
 }
 
 /* Crop the grid map (remove the unused blocks and shrink to fit) */
