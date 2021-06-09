@@ -114,6 +114,8 @@ public:
                                   const int row1, const int col1) const {
         return this->mGeometry.SquaredDistance(row0, col0, row1, col1); }
 
+    /* Get the geometric information of the grid map */
+    inline const GridMapGeometry& Geometry() const { return this->mGeometry; }
     /* Get the resolution of the grid map */
     inline double Resolution() const { return this->mGeometry.mResolution; }
     /* Get the number of the grid cell rows */
