@@ -201,6 +201,8 @@ public:
     void Crop();
     /* Compute the bounding box of the cropped grid map */
     BoundingBox<int> CroppedBoundingBox() const;
+    /* Compute the bounding box of the cropped grid map in blocks */
+    BoundingBox<int> CroppedBoundingBoxInBlocks() const;
 
 private:
     /* Allocate the storage for the blocks */

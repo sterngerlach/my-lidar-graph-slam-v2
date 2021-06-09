@@ -658,6 +658,21 @@ void GridMap<T>::Crop()
 template <typename T>
 BoundingBox<int> GridMap<T>::CroppedBoundingBox() const
 {
+    BoundingBox<int> croppedBox = this->CroppedBoundingBoxInBlocks();
+
+    /* Convert the number of blocks to the number of grid cells */
+    croppedBox.mMin.mX <<= this->mLog2BlockSize;
+    croppedBox.mMin.mY <<= this->mLog2BlockSize;
+    croppedBox.mMax.mX <<= this->mLog2BlockSize;
+    croppedBox.mMax.mY <<= this->mLog2BlockSize;
+
+    return croppedBox;
+}
+
+/* Compute the bounding box of the cropped grid map in blocks */
+template <typename T>
+BoundingBox<int> GridMap<T>::CroppedBoundingBoxInBlocks() const
+{
     const T* block = this->Block();
     BoundingBox<int> croppedBox = BoundingBox<int>::Zero;
 
@@ -667,11 +682,10 @@ BoundingBox<int> GridMap<T>::CroppedBoundingBox() const
             if (block->IsAllocated())
                 croppedBox.Expand(col, row);
 
-    return BoundingBox<int> {
-        croppedBox.mMin.mX << this->mLog2BlockSize,
-        croppedBox.mMin.mY << this->mLog2BlockSize,
-        (croppedBox.mMax.mX + 1) << this->mLog2BlockSize,
-        (croppedBox.mMax.mY + 1) << this->mLog2BlockSize };
+    croppedBox.mMax.mX += 1;
+    croppedBox.mMax.mY += 1;
+
+    return croppedBox;
 }
 
 } /* namespace GridMapNew */
