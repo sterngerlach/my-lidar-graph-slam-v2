@@ -42,6 +42,13 @@ public:
     /* Move assignment operator */
     GridBinaryBayes& operator=(GridBinaryBayes&& other) noexcept;
 
+    /* Constructor from the different type of grid */
+    template <typename U>
+    GridBinaryBayes(const U& other);
+    /* Assignment operator from the different type of grid */
+    template <typename U>
+    GridBinaryBayes& operator=(const U& other);
+
     /* Initialize with the grid size */
     void Initialize(const int log2Size);
     /* Reset to the initial state */
@@ -179,6 +186,37 @@ private:
     /* Grid values */
     std::unique_ptr<std::uint16_t[]> mValues;
 };
+
+/* Constructor from the different type of grid */
+template <typename U>
+GridBinaryBayes::GridBinaryBayes(const U& other)
+{
+    *this = other;
+}
+
+/* Assignment operator from the different type of grid */
+template <typename U>
+GridBinaryBayes& GridBinaryBayes::operator=(const U& other)
+{
+    /* Release the storage if not allocated */
+    if (!other.IsAllocated()) {
+        this->Reset();
+        return *this;
+    }
+
+    /* Reallocate the storage if the size is different */
+    if (this->mLog2Size != other.Log2Size()) {
+        this->mLog2Size = other.Log2Size();
+        this->mSize = other.Size();
+        this->Allocate();
+    }
+
+    /* Copy the grid values */
+    const int numOfValues = 1 << (other.Log2Size() << 1);
+    std::copy_n(other.Data(), numOfValues, this->mValues.get());
+
+    return *this;
+}
 
 /* Get the internal value of the grid cell */
 std::uint16_t GridBinaryBayes::Value(const int row, const int col) const
