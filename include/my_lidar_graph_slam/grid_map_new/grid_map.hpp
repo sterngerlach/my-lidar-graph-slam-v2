@@ -248,30 +248,29 @@ template <typename T>
 template <typename U>
 GridMap<T>& GridMap<T>::operator=(const GridMap<U>& other)
 {
-    if (this == &other)
-        return *this;
-
     /* Release the storage for blocks if not valid */
-    if (other.mBlocks == nullptr) {
+    if (other.Block() == nullptr) {
         this->Reset();
         return *this;
     }
 
     /* Reallocate the storage for blocks if not valid */
-    if (this->mLog2BlockSize != other.mLog2BlockSize) {
-        this->mLog2BlockSize = other.mLog2BlockSize;
-        this->mBlockSize = other.mBlockSize;
-        this->mBlockRows = other.mBlockRows;
-        this->mBlockCols = other.mBlockCols;
+    if (this->mLog2BlockSize != other.Log2BlockSize() ||
+        this->mBlockRows != other.BlockRows() ||
+        this->mBlockCols != other.BlockCols()) {
+        this->mLog2BlockSize = other.Log2BlockSize();
+        this->mBlockSize = other.BlockSize();
+        this->mBlockRows = other.BlockRows();
+        this->mBlockCols = other.BlockCols();
         this->Allocate();
     }
 
     /* Copy the blocks, which is possible if the type U is assignable to T */
     const int numOfBlocks = this->mBlockRows * this->mBlockCols;
-    std::copy_n(other.mBlocks.get(), numOfBlocks, this->mBlocks.get());
+    std::copy_n(other.Block(), numOfBlocks, this->mBlocks.get());
 
     /* Copy the geometric information */
-    this->mGeometry = other.mGeometry;
+    this->mGeometry = other.Geometry();
 
     return *this;
 }
