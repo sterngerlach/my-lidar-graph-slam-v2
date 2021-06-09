@@ -63,8 +63,6 @@ public:
     /* Initialize with the number of rows and columns */
     void Initialize(const double resolution, const int log2BlockSize,
                     const int desiredRows, const int desiredCols);
-    /* Reset to the initial state */
-    void Reset();
     /* Reset the grid values to unknown */
     void ResetValues();
 
@@ -209,6 +207,8 @@ public:
     BoundingBox<int> CroppedBoundingBoxInBlocks() const;
 
 private:
+    /* Reset to the initial state */
+    void Reset();
     /* Allocate the storage for the blocks */
     void Allocate();
     /* Release the storage for the blocks */
