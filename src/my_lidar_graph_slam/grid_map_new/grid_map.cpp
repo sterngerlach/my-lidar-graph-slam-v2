@@ -627,6 +627,28 @@ void GridMap<T>::Resize(const BoundingBox<int>& boundingBox)
     this->mGeometry.Resize(rowMin, colMin, rows, cols);
 }
 
+/* Resize the grid map given the bounding box */
+template <typename T>
+void GridMap<T>::Resize(const BoundingBox<double>& boundingBox)
+{
+    Assert(boundingBox.mMin.mX < boundingBox.mMax.mX);
+    Assert(boundingBox.mMin.mY < boundingBox.mMax.mY);
+
+    /* Avoid the rounding errors */
+    const Point2D<int> idxMin = this->PositionToIndex(
+        boundingBox.mMin.mX - this->mGeometry.mResolution,
+        boundingBox.mMin.mY - this->mGeometry.mResolution);
+    const Point2D<int> idxMax = this->PositionToIndex(
+        boundingBox.mMax.mX + this->mGeometry.mResolution,
+        boundingBox.mMax.mY + this->mGeometry.mResolution);
+
+    /* Create the bounding box using the above indices */
+    const BoundingBox<int> idxBoundingBox {
+        idxMin.mX, idxMin.mY, idxMax.mX + 1, idxMax.mY + 1 };
+    /* Resize the grid map */
+    this->Resize(idxBoundingBox);
+}
+
 /* Expand the grid map given the bounding box (index range) */
 template <typename T>
 void GridMap<T>::Expand(const BoundingBox<int>& boundingBox)
@@ -645,6 +667,28 @@ void GridMap<T>::Expand(const BoundingBox<int>& boundingBox)
 
     /* Resize the grid map */
     this->Resize(expandedBox);
+}
+
+/* Expand the grid map given the bounding box */
+template <typename T>
+void GridMap<T>::Expand(const BoundingBox<double>& boundingBox)
+{
+    Assert(boundingBox.mMin.mX < boundingBox.mMax.mX);
+    Assert(boundingBox.mMin.mY < boundingBox.mMax.mY);
+
+    /* Avoid the rounding errors */
+    const Point2D<int> idxMin = this->PositionToIndex(
+        boundingBox.mMin.mX - this->mGeometry.mResolution,
+        boundingBox.mMin.mY - this->mGeometry.mResolution);
+    const Point2D<int> idxMax = this->PositionToIndex(
+        boundingBox.mMax.mX + this->mGeometry.mResolution,
+        boundingBox.mMax.mY + this->mGeometry.mResolution);
+
+    /* Create the bounding box using the above indices */
+    const BoundingBox<int> idxBoundingBox {
+        idxMin.mX, idxMin.mY, idxMax.mX + 1, idxMax.mY + 1 };
+    /* Expand the grid map */
+    this->Expand(idxBoundingBox);
 }
 
 /* Crop the grid map (remove the unused blocks and shrink to fit) */

@@ -194,8 +194,12 @@ public:
 public:
     /* Resize the grid map given the bounding box (index range) */
     void Resize(const BoundingBox<int>& boundingBox);
+    /* Resize the grid map given the bounding box */
+    void Resize(const BoundingBox<double>& boundingBox);
     /* Expand the grid map given the bounding box (index range) */
     void Expand(const BoundingBox<int>& boundingBox);
+    /* Expand the grid map given the bounding box */
+    void Expand(const BoundingBox<double>& boundingBox);
 
     /* Crop the grid map (remove the unused blocks and shrink to fit) */
     void Crop();
