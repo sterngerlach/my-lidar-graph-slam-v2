@@ -35,10 +35,10 @@ public:
     /* Constructor to create an empty grid map */
     GridMap();
     /* Constructor with the number of rows and columns */
-    GridMap(const double resolution, const int log2BlockSize,
+    GridMap(const double resolution, const int blockSize,
             const int desiredRows, const int desiredCols);
     /* Constructor with the width and height */
-    GridMap(const double resolution, const int log2BlockSize,
+    GridMap(const double resolution, const int blockSize,
             const double width, const double height);
 
     /* Destructor */

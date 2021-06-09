@@ -14,6 +14,23 @@ template class GridMap<GridBinaryBayes>;
 template class GridMap<GridConstant>;
 template class GridMap<GridCounted>;
 
+/* Round up to the nearest power of 2
+ * Borrowed from https://stackoverflow.com/questions/466204 */
+int ToNearestPowerOf2(int x)
+{
+    Assert(x > 0);
+
+    --x;
+    x |= (x >> 1);
+    x |= (x >> 2);
+    x |= (x >> 4);
+    x |= (x >> 8);
+    x |= (x >> 16);
+    ++x;
+
+    return x;
+}
+
 /* Constructor to create an empty grid map */
 template <typename T>
 GridMap<T>::GridMap() :
@@ -28,28 +45,34 @@ GridMap<T>::GridMap() :
 
 /* Constructor with the number of rows and columns */
 template <typename T>
-GridMap<T>::GridMap(const double resolution, const int log2BlockSize,
+GridMap<T>::GridMap(const double resolution, const int blockSize,
                     const int desiredRows, const int desiredCols) :
     BaseType()
 {
     Assert(resolution > 0.0);
-    Assert(log2BlockSize >= 0);
+    Assert(blockSize > 0);
     Assert(desiredRows > 0);
     Assert(desiredCols > 0);
+
+    /* Compute the base-2 logarithm of the block size */
+    const int log2BlockSize = ToNearestPowerOf2(blockSize);
 
     this->Initialize(resolution, log2BlockSize, desiredRows, desiredCols);
 }
 
 /* Constructor with the width and height */
 template <typename T>
-GridMap<T>::GridMap(const double resolution, const int log2BlockSize,
+GridMap<T>::GridMap(const double resolution, const int blockSize,
                     const double width, const double height) :
     BaseType()
 {
     Assert(resolution > 0.0);
-    Assert(log2BlockSize >= 0);
+    Assert(blockSize > 0);
     Assert(width > 0.0);
     Assert(height > 0.0);
+
+    /* Compute the base-2 logarithm of the block size */
+    const int log2BlockSize = ToNearestPowerOf2(blockSize);
 
     /* Compute the number of desired rows and columns */
     const int desiredRows = static_cast<int>(std::ceil(height / resolution));
