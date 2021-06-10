@@ -89,20 +89,20 @@ public:
         return this->mValues.get() + (row << this->mLog2Size) + col; }
 
     /* Get the internal value of the grid cell */
-    std::uint16_t Value(const int row, const int col) const;
+    inline std::uint16_t Value(const int row, const int col) const;
     /* Get the internal value of the grid cell (index is not checked) */
-    std::uint16_t ValueUnchecked(const int row, const int col) const;
+    inline std::uint16_t ValueUnchecked(const int row, const int col) const;
     /* Get the internal value of the grid cell or return the default value */
-    std::uint16_t ValueOr(const int row, const int col,
-                          const std::uint16_t value) const;
+    inline std::uint16_t ValueOr(const int row, const int col,
+                                 const std::uint16_t value) const;
 
     /* Get the probability value of the grid cell */
-    double Probability(const int row, const int col) const;
+    inline double Probability(const int row, const int col) const;
     /* Get the probability value of the grid cell (index is not checked) */
-    double ProbabilityUnchecked(const int row, const int col) const;
+    inline double ProbabilityUnchecked(const int row, const int col) const;
     /* Get the probability value of the grid cell or return the default value */
-    double ProbabilityOr(const int row, const int col,
-                         const double prob) const;
+    inline double ProbabilityOr(const int row, const int col,
+                                const double prob) const;
 
     /* Copy the internal values to the given buffer */
     void CopyValues(std::uint16_t* buffer, const int bufferCols) const;
@@ -116,23 +116,23 @@ public:
                       const BoundingBox<int>& boundingBox) const;
 
     /* Set the internal value of the grid cell */
-    void SetValue(const int row, const int col,
-                  const std::uint16_t value);
+    inline void SetValue(const int row, const int col,
+                         const std::uint16_t value);
     /* Set the internal value of the grid cell (index is not checked) */
-    void SetValueUnchecked(const int row, const int col,
-                           const std::uint16_t value);
+    inline void SetValueUnchecked(const int row, const int col,
+                                  const std::uint16_t value);
 
     /* Set the probability value of the grid cell */
-    void SetProbability(const int row, const int col,
-                        const double prob);
+    inline void SetProbability(const int row, const int col,
+                               const double prob);
     /* Set the probability value of the grid cell (index is not checked) */
-    void SetProbabilityUnchecked(const int row, const int col,
-                                 const double prob);
+    inline void SetProbabilityUnchecked(const int row, const int col,
+                                        const double prob);
 
     /* Fill all grid values with the given internal value */
-    void FillValue(const std::uint16_t value);
+    inline void FillValue(const std::uint16_t value);
     /* Fill all grid values with the given probability value */
-    void FillProbability(const double prob);
+    inline void FillProbability(const double prob);
 
     /* Update the grid value given an observation */
     void Update(const int row, const int col, const double prob);
@@ -265,22 +265,6 @@ double GridBinaryBayes::ProbabilityOr(
         this->mValues[(row << this->mLog2Size) + col]];
 }
 
-/* Copy the internal values to the given buffer */
-void GridBinaryBayes::CopyValues(
-    std::uint16_t* buffer, const int bufferCols) const
-{
-    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
-    return this->CopyValues(buffer, bufferCols, boundingBox);
-}
-
-/* Copy the internal values as std::uint8_t to the given buffer */
-void GridBinaryBayes::CopyValuesU8(
-    std::uint8_t* buffer, const int bufferCols) const
-{
-    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
-    return this->CopyValuesU8(buffer, bufferCols, boundingBox);
-}
-
 /* Set the internal value of the grid cell */
 void GridBinaryBayes::SetValue(
     const int row, const int col, const std::uint16_t value)
@@ -322,14 +306,6 @@ void GridBinaryBayes::FillValue(const std::uint16_t value)
 void GridBinaryBayes::FillProbability(const double prob)
 {
     this->FillValue(ProbabilityToValue(prob));
-}
-
-/* Update the grid value given an observation */
-void GridBinaryBayes::Update(
-    const int row, const int col, const double prob)
-{
-    Assert(this->IsInside(row, col));
-    this->UpdateUnchecked(row, col, prob);
 }
 
 } /* namespace GridMapNew */

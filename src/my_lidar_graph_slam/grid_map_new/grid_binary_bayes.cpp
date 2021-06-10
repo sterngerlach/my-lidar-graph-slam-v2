@@ -129,6 +129,14 @@ void GridBinaryBayes::Allocate()
 
 /* Copy the internal values to the given buffer */
 void GridBinaryBayes::CopyValues(
+    std::uint16_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValues(buffer, bufferCols, boundingBox);
+}
+
+/* Copy the internal values to the given buffer */
+void GridBinaryBayes::CopyValues(
     std::uint16_t* buffer, const int bufferCols,
     const BoundingBox<int>& boundingBox) const
 {
@@ -152,6 +160,14 @@ void GridBinaryBayes::CopyValues(
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
+}
+
+/* Copy the internal values as std::uint8_t to the given buffer */
+void GridBinaryBayes::CopyValuesU8(
+    std::uint8_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValuesU8(buffer, bufferCols, boundingBox);
 }
 
 /* Copy the internal values as std::uint8_t to the given buffer */
@@ -182,6 +198,14 @@ void GridBinaryBayes::CopyValuesU8(
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
+}
+
+/* Update the grid value given an observation */
+void GridBinaryBayes::Update(
+    const int row, const int col, const double prob)
+{
+    Assert(this->IsInside(row, col));
+    this->UpdateUnchecked(row, col, prob);
 }
 
 /* Update the grid value given an observation (without input checks) */
