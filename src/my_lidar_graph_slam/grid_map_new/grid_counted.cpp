@@ -143,6 +143,14 @@ void GridCounted::Allocate()
 
 /* Copy the internal values to the given buffer */
 void GridCounted::CopyValues(
+    std::uint16_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValues(buffer, bufferCols, boundingBox);
+}
+
+/* Copy the internal values to the given buffer */
+void GridCounted::CopyValues(
     std::uint16_t* buffer, const int bufferCols,
     const BoundingBox<int>& boundingBox) const
 {
@@ -166,6 +174,14 @@ void GridCounted::CopyValues(
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
+}
+
+/* Copy the internal values as std::uint8_t to the given buffer */
+void GridCounted::CopyValuesU8(
+    std::uint8_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValuesU8(buffer, bufferCols, boundingBox);
 }
 
 /* Copy the internal values as std::uint8_t to the given buffer */
@@ -196,6 +212,14 @@ void GridCounted::CopyValuesU8(
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
+}
+
+/* Update the grid value given an observation (hit or miss) */
+void GridCounted::Update(
+    const int row, const int col, const bool hit)
+{
+    Assert(this->IsInside(row, col));
+    this->UpdateUnchecked(row, col, hit);
 }
 
 /* Update the grid value given an observation (without input checks) */
