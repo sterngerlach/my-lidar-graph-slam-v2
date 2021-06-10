@@ -129,6 +129,14 @@ void GridConstant::Allocate()
 
 /* Copy the internal values to the given buffer */
 void GridConstant::CopyValues(
+    std::uint16_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValues(buffer, bufferCols, boundingBox);
+}
+
+/* Copy the internal values to the given buffer */
+void GridConstant::CopyValues(
     std::uint16_t* buffer, const int bufferCols,
     const BoundingBox<int>& boundingBox) const
 {
@@ -152,6 +160,14 @@ void GridConstant::CopyValues(
         srcBuffer += this->mSize;
         dstBuffer += bufferCols;
     }
+}
+
+/* Copy the internal values as std::uint8_t to the given buffer */
+void GridConstant::CopyValuesU8(
+    std::uint8_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    return this->CopyValuesU8(buffer, bufferCols, boundingBox);
 }
 
 /* Copy the internal values as std::uint8_t to the given buffer */
