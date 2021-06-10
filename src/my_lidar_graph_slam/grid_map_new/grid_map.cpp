@@ -55,7 +55,8 @@ GridMap<T>::GridMap(const double resolution, const int blockSize,
     Assert(desiredCols > 0);
 
     /* Compute the base-2 logarithm of the block size */
-    const int log2BlockSize = ToNearestPowerOf2(blockSize);
+    const int powerOf2 = ToNearestPowerOf2(blockSize);
+    const int log2BlockSize = __builtin_ctz(powerOf2);
 
     this->Initialize(resolution, log2BlockSize, desiredRows, desiredCols);
 }
@@ -72,7 +73,8 @@ GridMap<T>::GridMap(const double resolution, const int blockSize,
     Assert(height > 0.0);
 
     /* Compute the base-2 logarithm of the block size */
-    const int log2BlockSize = ToNearestPowerOf2(blockSize);
+    const int powerOf2 = ToNearestPowerOf2(blockSize);
+    const int log2BlockSize = __builtin_ctz(powerOf2);
 
     /* Compute the number of desired rows and columns */
     const int desiredRows = static_cast<int>(std::ceil(height / resolution));
