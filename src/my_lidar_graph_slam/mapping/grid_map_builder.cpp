@@ -255,7 +255,7 @@ void GridMapBuilder::AppendLocalMap(
         const NodeId lastMapNodeIdMax = lastLocalMap.mScanNodeIdMax;
         /* Determine the scan data used for initializing a local map */
         const auto lastNodeIt = scanNodes.IteratorAt(lastMapNodeIdMax);
-        const auto firstNodeIt = std::prev(lastNodeIt, numOfScanNodes);
+        const auto firstNodeIt = std::prev(lastNodeIt, numOfScanNodes - 1);
         const NodeId nodeIdMin = firstNodeIt->mId;
         const NodeId nodeIdMax = lastNodeIt->mId;
 
