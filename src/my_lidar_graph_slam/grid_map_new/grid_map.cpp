@@ -551,7 +551,7 @@ Point2D<int> GridMap<T>::IndexToBlock(const int row, const int col) const
                          ((row >> this->mLog2BlockSize) - 1);
     const int blockCol = (col >= 0) ? (col >> this->mLog2BlockSize) :
                          ((col >> this->mLog2BlockSize) - 1);
-    return Point2D<int> { blockRow, blockCol };
+    return Point2D<int> { blockCol, blockRow };
 }
 
 /* Convert the grid index to the block index offset */
@@ -564,7 +564,7 @@ Point2D<int> GridMap<T>::IndexToBlockOffset(const int row, const int col) const
     const int mask = (1 << this->mLog2BlockSize) - 1;
     const int offsetRow = row & mask;
     const int offsetCol = col & mask;
-    return Point2D<int> { offsetRow, offsetCol };
+    return Point2D<int> { offsetCol, offsetRow };
 }
 
 /* Convert the block index to the grid index range */
