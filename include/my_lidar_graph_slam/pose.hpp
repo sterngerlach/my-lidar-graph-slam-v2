@@ -8,6 +8,8 @@
 #include <iostream>
 #include <type_traits>
 
+#include "my_lidar_graph_slam/point.hpp"
+
 namespace MyLidarGraphSlam {
 
 template <typename T>
@@ -161,6 +163,19 @@ RobotPose2D<T> Compound(const RobotPose2D<T>& startPose,
     T theta = startPose.mTheta + diffPose.mTheta;
 
     return RobotPose2D<T> { x, y, theta };
+}
+
+/* Compounding operator */
+template <typename T>
+Point2D<T> Compound(const RobotPose2D<T>& pose, const Point2D<T>& point)
+{
+    T sinTheta = std::sin(pose.mTheta);
+    T cosTheta = std::cos(pose.mTheta);
+
+    T x = cosTheta * point.mX - sinTheta * point.mY + pose.mX;
+    T y = sinTheta * point.mX + cosTheta * point.mY + pose.mY;
+
+    return Point2D<T> { x, y };
 }
 
 /* Inverse compounding operator */
