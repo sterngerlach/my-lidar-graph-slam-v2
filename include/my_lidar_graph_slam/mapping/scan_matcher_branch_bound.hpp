@@ -125,25 +125,23 @@ public:
 
     /* Optimize the robot pose by scan matching */
     ScanMatchingSummary OptimizePose(
-        const GridMapType& gridMap,
-        const std::vector<ConstMapType>& precompMaps,
+        const GridMap& gridMap,
+        const std::vector<ConstMap>& precompMaps,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalInitialPose,
         const double normalizedScoreThreshold,
         const double knownRateThreshold) const;
 
     /* Precompute multiple coarser grid maps for scan matching */
-    std::vector<ConstMapType> ComputeCoarserMaps(
-        const GridMapType& gridMap) const;
+    std::vector<ConstMap> ComputeCoarserMaps(const GridMap& gridMap) const;
 
 private:
     /* Compute the search window step */
-    void ComputeSearchStep(
-        const GridMapType& gridMap,
-        const Sensor::ScanDataPtr<double>& scanData,
-        double& stepX,
-        double& stepY,
-        double& stepTheta) const;
+    void ComputeSearchStep(const GridMap& gridMap,
+                           const Sensor::ScanDataPtr<double>& scanData,
+                           double& stepX,
+                           double& stepY,
+                           double& stepTheta) const;
 
 private:
     /* Pixel-accurate score function */
