@@ -40,6 +40,12 @@ public:
     /* Constructor with the width and height */
     GridMap(const double resolution, const int blockSize,
             const double width, const double height);
+    /* Constructor with the number of block rows, block columns,
+     * and the offset from the current map-local coordinate frame
+     * to the original map-local coordinate frame */
+    GridMap(const double resolution, const int blockSize,
+            const int blockRows, const int blockCols,
+            const Point2D<double>& posOffset);
 
     /* Destructor */
     ~GridMap() = default;

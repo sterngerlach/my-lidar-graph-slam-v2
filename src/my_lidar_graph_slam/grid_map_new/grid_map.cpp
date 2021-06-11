@@ -93,6 +93,46 @@ GridMap<T>::GridMap(const double resolution, const int blockSize,
     this->Initialize(resolution, log2BlockSize, desiredRows, desiredCols);
 }
 
+/* Constructor with the number of block rows, block columns,
+ * and the offset from the current map-local coordinate frame
+ * to the original map-local coordinate frame */
+template <typename T>
+GridMap<T>::GridMap(const double resolution, const int blockSize,
+                    const int blockRows, const int blockCols,
+                    const Point2D<double>& posOffset) :
+    BaseType(),
+    mLog2BlockSize(0),
+    mBlockSize(0),
+    mBlockRows(0),
+    mBlockCols(0),
+    mBlocks(nullptr)
+{
+    Assert(blockSize > 0);
+    Assert(blockRows > 0);
+    Assert(blockCols > 0);
+
+    /* Compute the base-2 logarithm of the block size */
+    const int powerOf2 = ToNearestPowerOf2(blockSize);
+    const int log2BlockSize = __builtin_ctz(powerOf2);
+
+    /* Set the size of the blocks */
+    this->mLog2BlockSize = log2BlockSize;
+    this->mBlockSize = blockSize;
+    this->mBlockRows = blockRows;
+    this->mBlockCols = blockCols;
+
+    /* Allocate the number of blocks */
+    this->Allocate();
+
+    /* Initialize the geometric information of the grid map */
+    const int rows = this->mBlockRows << this->mLog2BlockSize;
+    const int cols = this->mBlockCols << this->mLog2BlockSize;
+    this->mGeometry.Initialize(resolution, rows, cols);
+
+    /* Set the positional offset */
+    this->mGeometry.mPosOffset = posOffset;
+}
+
 /* Copy constructor */
 template <typename T>
 GridMap<T>::GridMap(const GridMap& other) :
