@@ -14,7 +14,7 @@ ScorePixelAccurate::ScorePixelAccurate() :
 
 /* Evaluate score function (matching score between scan data and map) */
 ScoreFunction::Summary ScorePixelAccurate::Score(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -23,24 +23,24 @@ ScoreFunction::Summary ScorePixelAccurate::Score(
     const std::size_t numOfScans = scanData->NumOfScans();
     std::size_t numOfKnownGridCells = 0;
 
-    const double unknownVal = gridMap.UnknownValue();
+    const double unknownProb = gridMap.UnknownProbability();
 
     for (std::size_t i = 0; i < numOfScans; ++i) {
         /* Add the occupancy probability value at the hit point */
         const Point2D<double> localHitPoint =
             scanData->HitPoint(mapLocalSensorPose, i);
         const Point2D<int> hitPointIdx =
-            gridMap.LocalPosToGridCellIndex(localHitPoint);
-        const double hitGridCellValue =
-            gridMap.Value(hitPointIdx, unknownVal);
+            gridMap.PositionToIndex(localHitPoint.mX, localHitPoint.mY);
+        const double hitCellProb = gridMap.ProbabilityOr(
+            hitPointIdx.mY, hitPointIdx.mX, unknownProb);
 
         /* Ignore the grid cell with unknown occupancy probability */
-        if (hitGridCellValue == unknownVal)
+        if (hitCellProb == unknownProb)
             continue;
 
         /* If the hit grid cell has unknown probability value,
          * the minimum score (zero) is added */
-        sumScore += hitGridCellValue;
+        sumScore += hitCellProb;
         ++numOfKnownGridCells;
     }
 

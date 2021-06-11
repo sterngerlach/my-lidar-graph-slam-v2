@@ -18,10 +18,9 @@ public:
     ~ScorePixelAccurate() = default;
 
     /* Evaluate score function (matching score between scan data and map) */
-    Summary Score(
-        const GridMapInterfaceType& gridMap,
-        const Sensor::ScanDataPtr<double>& scanData,
-        const RobotPose2D<double>& mapLocalSensorPose) override;
+    Summary Score(const GridMapInterface& gridMap,
+                  const Sensor::ScanDataPtr<double>& scanData,
+                  const RobotPose2D<double>& mapLocalSensorPose) override;
 };
 
 } /* namespace Mapping */
