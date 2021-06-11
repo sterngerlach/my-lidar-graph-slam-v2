@@ -32,7 +32,7 @@ CostGreedyEndpoint::CostGreedyEndpoint(
 /* Calculate cost function based on the squared distance
  * between scan point and its corresponding grid cell */
 double CostGreedyEndpoint::Cost(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -49,38 +49,33 @@ double CostGreedyEndpoint::Cost(
             mapLocalSensorPose, i, this->mHitAndMissedDist,
             localHitPoint, localMissedPoint);
 
-        const Point2D<int> hitPointIdx =
-            gridMap.LocalPosToGridCellIndex(localHitPoint);
-        const Point2D<int> missedPointIdx =
-            gridMap.LocalPosToGridCellIndex(localMissedPoint);
+        const Point2D<int> hitIdx =
+            gridMap.PositionToIndex(localHitPoint.mX, localHitPoint.mY);
+        const Point2D<int> missedIdx =
+            gridMap.PositionToIndex(localMissedPoint.mX, localMissedPoint.mY);
 
         /* Find the best grid cell index from the searching window */
-        const double unknownVal = gridMap.UnknownValue();
+        const double unknownProb = gridMap.UnknownProbability();
         double minCostValue = this->mDefaultCostValue;
 
         for (int ky = -this->mKernelSize; ky <= this->mKernelSize; ++ky) {
             for (int kx = -this->mKernelSize; kx <= this->mKernelSize; ++kx) {
-                const Point2D<int> hitIdx {
-                    hitPointIdx.mX + kx, hitPointIdx.mY + ky };
-                const double hitCellValue =
-                    gridMap.Value(hitIdx, unknownVal);
-
-                const Point2D<int> missedIdx {
-                    missedPointIdx.mX + kx, missedPointIdx.mY + ky };
-                const double missedCellValue =
-                    gridMap.Value(missedIdx, unknownVal);
+                const double hitCellProb = gridMap.ProbabilityOr(
+                    hitIdx.mY + ky, hitIdx.mX + kx, unknownProb);
+                const double missedCellProb = gridMap.ProbabilityOr(
+                    missedIdx.mY + ky, missedIdx.mX + kx, unknownProb);
 
                 /* Skip if the grid cell has unknown occupancy probability */
-                if (hitCellValue == unknownVal ||
-                    missedCellValue == unknownVal)
+                if (hitCellProb == unknownProb ||
+                    missedCellProb == unknownProb)
                     continue;
 
                 /* Skip if the occupancy probability of the grid cell
                  * that is assumed to be hit is less than the threshold or
                  * the occupancy probability of the missed grid cell
                  * is greater than the threshold */
-                if (hitCellValue < this->mOccupancyThreshold ||
-                    missedCellValue > this->mOccupancyThreshold)
+                if (hitCellProb < this->mOccupancyThreshold ||
+                    missedCellProb > this->mOccupancyThreshold)
                     continue;
 
                 /* Retrieve the cost value using the lookup table */
@@ -108,7 +103,7 @@ double CostGreedyEndpoint::Cost(
 
 /* Calculate a gradient vector in a map-local coordinate frame */
 Eigen::Vector3d CostGreedyEndpoint::ComputeGradient(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -141,7 +136,7 @@ Eigen::Vector3d CostGreedyEndpoint::ComputeGradient(
 
 /* Calculate a covariance matrix in a map-local coordinate frame */
 Eigen::Matrix3d CostGreedyEndpoint::ComputeCovariance(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {

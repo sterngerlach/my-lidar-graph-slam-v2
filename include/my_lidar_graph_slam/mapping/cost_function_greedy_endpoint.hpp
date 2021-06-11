@@ -29,19 +29,19 @@ public:
 
     /* Calculate cost function (mismatch between scan data and map) */
     double Cost(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose) override;
 
     /* Calculate a gradient vector in a map-local coordinate frame */
     Eigen::Vector3d ComputeGradient(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose) override;
 
     /* Calculate a covariance matrix in a map-local coordinate frame */
     Eigen::Matrix3d ComputeCovariance(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose) override;
 
