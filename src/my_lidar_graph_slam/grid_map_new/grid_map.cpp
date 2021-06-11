@@ -47,7 +47,12 @@ GridMap<T>::GridMap() :
 template <typename T>
 GridMap<T>::GridMap(const double resolution, const int blockSize,
                     const int desiredRows, const int desiredCols) :
-    BaseType()
+    BaseType(),
+    mLog2BlockSize(0),
+    mBlockSize(0),
+    mBlockRows(0),
+    mBlockCols(0),
+    mBlocks(nullptr)
 {
     Assert(resolution > 0.0);
     Assert(blockSize > 0);
@@ -65,7 +70,12 @@ GridMap<T>::GridMap(const double resolution, const int blockSize,
 template <typename T>
 GridMap<T>::GridMap(const double resolution, const int blockSize,
                     const double width, const double height) :
-    BaseType()
+    BaseType(),
+    mLog2BlockSize(0),
+    mBlockSize(0),
+    mBlockRows(0),
+    mBlockCols(0),
+    mBlocks(nullptr)
 {
     Assert(resolution > 0.0);
     Assert(blockSize > 0);
@@ -86,9 +96,22 @@ GridMap<T>::GridMap(const double resolution, const int blockSize,
 /* Copy constructor */
 template <typename T>
 GridMap<T>::GridMap(const GridMap& other) :
-    BaseType(other)
+    BaseType(other),
+    mLog2BlockSize(other.mLog2BlockSize),
+    mBlockSize(other.mBlockSize),
+    mBlockRows(other.mBlockRows),
+    mBlockCols(other.mBlockCols),
+    mBlocks(nullptr)
 {
-    *this = other;
+    if (other.mBlocks == nullptr)
+        return;
+
+    /* Allocate the storage for blocks */
+    this->Allocate();
+
+    /* Copy the blocks */
+    const int numOfBlocks = this->mBlockRows * this->mBlockCols;
+    std::copy_n(other.mBlocks.get(), numOfBlocks, this->mBlocks.get());
 }
 
 /* Copy assignment operator */
