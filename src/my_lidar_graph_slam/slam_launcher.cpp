@@ -2,13 +2,20 @@
 /* slam_launcher.cpp */
 
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <queue>
 #include <vector>
+
+#ifdef __GNUC__
+#if (__GNUC__ >= 6) && (__GNUC__ < 8)
+#include <experimental/filesystem>
+#elif (__GNUC__ >= 8)
+#include <filesystem>
+#endif
+#endif
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -55,7 +62,14 @@ using namespace MyLidarGraphSlam;
 
 /* Declare namespaces for convenience */
 namespace pt = boost::property_tree;
+
+#ifdef __GNUC__
+#if (__GNUC__ >= 6) && (__GNUC__ < 8)
+namespace fs = std::experimental::filesystem;
+#elif (__GNUC__ >= 8)
 namespace fs = std::filesystem;
+#endif
+#endif
 
 /* Create the greedy endpoint cost function object */
 std::shared_ptr<Mapping::CostFunction> CreateCostGreedyEndpoint(
