@@ -140,7 +140,7 @@ LoopDetectionResultVector LoopDetectorGridSearch::Detect(
 /* Find a corresponding pose of the current robot pose
  * from the local grid map */
 bool LoopDetectorGridSearch::FindCorrespondingPose(
-    const GridMapType& gridMap,
+    const GridMap& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalScanPose,
     RobotPose2D<double>& correspondingPose,

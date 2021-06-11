@@ -51,7 +51,7 @@ public:
 private:
     /* Find a corresponding pose of the current robot pose
      * from the local grid map */
-    bool FindCorrespondingPose(const GridMapType& gridMap,
+    bool FindCorrespondingPose(const GridMap& gridMap,
                                const Sensor::ScanDataPtr<double>& scanData,
                                const RobotPose2D<double>& mapLocalScanPose,
                                RobotPose2D<double>& correspondingPose,
