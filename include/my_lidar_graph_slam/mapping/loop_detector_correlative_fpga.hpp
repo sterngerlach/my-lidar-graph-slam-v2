@@ -49,7 +49,7 @@ private:
     /* Find a corresponding pose of the current robot pose
      * from a local grid map */
     bool FindCorrespondingPose(
-        const GridMapType& localMap,
+        const GridMap& localMap,
         const LocalMapId localMapId,
         const Point2D<double>& localMapCenterPos,
         const Sensor::ScanDataPtr<double>& scanData,
