@@ -283,7 +283,8 @@ template <typename T>
 void GridMap<T>::ForEachBlock(std::function<void(T&)> func)
 {
     const int numOfBlocks = this->mBlockRows * this->mBlockCols;
-    std::for_each_n(this->mBlocks.get(), numOfBlocks, func);
+    T* blocks = this->mBlocks.get();
+    std::for_each(blocks, blocks + numOfBlocks, func);
 }
 
 /* Apply the function to the grid cell */
