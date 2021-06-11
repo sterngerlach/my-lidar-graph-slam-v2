@@ -28,7 +28,7 @@ namespace Mapping {
 struct ScanMatchingQuery final
 {
     /* Constructor */
-    ScanMatchingQuery(const GridMapType& gridMap,
+    ScanMatchingQuery(const GridMap& gridMap,
                       const Point2D<double>& gridMapCenterPos,
                       const Sensor::ScanDataPtr<double>& scanData,
                       const RobotPose2D<double>& mapLocalInitialPose) :
@@ -41,7 +41,7 @@ struct ScanMatchingQuery final
     ~ScanMatchingQuery() = default;
 
     /* Grid map */
-    const GridMapType&                mGridMap;
+    const GridMap&                    mGridMap;
     /* Map-local center position of the grid map */
     const Point2D<double>             mGridMapCenterPos;
     /* Scan data */
