@@ -128,7 +128,9 @@ GridMap<T>& GridMap<T>::operator=(const GridMap& other)
     }
 
     /* Reallocate the storage for blocks if not valid */
-    if (this->mLog2BlockSize != other.mLog2BlockSize) {
+    if (this->mLog2BlockSize != other.mLog2BlockSize ||
+        this->mBlockRows != other.mBlockRows ||
+        this->mBlockCols != other.mBlockCols) {
         this->mLog2BlockSize = other.mLog2BlockSize;
         this->mBlockSize = other.mBlockSize;
         this->mBlockRows = other.mBlockRows;
