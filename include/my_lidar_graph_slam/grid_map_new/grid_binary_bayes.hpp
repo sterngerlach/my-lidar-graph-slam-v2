@@ -189,9 +189,20 @@ private:
 
 /* Constructor from the different type of grid */
 template <typename U>
-GridBinaryBayes::GridBinaryBayes(const U& other)
+GridBinaryBayes::GridBinaryBayes(const U& other) :
+    mLog2Size(other.Log2Size()),
+    mSize(other.Size()),
+    mValues(nullptr)
 {
-    *this = other;
+    if (!other.IsAllocated())
+        return;
+
+    /* Allocate the storage for the grid values */
+    this->Allocate();
+
+    /* Copy the grid values */
+    const int numOfValues = 1 << (other.Log2Size() << 1);
+    std::copy_n(other.Data(), numOfValues, this->mValues.get());
 }
 
 /* Assignment operator from the different type of grid */
