@@ -129,6 +129,9 @@ public:
     inline double Width() const { return this->mGeometry.mWidth; }
     /* Get the height of this grid map */
     inline double Height() const { return this->mGeometry.mHeight; }
+    /* Get the positional offset */
+    inline const Point2D<double>& PosOffset() const {
+        return this->mGeometry.mPosOffset; }
 
 protected:
     /* Geometry of the grid map */
