@@ -187,7 +187,7 @@ bool LidarGraphSlamFrontend::ProcessScan(
         RobotPose2D<double> latestScanPose;
         RobotPose2D<double> latestMapPose;
         Point2D<double> latestMapCenterPos;
-        GridMapType latestMap;
+        GridMap latestMap;
         pParent->GetLatestData(latestScanPose, latestMap,
                                latestMapPose, latestMapCenterPos);
 
