@@ -82,7 +82,7 @@ LoopDetectionResultVector LoopDetectorCorrelative::Detect(
         /* Precompute a low-resolution grid map */
         if (!this->mPrecompMaps.contains(localMap.mId)) {
             /* Precompute coarser grid maps */
-            ConstMapType precompMap =
+            ConstMap precompMap =
                 this->mScanMatcher->ComputeCoarserMap(localMap.mMap);
             /* Append the newly created grid map */
             this->mPrecompMaps.Append(localMap.mId, std::move(precompMap));
@@ -156,8 +156,8 @@ LoopDetectionResultVector LoopDetectorCorrelative::Detect(
 /* Find a corresponding pose of the current robot pose
  * from a local grid map */
 bool LoopDetectorCorrelative::FindCorrespondingPose(
-    const GridMapType& localMap,
-    const ConstMapType& precompMap,
+    const GridMap& localMap,
+    const ConstMap& precompMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalScanPose,
     RobotPose2D<double>& correspondingPose,
