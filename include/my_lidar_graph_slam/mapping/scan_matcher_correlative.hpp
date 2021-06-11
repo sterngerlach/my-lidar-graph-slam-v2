@@ -73,29 +73,27 @@ public:
 
     /* Optimize the robot pose by scan matching */
     ScanMatchingSummary OptimizePose(
-        const GridMapType& gridMap,
-        const ConstMapType& precompMap,
+        const GridMap& gridMap,
+        const ConstMap& precompMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalInitialPose,
         const double normalizedScoreThreshold,
         const double knownRateThreshold) const;
 
     /* Precompute a coarser grid map for scan matching */
-    ConstMapType ComputeCoarserMap(
-        const GridMapType& gridMap) const;
+    ConstMap ComputeCoarserMap(const GridMap& gridMap) const;
 
 private:
     /* Compute the search step */
-    void ComputeSearchStep(
-        const GridMapInterfaceType& gridMap,
-        const Sensor::ScanDataPtr<double>& scanData,
-        double& stepX,
-        double& stepY,
-        double& stepTheta) const;
+    void ComputeSearchStep(const GridMapInterface& gridMap,
+                           const Sensor::ScanDataPtr<double>& scanData,
+                           double& stepX,
+                           double& stepY,
+                           double& stepTheta) const;
 
     /* Compute the grid cell indices for scan points */
     void ComputeScanIndices(
-        const ConstMapType& precompMap,
+        const ConstMap& precompMap,
         const RobotPose2D<double>& mapLocalSensorPose,
         const Sensor::ScanDataPtr<double>& scanData,
         std::vector<Point2D<int>>& scanIndices) const;
@@ -103,14 +101,14 @@ private:
     /* Compute the scan matching score based on the already projected
      * scan points (indices) and index offsets */
     ScoreFunction::Summary ComputeScore(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const std::vector<Point2D<int>>& scanIndices,
         const int offsetX,
         const int offsetY) const;
 
     /* Evaluate the matching score using high-resolution grid map */
     void EvaluateHighResolutionMap(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const std::vector<Point2D<int>>& scanIndices,
         const int offsetX,
         const int offsetY,

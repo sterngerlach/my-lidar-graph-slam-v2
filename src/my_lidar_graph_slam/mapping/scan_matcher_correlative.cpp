@@ -104,7 +104,7 @@ ScanMatchingSummary ScanMatcherCorrelative::OptimizePose(
         queryInfo.mMapLocalInitialPose;
 
     /* Precompute the grid map */
-    const ConstMapType precompMap = this->ComputeCoarserMap(gridMap);
+    const auto precompMap = this->ComputeCoarserMap(gridMap);
 
     /* Update the metrics */
     this->mMetrics.mInputSetupTime->Observe(timer.ElapsedMicro());
@@ -118,8 +118,8 @@ ScanMatchingSummary ScanMatcherCorrelative::OptimizePose(
 
 /* Optimize the robot pose by scan matching */
 ScanMatchingSummary ScanMatcherCorrelative::OptimizePose(
-    const GridMapType& gridMap,
-    const ConstMapType& precompMap,
+    const GridMap& gridMap,
+    const ConstMap& precompMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalInitialPose,
     const double normalizedScoreThreshold,
@@ -246,8 +246,8 @@ ScanMatchingSummary ScanMatcherCorrelative::OptimizePose(
 }
 
 /* Precompute a coarser grid map for scan matching */
-ConstMapType ScanMatcherCorrelative::ComputeCoarserMap(
-    const GridMapType& gridMap) const
+ConstMap ScanMatcherCorrelative::ComputeCoarserMap(
+    const GridMap& gridMap) const
 {
     /* Create a coarser grid map with the specified resolution */
     return PrecomputeGridMap(gridMap, this->mLowResolution);
@@ -255,7 +255,7 @@ ConstMapType ScanMatcherCorrelative::ComputeCoarserMap(
 
 /* Compute the search step */
 void ScanMatcherCorrelative::ComputeSearchStep(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     double& stepX,
     double& stepY,
@@ -277,7 +277,7 @@ void ScanMatcherCorrelative::ComputeSearchStep(
 
 /* Compute the grid cell indices for scan points */
 void ScanMatcherCorrelative::ComputeScanIndices(
-    const ConstMapType& precompMap,
+    const ConstMap& precompMap,
     const RobotPose2D<double>& mapLocalSensorPose,
     const Sensor::ScanDataPtr<double>& scanData,
     std::vector<Point2D<int>>& scanIndices) const
@@ -290,8 +290,8 @@ void ScanMatcherCorrelative::ComputeScanIndices(
     for (std::size_t i = 0; i < numOfScans; ++i) {
         Point2D<double> localHitPoint =
             scanData->HitPoint(mapLocalSensorPose, i);
-        Point2D<int> hitIdx =
-            precompMap.LocalPosToGridCellIndex(localHitPoint);
+        Point2D<int> hitIdx = precompMap.PositionToIndex(
+            localHitPoint.mX, localHitPoint.mY);
         scanIndices.push_back(std::move(hitIdx));
     }
 
@@ -301,27 +301,27 @@ void ScanMatcherCorrelative::ComputeScanIndices(
 /* Compute the scan matching score based on the already projected
  * scan points (indices) and index offsets */
 ScoreFunction::Summary ScanMatcherCorrelative::ComputeScore(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const std::vector<Point2D<int>>& scanIndices,
     const int offsetX,
     const int offsetY) const
 {
     /* Evaluate the matching score based on the occupancy probability value */
-    const double unknownVal = gridMap.UnknownValue();
+    const double unknownProb = gridMap.UnknownProbability();
     std::size_t numOfKnownGridCells = 0;
     double sumScore = 0.0;
 
     for (const auto& hitIdx : scanIndices) {
-        const double mapVal = gridMap.Value(
-            hitIdx.mX + offsetX, hitIdx.mY + offsetY, unknownVal);
+        const double prob = gridMap.ProbabilityOr(
+            hitIdx.mY + offsetY, hitIdx.mX + offsetX, unknownProb);
 
         /* Ignore the grid cell with unknown occupancy probability */
-        if (mapVal == unknownVal)
+        if (prob == unknownProb)
             continue;
 
         /* Only grid cells that are observed at least once and that have known
          * occupancy probability values are considered in the computation */
-        sumScore += mapVal;
+        sumScore += prob;
         ++numOfKnownGridCells;
     }
 
@@ -339,7 +339,7 @@ ScoreFunction::Summary ScanMatcherCorrelative::ComputeScore(
 
 /* Evaluate the matching score using high-resolution grid map */
 void ScanMatcherCorrelative::EvaluateHighResolutionMap(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const std::vector<Point2D<int>>& scanIndices,
     const int offsetX,
     const int offsetY,
