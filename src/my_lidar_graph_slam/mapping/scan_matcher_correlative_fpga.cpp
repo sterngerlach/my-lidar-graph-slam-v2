@@ -476,27 +476,26 @@ void ScanMatcherCorrelativeFPGA::SetParameterRegisters(
     const int winX, const int winY, const int winTheta,
     const double stepX, const double stepY, const double stepTheta)
 {
+    const auto doubleToU32 = [](const double x) {
+        return FloatToUInt32(static_cast<double>(x)); };
+
     /* Set the actual number of the scan points */
     this->mControlRegisters->Write(
         this->mConfig.mAxiLiteSNumOfScans, Int32ToUInt32(numOfScans));
     /* Set the maximum scan range considered valid */
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSScanRangeMax,
-        FloatToUInt32(static_cast<float>(scanRangeMax)));
+        this->mConfig.mAxiLiteSScanRangeMax, doubleToU32(scanRangeMax));
     /* Set the score threshold (for loop detection) */
     this->mControlRegisters->Write(
         this->mConfig.mAxiLiteSScoreThreshold, Int32ToUInt32(scoreThreshold));
 
     /* Set the minimum possible sensor pose */
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSPoseX,
-        FloatToUInt32(static_cast<float>(minSensorPose.mX)));
+        this->mConfig.mAxiLiteSPoseX, doubleToU32(minSensorPose.mX));
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSPoseY,
-        FloatToUInt32(static_cast<float>(minSensorPose.mY)));
+        this->mConfig.mAxiLiteSPoseY, doubleToU32(minSensorPose.mY));
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSPoseTheta,
-        FloatToUInt32(static_cast<float>(minSensorPose.mTheta)));
+        this->mConfig.mAxiLiteSPoseTheta, doubleToU32(minSensorPose.mTheta));
 
     /* Set the actual size of the cropped grid map */
     this->mControlRegisters->Write(
@@ -505,11 +504,9 @@ void ScanMatcherCorrelativeFPGA::SetParameterRegisters(
         this->mConfig.mAxiLiteSMapSizeY, Int32ToUInt32(gridMapSize.mY));
     /* Set the minimum coordinate of the cropped grid map */
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSMapMinX,
-        FloatToUInt32(static_cast<float>(gridMapMinPos.mX)));
+        this->mConfig.mAxiLiteSMapMinX, doubleToU32(gridMapMinPos.mX));
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSMapMinY,
-        FloatToUInt32(static_cast<float>(gridMapMinPos.mY)));
+        this->mConfig.mAxiLiteSMapMinY, doubleToU32(gridMapMinPos.mY));
 
     /* Set the size of the search window */
     this->mControlRegisters->Write(
@@ -520,14 +517,11 @@ void ScanMatcherCorrelativeFPGA::SetParameterRegisters(
         this->mConfig.mAxiLiteSWinTheta, Int32ToUInt32(winTheta));
     /* Set the search step */
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSStepX,
-        FloatToUInt32(static_cast<float>(stepX)));
+        this->mConfig.mAxiLiteSStepX, doubleToU32(stepX));
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSStepY,
-        FloatToUInt32(static_cast<float>(stepY)));
+        this->mConfig.mAxiLiteSStepY, doubleToU32(stepY));
     this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSStepTheta,
-        FloatToUInt32(static_cast<float>(stepTheta)));
+        this->mConfig.mAxiLiteSStepTheta, doubleToU32(stepTheta));
 }
 
 /* Send the scan data through AXI DMA */
