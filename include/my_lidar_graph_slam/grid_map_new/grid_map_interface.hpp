@@ -22,6 +22,9 @@ class GridMapInterface
 public:
     /* Constructor */
     GridMapInterface() = default;
+    /* Constructor with the geometry information */
+    GridMapInterface(const GridMapGeometry& geometry) :
+        mGeometry(geometry) { }
     /* Destructor */
     virtual ~GridMapInterface() = default;
 
