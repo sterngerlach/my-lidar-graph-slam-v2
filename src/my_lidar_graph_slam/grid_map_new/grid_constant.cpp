@@ -140,13 +140,6 @@ void GridConstant::CopyValues(
     std::uint16_t* buffer, const int bufferCols,
     const BoundingBox<int>& boundingBox) const
 {
-    Assert(boundingBox.mMin.mX >= 0);
-    Assert(boundingBox.mMin.mY >= 0);
-    Assert(boundingBox.mMax.mX <= this->mSize);
-    Assert(boundingBox.mMax.mY <= this->mSize);
-    Assert(boundingBox.mMax.mX > boundingBox.mMin.mX);
-    Assert(boundingBox.mMax.mY > boundingBox.mMin.mY);
-
     const int cols = boundingBox.mMax.mX - boundingBox.mMin.mX;
     const int rowMin = boundingBox.mMin.mY;
     const int rowMax = boundingBox.mMax.mY;
@@ -175,13 +168,6 @@ void GridConstant::CopyValuesU8(
     std::uint8_t* buffer, const int bufferCols,
     const BoundingBox<int>& boundingBox) const
 {
-    Assert(boundingBox.mMin.mX >= 0);
-    Assert(boundingBox.mMin.mY >= 0);
-    Assert(boundingBox.mMax.mX <= this->mSize);
-    Assert(boundingBox.mMax.mY <= this->mSize);
-    Assert(boundingBox.mMax.mX > boundingBox.mMin.mX);
-    Assert(boundingBox.mMax.mY > boundingBox.mMin.mY);
-
     auto rawToU8 = [](const std::uint16_t value) {
         return static_cast<std::uint8_t>(value >> 8); };
 
