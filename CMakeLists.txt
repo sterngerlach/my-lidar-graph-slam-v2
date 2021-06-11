@@ -38,6 +38,13 @@ target_link_libraries(lidar_graph_slam PUBLIC PNG::PNG)
 target_link_libraries(lidar_graph_slam PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(lidar_graph_slam PUBLIC
     cholmod g2o_core g2o_stuff g2o_solver_cholmod g2o_types_slam2d)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1)
+        target_link_libraries(lidar_graph_slam PUBLIC stdc++fs)
+    endif()
+endif()
+
 target_compile_options(lidar_graph_slam PUBLIC
     $<$<CXX_COMPILER_ID:GNU>:-pedantic -Wall -Wextra -Wno-psabi>
     $<$<CONFIG:Release>:-O3>
