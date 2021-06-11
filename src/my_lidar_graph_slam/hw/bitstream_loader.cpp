@@ -3,7 +3,14 @@
 
 #include "my_lidar_graph_slam/hw/bitstream_loader.hpp"
 
+#ifdef __GNUC__
+#if (__GNUC__ >= 6) && (__GNUC__ < 8)
+#include <experimental/filesystem>
+#elif (__GNUC__ >= 8)
 #include <filesystem>
+#endif
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -16,7 +23,13 @@
 
 #include "my_lidar_graph_slam/util.hpp"
 
+#ifdef __GNUC__
+#if (__GNUC__ >= 6) && (__GNUC__ < 8)
+namespace fs = std::experimental::filesystem;
+#elif (__GNUC__ >= 8)
 namespace fs = std::filesystem;
+#endif
+#endif
 
 namespace MyLidarGraphSlam {
 namespace Hardware {
