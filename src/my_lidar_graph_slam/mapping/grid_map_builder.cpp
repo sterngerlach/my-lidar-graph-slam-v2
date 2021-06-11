@@ -872,94 +872,96 @@ void GridMapBuilder::ComputeMissedGridCellIndices(
  */
 
 /* Compute the maximum of a 'winSize' pixel wide row at each pixel */
-void SlidingWindowMaxRow(const GridMapType& gridMap,
-                         ConstMapType& intermediateMap,
+void SlidingWindowMaxRow(const GridMap& gridMap,
+                         ConstMap& intermediateMap,
                          const int winSize)
 {
+    /* Make sure that the intermediate map has the same size as the grid map */
+    Assert(intermediateMap.BlockRows() == gridMap.BlockRows());
+    Assert(intermediateMap.BlockCols() == gridMap.BlockCols());
+
     /* Each grid cell in the grid map stores an occupancy probability value
-     * using the data type `StorageType` (defined as std::uint16_t) */
-    using StorageType = GridMapType::StorageType;
+     * which is discretized to the unsigned integer (std::uint16_t) */
+    using ValueType = GridMap::GridType::ValueType;
 
     /* Compute the maximum for each column */
-    const StorageType unknownRawValue = gridMap.UnknownRawValue();
+    const ValueType unknownValue = gridMap.UnknownValue();
     int colIdx = 0;
 
-    std::function<StorageType(int)> inFunc =
-        [&colIdx, &gridMap, unknownRawValue](int rowIdx) {
-        return gridMap.RawValue(colIdx, rowIdx, unknownRawValue); };
+    std::function<ValueType(int)> inFunc =
+        [&colIdx, &gridMap, unknownValue](int rowIdx) {
+        return gridMap.ValueOr(rowIdx, colIdx, unknownValue); };
 
-    std::function<void(int, StorageType)> outFunc =
-        [&colIdx, &gridMap, &intermediateMap, unknownRawValue](
-            int rowIdx, StorageType maxValue) {
-        const Point2D<int> patchIdx =
-            gridMap.GridCellIndexToPatchIndex(colIdx, rowIdx);
-        const bool isAllocated = gridMap.PatchIsAllocated(patchIdx);
+    std::function<void(int, ValueType)> outFunc =
+        [&colIdx, &gridMap, &intermediateMap, unknownValue](
+            int rowIdx, ValueType maxValue) {
+        intermediateMap.SetValueUnchecked(rowIdx, colIdx, maxValue); };
 
-        if (isAllocated)
-            intermediateMap.SetRawValue(colIdx, rowIdx, maxValue); };
-
-    const int numOfGridCellsX = gridMap.NumOfGridCellsX();
-    const int numOfGridCellsY = gridMap.NumOfGridCellsY();
+    const int rows = gridMap.Rows();
+    const int cols = gridMap.Cols();
 
     /* Apply the sliding window maximum function */
-    for (colIdx = 0; colIdx < numOfGridCellsX; ++colIdx)
-        SlidingWindowMax(inFunc, outFunc, numOfGridCellsY, winSize);
+    for (colIdx = 0; colIdx < cols; ++colIdx)
+        SlidingWindowMax(inFunc, outFunc, rows, winSize);
 }
 
 /* Compute the maximum of a 'winSize' pixel wide column at each pixel */
-void SlidingWindowMaxCol(const ConstMapType& intermediateMap,
-                         ConstMapType& precompMap,
+void SlidingWindowMaxCol(const ConstMap& intermediateMap,
+                         ConstMap& precompMap,
                          const int winSize)
 {
+    /* Make sure that the resulting map has the same size
+     * as the intermediate map */
+    Assert(precompMap.BlockRows() == intermediateMap.BlockRows());
+    Assert(precompMap.BlockCols() == intermediateMap.BlockCols());
+
     /* Each grid cell in the grid map stores an occupancy probability value
-     * using the data type `StorageType` (defined as std::uint16_t) */
-    using StorageType = GridMapType::StorageType;
+     * which is discretized to the unsigned integer (std::uint16_t) */
+    using ValueType = GridMap::GridType::ValueType;
 
     /* Compute the maximum for each row */
-    const StorageType unknownRawValue = intermediateMap.UnknownRawValue();
+    const ValueType unknownValue = intermediateMap.UnknownValue();
     int rowIdx = 0;
 
-    std::function<StorageType(int)> inFunc =
-        [&rowIdx, &intermediateMap, unknownRawValue](int colIdx) {
-        return intermediateMap.RawValue(colIdx, rowIdx, unknownRawValue); };
+    std::function<ValueType(int)> inFunc =
+        [&rowIdx, &intermediateMap, unknownValue](int colIdx) {
+        return intermediateMap.ValueOr(rowIdx, colIdx, unknownValue); };
 
-    std::function<void(int, StorageType)> outFunc =
-        [&rowIdx, &intermediateMap, &precompMap, unknownRawValue](
-            int colIdx, StorageType maxValue) {
-        const Point2D<int> patchIdx =
-            intermediateMap.GridCellIndexToPatchIndex(colIdx, rowIdx);
-        const bool isAllocated = intermediateMap.PatchIsAllocated(patchIdx);
+    std::function<void(int, ValueType)> outFunc =
+        [&rowIdx, &intermediateMap, &precompMap, unknownValue](
+            int colIdx, ValueType maxValue) {
+        precompMap.SetValueUnchecked(rowIdx, colIdx, maxValue); };
 
-        if (isAllocated)
-            precompMap.SetRawValue(colIdx, rowIdx, maxValue); };
-
-    const int numOfGridCellsX = intermediateMap.NumOfGridCellsX();
-    const int numOfGridCellsY = intermediateMap.NumOfGridCellsY();
+    const int rows = intermediateMap.Rows();
+    const int cols = intermediateMap.Cols();
 
     /* Apply the sliding window maximum function */
-    for (rowIdx = 0; rowIdx < numOfGridCellsY; ++rowIdx)
-        SlidingWindowMax(inFunc, outFunc, numOfGridCellsX, winSize);
+    for (rowIdx = 0; rowIdx < rows; ++rowIdx)
+        SlidingWindowMax(inFunc, outFunc, cols, winSize);
 }
 
 /* Precompute coarser grid maps for efficiency */
-void PrecomputeGridMaps(const GridMapType& gridMap,
-                        std::vector<ConstMapType>& precomputedMaps,
+void PrecomputeGridMaps(const GridMap& gridMap,
+                        std::vector<ConstMap>& precomputedMaps,
                         const int nodeHeightMax)
 {
     /* Create the temporary grid map to store the intermediate result
      * The map size is as same as the local grid map and is reused for
      * several times below */
-    ConstMapType intermediateMap = ConstMapType::CreateSameSizeMap(gridMap);
+    ConstMap intermediateMap { gridMap.Resolution(), gridMap.BlockSize(),
+                               gridMap.BlockRows(), gridMap.BlockCols(),
+                               gridMap.PosOffset() };
 
-    /* Clear the precomputed coarser grid maps */
+    /* Clear and allocate the precomputed coarser grid maps */
     precomputedMaps.clear();
+    precomputedMaps.reserve(nodeHeightMax + 1);
 
     /* Compute a grid map for each node height */
     for (int nodeHeight = 0, winSize = 1;
          nodeHeight <= nodeHeightMax; ++nodeHeight, winSize <<= 1) {
         /* Precompute a grid map */
-        ConstMapType precompMap =
-            PrecomputeGridMap(gridMap, intermediateMap, winSize);
+        ConstMap precompMap = PrecomputeGridMap(
+            gridMap, intermediateMap, winSize);
 
         /* Append the newly created map */
         precomputedMaps.emplace_back(std::move(precompMap));
@@ -967,14 +969,25 @@ void PrecomputeGridMaps(const GridMapType& gridMap,
 }
 
 /* Precompute grid map for efficiency */
-ConstMapType PrecomputeGridMap(const GridMapType& gridMap,
-                               ConstMapType& intermediateMap,
-                               const int winSize)
+ConstMap PrecomputeGridMap(const GridMap& gridMap,
+                           ConstMap& intermediateMap,
+                           const int winSize)
 {
-    /* Create a new grid map
-     * Each pixel stores the maximum of the occupancy probability values of
+    /* Make sure that the intermediate map has the same size as the grid map */
+    Assert(intermediateMap.BlockRows() == gridMap.BlockRows());
+    Assert(intermediateMap.BlockCols() == gridMap.BlockCols());
+
+    /* Create a new grid map which has the same size and the geometric
+     * information as the original grid map so that grid cells in these
+     * two grid maps correspond to the same place in the world */
+    /* Each pixel stores the maximum of the occupancy probability values of
      * 'winSize' * 'winSize' box of pixels beginning there */
-    ConstMapType precompMap = ConstMapType::CreateSameSizeMap(gridMap);
+    ConstMap precompMap { gridMap.Resolution(), gridMap.BlockSize(),
+                          gridMap.BlockRows(), gridMap.BlockCols(),
+                          gridMap.PosOffset() };
+
+    /* Reset the grid values in an intermediate map */
+    intermediateMap.ResetValues();
 
     /* Store the maximum of the 'winSize' pixel wide row */
     SlidingWindowMaxRow(gridMap, intermediateMap, winSize);
@@ -985,14 +998,20 @@ ConstMapType PrecomputeGridMap(const GridMapType& gridMap,
 }
 
 /* Precompute grid map for efficiency */
-ConstMapType PrecomputeGridMap(const GridMapType& gridMap,
-                               const int winSize)
+ConstMap PrecomputeGridMap(const GridMap& gridMap,
+                           const int winSize)
 {
     /* Create a temporary map to store the intermediate result */
-    ConstMapType intermediateMap = ConstMapType::CreateSameSizeMap(gridMap);
+    ConstMap intermediateMap { gridMap.Resolution(), gridMap.BlockSize(),
+                               gridMap.BlockRows(), gridMap.BlockCols(),
+                               gridMap.PosOffset() };
 
-    /* Create a new grid map */
-    ConstMapType precompMap = ConstMapType::CreateSameSizeMap(gridMap);
+    /* Create a new grid map which has the same size and the geometric
+     * information as the original grid map so that grid cells in these
+     * two grid maps correspond to the same place in the world */
+    ConstMap precompMap { gridMap.Resolution(), gridMap.BlockSize(),
+                          gridMap.BlockRows(), gridMap.BlockCols(),
+                          gridMap.PosOffset() };
 
     /* Store the maximum of the 'winSize' pixel wide row */
     SlidingWindowMaxRow(gridMap, intermediateMap, winSize);
