@@ -65,7 +65,7 @@ GridMapBuilder::GridMapBuilder(
     const double probMiss) :
     mResolution(mapResolution),
     mPatchSize(patchSize),
-    mLatestMap(mapResolution, patchSize, 0, 0, Point2D<double>(0.0, 0.0)),
+    mLatestMap(mapResolution, patchSize, 1.0, 1.0),
     mLatestMapPose(0.0, 0.0, 0.0),
     mAccumTravelDist(0.0),
     mNumOfScansForLatestMap(numOfScansForLatestMap),
@@ -133,7 +133,7 @@ void GridMapBuilder::AfterLoopClosure(
  * of the local grid map in the map-local coordinate frame */
 void GridMapBuilder::FinishLocalMap(
     const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-    const IdMap<NodeId, ScanNode>& scanNodes)
+    const IdMap<NodeId, ScanNode>& /* scanNodes */)
 {
     if (this->mLocalMaps.empty())
         return;
@@ -151,21 +151,19 @@ void GridMapBuilder::FinishLocalMap(
 
 /* Construct the global grid map */
 void GridMapBuilder::ConstructGlobalMap(
-    const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
+    const IdMap<LocalMapId, LocalMapNode>& /* localMapNodes */,
     const IdMap<NodeId, ScanNode>& scanNodes,
     const NodeId scanNodeIdMin,
     const NodeId scanNodeIdMax,
     RobotPose2D<double>& globalMapPose,
-    GridMapType& globalMap)
+    GridMap& globalMap)
 {
-    /* World coordinate pose of the first scan node is used as the map pose */
+    /* World coordinate pose of the first scan node is used as the map pose
+     * The below pose is the origin of the map-local coordinate frame */
     const RobotPose2D<double> mapPose = scanNodes.Front().mGlobalPose;
-    /* The above pose is the center of the local map coordinate */
-    const Point2D<double> localCenterPos = Point2D<double>::Zero;
 
     /* Construct the global map */
-    GridMapType gridMap { this->mResolution, this->mPatchSize,
-                          0, 0, localCenterPos };
+    GridMap gridMap { this->mResolution, this->mPatchSize, 1.0, 1.0 };
     this->ConstructMapFromScans(mapPose, gridMap, scanNodes,
                                 scanNodeIdMin, scanNodeIdMax);
 
@@ -237,11 +235,9 @@ void GridMapBuilder::AppendLocalMap(
     localMapNodes.Append(localMapId, localMapPose);
 
     /* Current robot pose in a world frame is used as the
-     * origin of the local map coordinate */
-    const Point2D<double> centerPos { 0.0, 0.0 };
+     * origin of the map-local coordinate frame */
     /* Create a new local map */
-    GridMapType newLocalMap {
-        this->mResolution, this->mPatchSize, 0, 0, centerPos };
+    GridMap newLocalMap { this->mResolution, this->mPatchSize, 1.0, 1.0 };
 
     if (!this->mLocalMaps.empty()) {
         /* Retrieve the reference to the last local map */
@@ -420,8 +416,8 @@ void GridMapBuilder::UpdateGridMap(
         localMinPos, localMaxPos, localHitPoints);
 
     /* Expand the local map so that it can contain the latest scan */
-    localMap.Expand(localMinPos.mX, localMinPos.mY,
-                    localMaxPos.mX, localMaxPos.mY);
+    const BoundingBox<double> boundingBox { localMinPos, localMaxPos };
+    localMap.Expand(boundingBox);
 
     /* Compute the sensor pose from the robot pose */
     const RobotPose2D<double> globalSensorPose =
@@ -436,17 +432,15 @@ void GridMapBuilder::UpdateGridMap(
         InverseCompound(globalMapPose, globalSensorPose);
     /* Calculate the grid cell index corresponding to the sensor pose */
     const Point2D<int> sensorGridCellIdx =
-        localMap.LocalPosToGridCellIndex(
-            localSensorPose.mX, localSensorPose.mY);
+        localMap.PositionToIndex(localSensorPose.mX, localSensorPose.mY);
 
     /* Integrate the scan into the local map */
     const std::size_t numOfFilteredScans = localHitPoints.size();
 
     for (std::size_t i = 0; i < numOfFilteredScans; ++i) {
         /* Compute the index of the hit grid cell */
-        const Point2D<int> hitGridCellIdx =
-            localMap.LocalPosToGridCellIndex(
-                localHitPoints[i].mX, localHitPoints[i].mY);
+        const Point2D<int> hitGridCellIdx = localMap.PositionToIndex(
+            localHitPoints[i].mX, localHitPoints[i].mY);
 
         /* Compute the indices of the missed grid cells */
         this->ComputeMissedGridCellIndices(
@@ -454,10 +448,14 @@ void GridMapBuilder::UpdateGridMap(
 
         /* Update occupancy probability values for missed grid cells */
         for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-            localMap.Update(missedGridCellIndices[j], this->mProbMiss);
+            localMap.Update(missedGridCellIndices[j].mY,
+                            missedGridCellIndices[j].mX,
+                            this->mProbMiss);
 
         /* Update occupancy probability values for hit grid cell */
-        localMap.Update(hitGridCellIdx, this->mProbHit);
+        localMap.Update(hitGridCellIdx.mY,
+                        hitGridCellIdx.mX,
+                        this->mProbHit);
     }
 
     /* Update the scan Id information of the local map */
@@ -534,7 +532,7 @@ void GridMapBuilder::UpdateAccumTravelDist(
 /* Construct the grid map from the specified scans */
 void GridMapBuilder::ConstructMapFromScans(
     const RobotPose2D<double>& globalMapPose,
-    GridMapType& gridMap,
+    GridMap& gridMap,
     const IdMap<NodeId, ScanNode>& scanNodes,
     const NodeId scanNodeIdMin,
     const NodeId scanNodeIdMax) const
@@ -610,16 +608,16 @@ void GridMapBuilder::ConstructMapFromScans(
         localHitPoints.emplace(scanNodeId, std::move(nodeLocalHitPoints));
     }
 
-    /* Expand the area to prevent floating-point errors */
+    /* Expand the bounding box to avoid floating-point errors */
     localMinPos.mX -= gridMap.Resolution();
     localMinPos.mY -= gridMap.Resolution();
     localMaxPos.mX += gridMap.Resolution();
     localMaxPos.mY += gridMap.Resolution();
 
     /* Create a new grid map that contains all scan points */
-    gridMap.Resize(localMinPos.mX, localMinPos.mY,
-                   localMaxPos.mX, localMaxPos.mY);
-    gridMap.Reset();
+    const BoundingBox<double> boundingBox { localMinPos, localMaxPos };
+    gridMap.Resize(boundingBox);
+    gridMap.ResetValues();
 
     /* Integrate the scan into the grid map
      * Reuse the same iterators as above since the pose graph is constant */
@@ -638,8 +636,7 @@ void GridMapBuilder::ConstructMapFromScans(
             InverseCompound(globalMapPose, globalSensorPose);
         /* Compute the grid cell index corresponding to the sensor pose */
         const Point2D<int> sensorGridCellIdx =
-            gridMap.LocalPosToGridCellIndex(
-                localSensorPose.mX, localSensorPose.mY);
+            gridMap.PositionToIndex(localSensorPose.mX, localSensorPose.mY);
 
         /* Integrate the scan into the grid map */
         const std::size_t numOfFilteredScans =
@@ -651,8 +648,7 @@ void GridMapBuilder::ConstructMapFromScans(
                 localHitPoints[scanNodeId].at(i);
             /* Compute the index of the hit grid cell */
             const Point2D<int> hitGridCellIdx =
-                gridMap.LocalPosToGridCellIndex(
-                    localHitPoint.mX, localHitPoint.mY);
+                gridMap.PositionToIndex(localHitPoint.mX, localHitPoint.mY);
 
             /* Compute the indices of the missed grid cells */
             this->ComputeMissedGridCellIndices(
@@ -660,10 +656,14 @@ void GridMapBuilder::ConstructMapFromScans(
 
             /* Update occupancy probability values for missed grid cells */
             for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-                gridMap.Update(missedGridCellIndices[j], this->mProbMiss);
+                gridMap.Update(missedGridCellIndices[j].mY,
+                               missedGridCellIndices[j].mX,
+                               this->mProbMiss);
 
             /* Update occupancy probability values for hit grid cell */
-            gridMap.Update(hitGridCellIdx, this->mProbHit);
+            gridMap.Update(hitGridCellIdx.mY,
+                           hitGridCellIdx.mX,
+                           this->mProbHit);
         }
     }
 
@@ -673,7 +673,7 @@ void GridMapBuilder::ConstructMapFromScans(
 /* Construct the grid map from all the scans */
 void GridMapBuilder::ConstructMapFromAllScans(
     const RobotPose2D<double>& globalMapPose,
-    GridMapType& gridMap,
+    GridMap& gridMap,
     const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
     const IdMap<NodeId, ScanNode>& scanNodes)
 {
@@ -759,16 +759,15 @@ void GridMapBuilder::ConstructMapFromAllScans(
     localMaxPos.mY += gridMap.Resolution();
 
     /* Create a new grid map that contains all scan points */
-    gridMap.Resize(localMinPos.mX, localMinPos.mY,
-                   localMaxPos.mX, localMaxPos.mY);
-    gridMap.Reset();
+    const BoundingBox<double> boundingBox { localMinPos, localMaxPos };
+    gridMap.Resize(boundingBox);
+    gridMap.ResetValues();
 
     /* Integrate the scan into the grid map */
     for (const auto& [scanNodeId, localSensorPose] : localSensorPoses) {
         /* Compute the grid cell index corresponding to the sensor pose */
         const Point2D<int> sensorGridCellIdx =
-            gridMap.LocalPosToGridCellIndex(
-                localSensorPose.mX, localSensorPose.mY);
+            gridMap.PositionToIndex(localSensorPose.mX, localSensorPose.mY);
         /* Retrieve the scan points in the map-local coordinate frame */
         const auto& nodeLocalHitPoints = localHitPoints.at(scanNodeId);
 
@@ -777,18 +776,21 @@ void GridMapBuilder::ConstructMapFromAllScans(
             const Point2D<double>& localHitPoint = nodeLocalHitPoints.at(i);
             /* Compute the index of the hit grid cell */
             const Point2D<int> hitGridCellIdx =
-                gridMap.LocalPosToGridCellIndex(
-                    localHitPoint.mX, localHitPoint.mY);
+                gridMap.PositionToIndex(localHitPoint.mX, localHitPoint.mY);
             /* Compute the indices of the missed grid cells */
             this->ComputeMissedGridCellIndices(
                 sensorGridCellIdx, hitGridCellIdx, missedGridCellIndices);
 
             /* Update occupancy probability values for missed grid cells */
             for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-                gridMap.Update(missedGridCellIndices[j], this->mProbMiss);
+                gridMap.Update(missedGridCellIndices[j].mY,
+                               missedGridCellIndices[j].mX,
+                               this->mProbMiss);
 
             /* Update occupancy probability values for the hit grid cell */
-            gridMap.Update(hitGridCellIdx, this->mProbHit);
+            gridMap.Update(hitGridCellIdx.mY,
+                           hitGridCellIdx.mX,
+                           this->mProbHit);
         }
     }
 

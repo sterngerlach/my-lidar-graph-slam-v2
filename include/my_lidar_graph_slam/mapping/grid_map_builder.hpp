@@ -88,7 +88,7 @@ struct LocalMap final
 {
     /* Constructor */
     LocalMap(const LocalMapId localMapId,
-             GridMapType&& gridMap,
+             GridMap&& gridMap,
              const NodeId scanNodeId) :
         mId(localMapId),
         mMap(std::move(gridMap)),
@@ -112,7 +112,7 @@ struct LocalMap final
     const LocalMapId mId;
     /* Local grid map consisting of the sequence of the scan data
      * from `mScanNodeIdMin` to `mScanNodeIdMax` */
-    GridMapType      mMap;
+    GridMap          mMap;
     /* Minimum scan node Id */
     NodeId           mScanNodeIdMin;
     /* Maximum scan node Id */
@@ -169,7 +169,7 @@ public:
         const NodeId scanNodeIdMin,
         const NodeId scanNodeIdMax,
         RobotPose2D<double>& globalMapPose,
-        GridMapType& globalMap);
+        GridMap& globalMap);
 
     /* Append a new local map */
     void AppendLocalMap(
@@ -218,7 +218,7 @@ public:
     const LocalMap& LatestLocalMap() const;
 
     /* Retrieve the grid map constructed from the latest scans */
-    inline const GridMapType& LatestMap() const
+    inline const GridMap& LatestMap() const
     { return this->mLatestMap; }
     /* Retrieve the latest map pose in a world frame */
     inline const RobotPose2D<double>& LatestMapPose() const
@@ -236,7 +236,7 @@ private:
     /* Construct the grid map from the specified scans */
     void ConstructMapFromScans(
         const RobotPose2D<double>& globalMapPose,
-        GridMapType& gridMap,
+        GridMap& gridMap,
         const IdMap<NodeId, ScanNode>& scanNodes,
         const NodeId scanNodeIdMin,
         const NodeId scanNodeIdMax) const;
@@ -244,7 +244,7 @@ private:
     /* Construct the grid map from all the scans */
     void ConstructMapFromAllScans(
         const RobotPose2D<double>& globalMapPose,
-        GridMapType& gridMap,
+        GridMap& gridMap,
         const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
         const IdMap<NodeId, ScanNode>& scanNodes);
 
@@ -273,7 +273,7 @@ private:
     IdMap<LocalMapId, LocalMap> mLocalMaps;
     /* Grid map constructed from the latest scans
      * Used for scan matching and updated when a new scan data is available */
-    GridMapType                 mLatestMap;
+    GridMap                     mLatestMap;
     /* Latest map pose in a world frame */
     RobotPose2D<double>         mLatestMapPose;
     /* Accumulated travel distance */
