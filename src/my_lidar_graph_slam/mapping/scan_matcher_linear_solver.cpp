@@ -142,7 +142,7 @@ ScanMatchingSummary ScanMatcherLinearSolver::OptimizePose(
 
 /* Perform one optimization step */
 RobotPose2D<double> ScanMatcherLinearSolver::OptimizeStep(
-    const GridMapType& gridMap,
+    const GridMap& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
