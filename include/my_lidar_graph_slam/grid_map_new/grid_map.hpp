@@ -244,9 +244,23 @@ private:
 /* Constructor from the grid map with different type of grids */
 template <typename T>
 template <typename U>
-GridMap<T>::GridMap(const GridMap<U>& other)
+GridMap<T>::GridMap(const GridMap<U>& other) :
+    BaseType(other.Geometry()),
+    mLog2BlockSize(other.Log2BlockSize()),
+    mBlockSize(other.BlockSize()),
+    mBlockRows(other.BlockRows()),
+    mBlockCols(other.BlockCols()),
+    mBlocks(nullptr)
 {
-    *this = other;
+    if (other.Block() == nullptr)
+        return;
+
+    /* Allocate the storage for blocks */
+    this->Allocate();
+
+    /* Copy the blocks, which is possible if the type U is assignable to T */
+    const int numOfBlocks = this->mBlockRows * this->mBlockCols;
+    std::copy_n(other.Block(), numOfBlocks, this->mBlocks.get());
 }
 
 /* Assignment operator from the grid map with different type of grids */
