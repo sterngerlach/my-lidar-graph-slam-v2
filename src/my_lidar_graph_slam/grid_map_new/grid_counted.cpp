@@ -162,10 +162,17 @@ void GridCounted::CopyValues(
         this->Data(boundingBox.mMin.mY, boundingBox.mMin.mX);
     std::uint16_t* dstBuffer = buffer;
 
-    for (int row = rowMin; row < rowMax; ++row) {
-        std::copy_n(srcBuffer, cols, dstBuffer);
-        srcBuffer += this->mSize;
-        dstBuffer += bufferCols;
+    if (!this->IsAllocated()) {
+        for (int row = rowMin; row < rowMax; ++row) {
+            std::fill_n(dstBuffer, cols, UnknownValue);
+            dstBuffer += bufferCols;
+        }
+    } else {
+        for (int row = rowMin; row < rowMax; ++row) {
+            std::copy_n(srcBuffer, cols, dstBuffer);
+            srcBuffer += this->mSize;
+            dstBuffer += bufferCols;
+        }
     }
 }
 
@@ -193,10 +200,17 @@ void GridCounted::CopyValuesU8(
         this->Data(boundingBox.mMin.mY, boundingBox.mMin.mX);
     std::uint8_t* dstBuffer = buffer;
 
-    for (int row = rowMin; row < rowMax; ++row) {
-        std::transform(srcBuffer, srcBuffer + cols, dstBuffer, rawToU8);
-        srcBuffer += this->mSize;
-        dstBuffer += bufferCols;
+    if (!this->IsAllocated()) {
+        for (int row = rowMin; row < rowMax; ++row) {
+            std::fill_n(dstBuffer, cols, rawToU8(UnknownValue));
+            dstBuffer += bufferCols;
+        }
+    } else {
+        for (int row = rowMin; row < rowMax; ++row) {
+            std::transform(srcBuffer, srcBuffer + cols, dstBuffer, rawToU8);
+            srcBuffer += this->mSize;
+            dstBuffer += bufferCols;
+        }
     }
 }
 
