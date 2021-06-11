@@ -211,6 +211,11 @@ private:
     /* Initialize the CMA memory for the output data */
     void InitializeCMAMemoryOutput();
 
+    /* Compute the bounding box of the grid map */
+    BoundingBox<int> ComputeBoundingBox(
+        const GridMap& gridMap,
+        const Point2D<double>& centerPos) const;
+
     /* Set the scan matching parameters through AXI4-Lite slave interface */
     void SetParameterRegisters(
         const int numOfScans,
