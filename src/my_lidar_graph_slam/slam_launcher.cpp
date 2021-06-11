@@ -1427,7 +1427,7 @@ int main(int argc, char** argv)
 
     /* Retrieve a latest map that contains latest scans */
     RobotPose2D<double> latestMapPose;
-    Mapping::GridMapType latestMap;
+    Mapping::GridMap latestMap;
     Mapping::NodeId latestMapNodeIdMin { Mapping::NodeId::Invalid };
     Mapping::NodeId latestMapNodeIdMax { Mapping::NodeId::Invalid };
     pLidarGraphSlam->GetLatestMap(latestMapPose, latestMap,
@@ -1445,7 +1445,7 @@ int main(int argc, char** argv)
 
     /* Build a global map that contains all local grid maps */
     RobotPose2D<double> globalMapPose;
-    Mapping::GridMapType globalMap;
+    Mapping::GridMap globalMap;
     pLidarGraphSlam->GetGlobalMap(globalMapPose, globalMap,
                                   scanNodeIdMin, scanNodeIdMax);
 
@@ -1458,7 +1458,7 @@ int main(int argc, char** argv)
     pMapSaver->SaveLatestMapAndScan(
         latestMapPose, latestMap, &scanNodes,
         &latestMapNodeIdMin, &latestMapNodeIdMax,
-        nullptr, true, outputFilePath);
+        nullptr, nullptr, true, outputFilePath);
 
     /* Save the metrics */
     SaveMetrics(outputFilePath);
