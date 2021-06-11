@@ -82,7 +82,7 @@ LoopDetectionResultVector LoopDetectorBranchBound::Detect(
         /* Precompute coarser grid maps */
         if (!this->mPrecompMaps.contains(localMap.mId)) {
             /* Precompute multiple coarser grid maps */
-            std::vector<ConstMapType> precompMaps =
+            std::vector<ConstMap> precompMaps =
                 this->mScanMatcher->ComputeCoarserMaps(localMap.mMap);
             /* Append the newly created grid map pyramid */
             this->mPrecompMaps.Append(localMap.mId, std::move(precompMaps));
@@ -156,8 +156,8 @@ LoopDetectionResultVector LoopDetectorBranchBound::Detect(
 /* Find a corresponding pose of the current robot pose
  * from the local grid map */
 bool LoopDetectorBranchBound::FindCorrespondingPose(
-    const GridMapType& localMap,
-    const std::vector<ConstMapType>& precompMaps,
+    const GridMap& localMap,
+    const std::vector<ConstMap>& precompMaps,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalScanPose,
     RobotPose2D<double>& correspondingPose,

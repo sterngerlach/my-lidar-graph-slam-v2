@@ -49,13 +49,13 @@ public:
     {
         /* Constructor */
         PrecomputedMapStack(const LocalMapId& localMapId,
-                            std::vector<ConstMapType>&& precompMaps) :
+                            std::vector<ConstMap>&& precompMaps) :
             mId(localMapId), mMaps(std::move(precompMaps)) { }
 
         /* Id of the local grid map */
-        const LocalMapId                mId;
+        const LocalMapId            mId;
         /* Precomputed coarser grid maps */
-        const std::vector<ConstMapType> mMaps;
+        const std::vector<ConstMap> mMaps;
     };
 
     /* Constructor */
@@ -77,8 +77,8 @@ private:
     /* Find a corresponding pose of the current robot pose
      * from the local grid map */
     bool FindCorrespondingPose(
-        const GridMapType& localMap,
-        const std::vector<ConstMapType>& precompMaps,
+        const GridMap& localMap,
+        const std::vector<ConstMap>& precompMaps,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalScanPose,
         RobotPose2D<double>& correspondingPose,
