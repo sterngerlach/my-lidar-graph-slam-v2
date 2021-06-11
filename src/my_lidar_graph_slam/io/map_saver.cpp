@@ -32,7 +32,7 @@ namespace IO {
 /* Set the grid map information */
 MapSaveQuery& MapSaveQuery::GridMap(
     const RobotPose2D<double>& gridMapPose,
-    const Mapping::GridMapType& gridMap)
+    const Mapping::GridMap& gridMap)
 {
     this->mGridMapPose = gridMapPose;
     this->mGridMap = &gridMap;
@@ -109,39 +109,25 @@ bool MapSaver::SaveMap(const MapSaveQuery& mapSaveQuery) const
     /* Current implementation requires the grid map */
     Assert(mapSaveQuery.mGridMap != nullptr);
 
-    /* Compute the map size to be written to the image */
-    Point2D<int> patchIdxMin;
-    Point2D<int> patchIdxMax;
-    Point2D<int> gridCellIdxMin;
-    Point2D<int> gridCellIdxMax;
-    Point2D<int> mapSizeInPatches;
-    Point2D<int> mapSizeInGridCells;
-    Point2D<double> mapSizeInMeters;
-    mapSaveQuery.mGridMap->ComputeActualMapSize(
-        patchIdxMin, patchIdxMax, gridCellIdxMin, gridCellIdxMax,
-        mapSizeInPatches, mapSizeInGridCells, mapSizeInMeters);
+    /* Compute the size of the cropped grid map */
+    const BoundingBox<int> croppedBox =
+        mapSaveQuery.mGridMap->CroppedBoundingBox();
 
     /* Initialize the image */
-    gil::rgb8_image_t mapImage { mapSizeInGridCells.mX,
-                                 mapSizeInGridCells.mY };
+    gil::rgb8_image_t mapImage { croppedBox.Width(), croppedBox.Height() };
     const gil::rgb8_view_t& mapImageView = gil::view(mapImage);
     gil::fill_pixels(mapImageView, gil::rgb8_pixel_t(192, 192, 192));
 
     /* Draw the grid cells to the image */
-    this->DrawMap(mapImageView, mapSaveQuery,
-                  patchIdxMin, patchIdxMax, mapSizeInPatches);
+    this->DrawMap(mapImageView, mapSaveQuery.mGridMap, croppedBox);
 
     /* Draw the trajectory (pose graph nodes) of the robot */
     if (!mapSaveQuery.mTrajectoryPoses.empty())
-        this->DrawTrajectory(
-            mapImageView, mapSaveQuery,
-            gridCellIdxMin, gridCellIdxMax, mapSizeInGridCells);
+        this->DrawTrajectory(mapImageView, mapSaveQuery, croppedBox);
 
     /* Draw the scans to the image */
     if (!mapSaveQuery.mScans.empty())
-        this->DrawScan(
-            mapImageView, mapSaveQuery,
-            gridCellIdxMin, gridCellIdxMax, mapSizeInGridCells);
+        this->DrawScan(mapImageView, mapSaveQuery, croppedBox);
 
     /* Save the map as PNG image
      * Image should be flipped upside down */
@@ -167,13 +153,7 @@ bool MapSaver::SaveMap(const MapSaveQuery& mapSaveQuery) const
     /* Save the map metadata as JSON format */
     try {
         const std::string metadataFileName = mapSaveQuery.mFileName + ".json";
-        this->SaveMapMetadata(
-            mapSaveQuery.mGridMapPose, mapSaveQuery.mGridMap->Resolution(),
-            mapSaveQuery.mGridMap->PatchSize(),
-            mapSizeInPatches, mapSizeInGridCells, mapSizeInMeters,
-            mapSaveQuery.mGridMap->LocalMinPos(),
-            mapSaveQuery.mGridMap->LocalMaxPos(),
-            metadataFileName);
+        this->SaveMapMetadata(mapSaveQuery, croppedBox, metadataFileName);
     } catch (const pt::json_parser_error& e) {
         std::cerr << "boost::property_tree::json_parser_error occurred: "
                   << e.what() << ' '
@@ -188,7 +168,7 @@ bool MapSaver::SaveMap(const MapSaveQuery& mapSaveQuery) const
 /* Save the entire map */
 bool MapSaver::SaveMap(
     const RobotPose2D<double>& gridMapPose,
-    const Mapping::GridMapType& gridMap,
+    const Mapping::GridMap& gridMap,
     const IdMap<NodeId, ScanNode>* pTrajectoryNodes,
     const NodeId* pNodeIdMin,
     const NodeId* pNodeIdMax,
@@ -438,11 +418,12 @@ bool MapSaver::SaveLocalMapAndScan(
 /* Save the latest map and the scan */
 bool MapSaver::SaveLatestMapAndScan(
     const RobotPose2D<double>& latestMapPose,
-    const Mapping::GridMapType& latestMap,
+    const Mapping::GridMap& latestMap,
     const IdMap<NodeId, ScanNode>* pTrajectoryNodes,
     const NodeId* pNodeIdMin,
     const NodeId* pNodeIdMax,
-    const ScanNode* pScanNode,
+    const RobotPose2D<double>* pScanGlobalPose,
+    const Sensor::ScanDataPtr<double>& pScanData,
     const bool saveMetadata,
     const std::string& fileName) const
 {
@@ -470,8 +451,8 @@ bool MapSaver::SaveLatestMapAndScan(
     }
 
     /* Draw the scan points if necessary */
-    if (pScanNode != nullptr)
-        saveQuery.AppendScan(pScanNode->mGlobalPose, pScanNode->mScanData,
+    if (pScanGlobalPose != nullptr)
+        saveQuery.AppendScan(*pScanGlobalPose, pScanData,
                              gil::rgb8_pixel_t(0, 0, 255));
 
     /* Save the map image */
@@ -481,32 +462,14 @@ bool MapSaver::SaveLatestMapAndScan(
 /* Save precomputed grid maps stored in a local grid map */
 bool MapSaver::SavePrecomputedGridMaps(
     const RobotPose2D<double>& mapPose,
-    const std::vector<Mapping::ConstMapType>& precompMaps,
+    const std::vector<Mapping::ConstMap>& precompMaps,
     const bool saveMetadata,
     const std::string& fileName) const
 {
     /* Convert the precomputed grid map and save */
     for (std::size_t i = 0; i < precompMaps.size(); ++i) {
-        /* Retrieve the coarser grid map */
-        const auto& precompMap = precompMaps[i];
-
-        /* Create the occupancy grid map */
-        Mapping::GridMapType gridMap =
-            Mapping::GridMapType::CreateSameSizeMap(precompMap);
-
-        const double unknownVal = precompMap.UnknownValue();
-        const int numOfGridCellsX = precompMap.NumOfGridCellsX();
-        const int numOfGridCellsY = precompMap.NumOfGridCellsY();
-
-        /* Copy the occupancy probability values */
-        for (int y = 0; y < numOfGridCellsY; ++y) {
-            for (int x = 0; x < numOfGridCellsX; ++x) {
-                const double mapValue = precompMap.Value(x, y, unknownVal);
-
-                if (mapValue != unknownVal)
-                    gridMap.Update(x, y, mapValue);
-            }
-        }
+        /* Create the occupancy grid map from the coarser grid map */
+        const Mapping::GridMap gridMap { precompMaps[i] };
 
         const std::string precompMapFileName =
             fileName + "-precomp-map-" + std::to_string(i);
@@ -525,58 +488,46 @@ bool MapSaver::SavePrecomputedGridMaps(
 }
 
 /* Draw the grid cells to the image */
-void MapSaver::DrawMap(
-    const gil::rgb8_view_t& mapImageView,
-    const MapSaveQuery& mapSaveQuery,
-    const Point2D<int>& patchIdxMin,
-    const Point2D<int>& patchIdxMax,
-    const Point2D<int>& mapSizeInPatches) const
+void MapSaver::DrawMap(const gil::rgb8_view_t& mapImageView,
+                       const Mapping::GridMap* gridMap,
+                       const BoundingBox<int>& boundingBox) const
 {
-    /* Retrieve the grid map */
-    const auto* pGridMap = mapSaveQuery.mGridMap;
+    /* Check that the grid map has the same size as the image */
+    Assert(mapImageView.width() == boundingBox.Width());
+    Assert(mapImageView.height() == boundingBox.Height());
 
-    /* Draw the patches to the image */
-    for (int y = 0; y < mapSizeInPatches.mY; ++y) {
-        for (int x = 0; x < mapSizeInPatches.mX; ++x) {
-            const auto& patch = pGridMap->PatchAt(
-                patchIdxMin.mX + x, patchIdxMin.mY + y);
+    const auto toGrayScale = [](const std::uint8_t value) {
+        return gil::rgb8_pixel_t(value, value, value); };
+    const auto unknownProb = gridMap->UnknownProbability();
 
-            if (!patch.IsAllocated())
+    /* Draw the grid cells to the image */
+    for (int row = boundingBox.mMin.mY; row < boundingBox.mMax.mY; ++row) {
+        for (int col = boundingBox.mMin.mX; col < boundingBox.mMax.mX; ++col) {
+            /* Get the probability value */
+            const auto prob = gridMap->ProbabilityOr(row, col, unknownProb);
+
+            /* Skip if the grid cell is unknown */
+            if (prob == unknownProb)
                 continue;
 
-            /* Draw the grid cells in the patch */
-            for (int yy = 0; yy < pGridMap->PatchSize(); ++yy) {
-                for (int xx = 0; xx < pGridMap->PatchSize(); ++xx) {
-                    const double gridCellValue = patch.At(xx, yy).Value();
+            /* Convert the probability to the pixel intensity */
+            const auto imageRow = static_cast<std::ptrdiff_t>(
+                row - boundingBox.mMin.mY);
+            const auto imageCol = static_cast<std::ptrdiff_t>(
+                col - boundingBox.mMin.mX);
+            const auto pixelValue = static_cast<std::uint8_t>(
+                (1.0 - prob) * 255.0);
 
-                    /* If the occupancy probability value is less than or
-                     * equal to zero, then the grid cell is not yet observed
-                     * and is in unknown state (GridCell::Unknown is zero) */
-                    if (gridCellValue <= 0.0 || gridCellValue > 1.0)
-                        continue;
-
-                    const std::ptrdiff_t idxX = static_cast<std::ptrdiff_t>(
-                        x * pGridMap->PatchSize() + xx);
-                    const std::ptrdiff_t idxY = static_cast<std::ptrdiff_t>(
-                        y * pGridMap->PatchSize() + yy);
-                    const std::uint8_t grayScale = static_cast<std::uint8_t>(
-                        (1.0 - gridCellValue) * 255.0);
-
-                    mapImageView(idxX, idxY) =
-                        gil::rgb8_pixel_t(grayScale, grayScale, grayScale);
-                }
-            }
+            /* Set the pixel intensity */
+            mapImageView(imageCol, imageRow) = toGrayScale(pixelValue);
         }
     }
 }
 
 /* Draw the trajectory lines to the image */
-void MapSaver::DrawTrajectory(
-    const gil::rgb8_view_t& mapImageView,
-    const MapSaveQuery& mapSaveQuery,
-    const Point2D<int>& gridCellIdxMin,
-    const Point2D<int>& gridCellIdxMax,
-    const Point2D<int>& mapSizeInGridCells) const
+void MapSaver::DrawTrajectory(const gil::rgb8_view_t& mapImageView,
+                              const MapSaveQuery& mapSaveQuery,
+                              const BoundingBox<int>& boundingBox) const
 {
     /* Retrieve the necessary information */
     const auto& trajectoryPoses = mapSaveQuery.mTrajectoryPoses;
@@ -592,26 +543,25 @@ void MapSaver::DrawTrajectory(
     const RobotPose2D<double> firstPose =
         InverseCompound(gridMapPose, trajectoryPoses.front());
     Point2D<int> prevGridCellIdx =
-        gridMap->LocalPosToGridCellIndex(firstPose.mX, firstPose.mY);
+        gridMap->PositionToIndex(firstPose.mX, firstPose.mY);
 
     for (std::size_t i = 1; i < trajectoryPoses.size(); ++i) {
         const RobotPose2D<double> trajectoryPose =
             InverseCompound(gridMapPose, trajectoryPoses[i]);
         const Point2D<int> gridCellIdx =
-            gridMap->LocalPosToGridCellIndex(
-                trajectoryPose.mX, trajectoryPose.mY);
+            gridMap->PositionToIndex(trajectoryPose.mX, trajectoryPose.mY);
         std::vector<Point2D<int>> lineIndices;
         Bresenham(prevGridCellIdx, gridCellIdx, lineIndices);
 
         for (const auto& interpolatedIdx : lineIndices) {
-            if (interpolatedIdx.mX < gridCellIdxMin.mX ||
-                interpolatedIdx.mX > gridCellIdxMax.mX - lineWidth ||
-                interpolatedIdx.mY < gridCellIdxMin.mY ||
-                interpolatedIdx.mY > gridCellIdxMax.mY - lineWidth)
+            if (interpolatedIdx.mX < boundingBox.mMin.mX ||
+                interpolatedIdx.mX > boundingBox.mMax.mX - lineWidth ||
+                interpolatedIdx.mY < boundingBox.mMin.mY ||
+                interpolatedIdx.mY > boundingBox.mMax.mY - lineWidth)
                 continue;
 
-            const int x = interpolatedIdx.mX - gridCellIdxMin.mX;
-            const int y = interpolatedIdx.mY - gridCellIdxMin.mY;
+            const int x = interpolatedIdx.mX - boundingBox.mMin.mX;
+            const int y = interpolatedIdx.mY - boundingBox.mMin.mY;
             const auto& subView = gil::subimage_view(
                 mapImageView, x, y, lineWidth, lineWidth);
             gil::fill_pixels(subView, trajectoryColor);
@@ -622,12 +572,9 @@ void MapSaver::DrawTrajectory(
 }
 
 /* Draw the scans obtained at the specified node to the image */
-void MapSaver::DrawScan(
-    const boost::gil::rgb8_view_t& mapImageView,
-    const MapSaveQuery& mapSaveQuery,
-    const Point2D<int>& gridCellIdxMin,
-    const Point2D<int>& gridCellIdxMax,
-    const Point2D<int>& mapSizeInGridCells) const
+void MapSaver::DrawScan(const boost::gil::rgb8_view_t& mapImageView,
+                        const MapSaveQuery& mapSaveQuery,
+                        const BoundingBox<int>& boundingBox) const
 {
     const auto& scanPoses = mapSaveQuery.mScanPoses;
     const auto& scans = mapSaveQuery.mScans;
@@ -641,15 +588,14 @@ void MapSaver::DrawScan(
         const RobotPose2D<double> localScanPose =
             InverseCompound(gridMapPose, scanPoses[i]);
         const Point2D<int> scanPoseIdx =
-            gridMap->LocalPosToGridCellIndex(
-                localScanPose.mX, localScanPose.mY);
+            gridMap->PositionToIndex(localScanPose.mX, localScanPose.mY);
 
-        if (scanPoseIdx.mX >= gridCellIdxMin.mX &&
-            scanPoseIdx.mX <= gridCellIdxMax.mX - scanPointSize &&
-            scanPoseIdx.mY >= gridCellIdxMin.mY &&
-            scanPoseIdx.mY <= gridCellIdxMax.mX - scanPointSize) {
-            const int x = scanPoseIdx.mX - gridCellIdxMin.mX;
-            const int y = scanPoseIdx.mY - gridCellIdxMin.mY;
+        if (scanPoseIdx.mX >= boundingBox.mMin.mX &&
+            scanPoseIdx.mX <= boundingBox.mMax.mX - scanPointSize &&
+            scanPoseIdx.mY >= boundingBox.mMin.mY &&
+            scanPoseIdx.mY <= boundingBox.mMax.mY - scanPointSize) {
+            const int x = scanPoseIdx.mX - boundingBox.mMin.mX;
+            const int y = scanPoseIdx.mY - boundingBox.mMin.mY;
             const auto& subView = gil::subimage_view(
                 mapImageView, x, y, scanPointSize, scanPointSize);
             gil::fill_pixels(subView, scanColors[i]);
@@ -661,23 +607,22 @@ void MapSaver::DrawScan(
             InverseCompound(gridMapPose, globalSensorPose);
         const std::size_t numOfScans = scans[i]->NumOfScans();
 
-        for (std::size_t i = 0; i < numOfScans; ++i) {
+        for (std::size_t j = 0; j < numOfScans; ++j) {
             /* Calculate the grid cell index */
             const Point2D<double> localHitPoint =
-                scans[i]->HitPoint(localSensorPose, i);
+                scans[i]->HitPoint(localSensorPose, j);
             const Point2D<int> hitPointIdx =
-                gridMap->LocalPosToGridCellIndex(
-                    localHitPoint.mX, localHitPoint.mY);
+                gridMap->PositionToIndex(localHitPoint.mX, localHitPoint.mY);
 
-            if (hitPointIdx.mX < gridCellIdxMin.mX ||
-                hitPointIdx.mX > gridCellIdxMax.mX - scanPointSize ||
-                hitPointIdx.mY < gridCellIdxMin.mY ||
-                hitPointIdx.mY > gridCellIdxMax.mY - scanPointSize)
+            if (hitPointIdx.mX < boundingBox.mMin.mX ||
+                hitPointIdx.mX > boundingBox.mMax.mX - scanPointSize ||
+                hitPointIdx.mY < boundingBox.mMin.mY ||
+                hitPointIdx.mY > boundingBox.mMax.mY - scanPointSize)
                 continue;
 
             /* Draw the scan point to the image */
-            const int x = hitPointIdx.mX - gridCellIdxMin.mX;
-            const int y = hitPointIdx.mY - gridCellIdxMin.mY;
+            const int x = hitPointIdx.mX - boundingBox.mMin.mX;
+            const int y = hitPointIdx.mY - boundingBox.mMin.mY;
             const auto& subView = gil::subimage_view(
                 mapImageView, x, y, scanPointSize, scanPointSize);
             gil::fill_pixels(subView, scanColors[i]);
@@ -686,37 +631,54 @@ void MapSaver::DrawScan(
 }
 
 /* Save the map metadata as JSON format */
-void MapSaver::SaveMapMetadata(
-    const RobotPose2D<double>& gridMapPose,
-    const double mapResolution,
-    const int patchSize,
-    const Point2D<int>& mapSizeInPatches,
-    const Point2D<int>& mapSizeInGridCells,
-    const Point2D<double>& mapSizeInMeters,
-    const Point2D<double>& localMinPos,
-    const Point2D<double>& localMaxPos,
-    const std::string& fileName) const
+void MapSaver::SaveMapMetadata(const MapSaveQuery& mapSaveQuery,
+                               const BoundingBox<int>& boundingBox,
+                               const std::string& fileName) const
 {
     pt::ptree jsonMetadata;
 
-    /* Write the map metadata */
-    jsonMetadata.put("Map.GlobalPose.X", gridMapPose.mX);
-    jsonMetadata.put("Map.GlobalPose.Y", gridMapPose.mY);
-    jsonMetadata.put("Map.GlobalPose.Theta", gridMapPose.mTheta);
-    jsonMetadata.put("Map.Resolution", mapResolution);
-    jsonMetadata.put("Map.PatchSize", patchSize);
+    /* Write the grid map metadata */
+    jsonMetadata.put("GlobalPose.X", mapSaveQuery.mGridMapPose.mX);
+    jsonMetadata.put("GlobalPose.Y", mapSaveQuery.mGridMapPose.mY);
+    jsonMetadata.put("GlobalPose.Theta", mapSaveQuery.mGridMapPose.mTheta);
 
-    jsonMetadata.put("Map.WidthInPatches", mapSizeInPatches.mX);
-    jsonMetadata.put("Map.HeightInPatches", mapSizeInPatches.mY);
-    jsonMetadata.put("Map.WidthInGridCells", mapSizeInGridCells.mX);
-    jsonMetadata.put("Map.HeightInGridCells", mapSizeInGridCells.mY);
-    jsonMetadata.put("Map.WidthInMeters", mapSizeInMeters.mX);
-    jsonMetadata.put("Map.HeightInMeters", mapSizeInMeters.mY);
+    const auto* pGridMap = mapSaveQuery.mGridMap;
 
-    jsonMetadata.put("Map.LocalMinPos.X", localMinPos.mX);
-    jsonMetadata.put("Map.LocalMinPos.Y", localMinPos.mY);
-    jsonMetadata.put("Map.LocalMaxPos.X", localMaxPos.mX);
-    jsonMetadata.put("Map.LocalMaxPos.Y", localMaxPos.mY);
+    jsonMetadata.put("Resolution", pGridMap->Resolution());
+    jsonMetadata.put("Log2BlockSize", pGridMap->Log2BlockSize());
+    jsonMetadata.put("BlockSize", pGridMap->BlockSize());
+
+    const int rows = boundingBox.Height();
+    const int cols = boundingBox.Width();
+    const int blockRows = (rows + pGridMap->BlockSize() - 1)
+                          >> pGridMap->Log2BlockSize();
+    const int blockCols = (cols + pGridMap->BlockSize() - 1)
+                          >> pGridMap->Log2BlockSize();
+    const double height = pGridMap->Resolution() * rows;
+    const double width = pGridMap->Resolution() * cols;
+
+    jsonMetadata.put("Rows", rows);
+    jsonMetadata.put("Cols", cols);
+    jsonMetadata.put("BlockRows", blockRows);
+    jsonMetadata.put("BlockCols", blockCols);
+    jsonMetadata.put("Height", height);
+    jsonMetadata.put("Width", width);
+
+    /* `posMin` represents the position of the (0, 0) grid cell
+     * in the map-local coordinate frame, from which the pose of the
+     * (0, 0) grid cell in the global coordinate frame can be computed
+     * using the pose of the grid map `mapSaveQuery.mGridMapPose` */
+    const auto posMin = pGridMap->IndexToPosition(
+        boundingBox.mMin.mY, boundingBox.mMin.mX);
+    /* `posMax` represents the position of the corner grid cell
+     * in the map-local coordinate frame */
+    const auto posMax = pGridMap->IndexToPosition(
+        boundingBox.mMax.mY, boundingBox.mMax.mX);
+
+    jsonMetadata.put("PositionMin.X", posMin.mX);
+    jsonMetadata.put("PositionMin.Y", posMin.mY);
+    jsonMetadata.put("PositionMax.X", posMax.mX);
+    jsonMetadata.put("PositionMax.Y", posMax.mY);
 
     /* Save the map metadata as JSON format */
     pt::write_json(fileName, jsonMetadata);

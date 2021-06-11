@@ -43,7 +43,7 @@ namespace IO {
 struct MapSaveQuery
 {
     /* Type declaration for convenience */
-    using GridMapPtr = const Mapping::GridMapType*;
+    using GridMapPtr = const Mapping::GridMap*;
     using PoseVector = std::vector<RobotPose2D<double>>;
     using ScanVector = std::vector<const Sensor::ScanData<double>*>;
     using Color = boost::gil::rgb8_pixel_t;
@@ -73,7 +73,7 @@ struct MapSaveQuery
 
     /* Set the grid map information */
     MapSaveQuery& GridMap(const RobotPose2D<double>& gridMapPose,
-                          const Mapping::GridMapType& gridMap);
+                          const Mapping::GridMap& gridMap);
 
     /* Append the trajectory pose */
     MapSaveQuery& AppendTrajectory(const RobotPose2D<double>& robotPose);
@@ -163,7 +163,7 @@ public:
     /* Save the entire map */
     bool SaveMap(
         const RobotPose2D<double>& gridMapPose,
-        const Mapping::GridMapType& gridMap,
+        const Mapping::GridMap& gridMap,
         const IdMap<NodeId, ScanNode>* pTrajectoryNodes,
         const NodeId* pNodeIdMin,
         const NodeId* pNodeIdMax,
@@ -197,57 +197,42 @@ public:
     /* Save the latest map and the scan */
     bool SaveLatestMapAndScan(
         const RobotPose2D<double>& latestMapPose,
-        const Mapping::GridMapType& latestMap,
+        const Mapping::GridMap& latestMap,
         const IdMap<NodeId, ScanNode>* pTrajectoryNodes,
         const NodeId* pNodeIdMin,
         const NodeId* pNodeIdMax,
-        const ScanNode* pScanNode,
+        const RobotPose2D<double>* pScanGlobalPose,
+        const Sensor::ScanDataPtr<double>& pScanData,
         const bool saveMetadata,
         const std::string& fileName) const;
 
     /* Save precomputed grid maps stored in a local grid map */
     bool SavePrecomputedGridMaps(
         const RobotPose2D<double>& mapPose,
-        const std::vector<Mapping::ConstMapType>& precompMaps,
+        const std::vector<Mapping::ConstMap>& precompMaps,
         const bool saveMetadata,
         const std::string& fileName) const;
 
 private:
     /* Draw the grid cells to the image */
-    void DrawMap(
-        const boost::gil::rgb8_view_t& mapImageView,
-        const MapSaveQuery& mapSaveQuery,
-        const Point2D<int>& patchIdxMin,
-        const Point2D<int>& patchIdxMax,
-        const Point2D<int>& mapSizeInPatches) const;
+    void DrawMap(const boost::gil::rgb8_view_t& mapImageView,
+                 const Mapping::GridMap* gridMap,
+                 const BoundingBox<int>& boundingBox) const;
 
     /* Draw the trajectory lines to the image */
-    void DrawTrajectory(
-        const boost::gil::rgb8_view_t& mapImageView,
-        const MapSaveQuery& mapSaveQuery,
-        const Point2D<int>& gridCellIdxMin,
-        const Point2D<int>& gridCellIdxMax,
-        const Point2D<int>& mapSizeInGridCells) const;
+    void DrawTrajectory(const boost::gil::rgb8_view_t& mapImageView,
+                        const MapSaveQuery& mapSaveQuery,
+                        const BoundingBox<int>& boundingBox) const;
 
     /* Draw the scans obtained at the specified node to the image */
-    void DrawScan(
-        const boost::gil::rgb8_view_t& mapImageView,
-        const MapSaveQuery& mapSaveQuery,
-        const Point2D<int>& gridCellIdxMin,
-        const Point2D<int>& gridCellIdxMax,
-        const Point2D<int>& mapSizeInGridCells) const;
+    void DrawScan(const boost::gil::rgb8_view_t& mapImageView,
+                  const MapSaveQuery& mapSaveQuery,
+                  const BoundingBox<int>& boundingBox) const;
 
     /* Save the map metadata as JSON format */
-    void SaveMapMetadata(
-        const RobotPose2D<double>& gridMapPose,
-        const double mapResolution,
-        const int patchSize,
-        const Point2D<int>& mapSizeInPatches,
-        const Point2D<int>& mapSizeInGridCells,
-        const Point2D<double>& mapSizeInMeters,
-        const Point2D<double>& localMinPos,
-        const Point2D<double>& localMaxPos,
-        const std::string& fileName) const;
+    void SaveMapMetadata(const MapSaveQuery& mapSaveQuery,
+                         const BoundingBox<int>& boundingBox,
+                         const std::string& fileName) const;
 };
 
 } /* namespace IO */
