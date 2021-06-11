@@ -83,7 +83,7 @@ ScanMatchingSummary ScanMatcherGridSearch::OptimizePose(
 
 /* Optimize the robot pose by scan matching */
 ScanMatchingSummary ScanMatcherGridSearch::OptimizePose(
-    const GridMapType& gridMap,
+    const GridMap& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalInitialPose,
     const double normalizedScoreThreshold,
