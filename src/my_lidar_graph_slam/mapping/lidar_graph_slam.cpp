@@ -223,7 +223,7 @@ void LidarGraphSlam::GetPoseGraph(
 /* Retrieve the latest data */
 void LidarGraphSlam::GetLatestData(
     RobotPose2D<double>& lastScanPose,
-    GridMapType& latestMap,
+    GridMap& latestMap,
     RobotPose2D<double>& latestMapPose,
     Point2D<double>& latestMapCenterPos) const
 {
@@ -325,12 +325,29 @@ LoopSearchHint LidarGraphSlam::GetLoopSearchHint() const
 
         /* Retrieve the local map information */
         const auto& localMap = this->mGridMapBuilder->LocalMapAt(nodeId);
+        const auto& gridMap = localMap.mMap;
+        const auto& globalPose = mapNode.mGlobalPose;
 
         /* Compute the bounding box of the local map in a world frame */
-        Point2D<double> globalMinPos;
-        Point2D<double> globalMaxPos;
-        localMap.mMap.ComputeBoundingBox(mapNode.mGlobalPose,
-                                         globalMinPos, globalMaxPos);
+        const int rows = gridMap.Rows();
+        const int cols = gridMap.Cols();
+
+        const std::array<Point2D<double>, 4> cornerPoints {
+            Compound(globalPose, gridMap.IndexToPosition(0, 0)),
+            Compound(globalPose, gridMap.IndexToPosition(rows, 0)),
+            Compound(globalPose, gridMap.IndexToPosition(0, cols)),
+            Compound(globalPose, gridMap.IndexToPosition(rows, cols)) };
+
+        const Point2D<double> globalMinPos {
+            std::min(std::min(cornerPoints[0].mX, cornerPoints[1].mX),
+                     std::min(cornerPoints[2].mX, cornerPoints[3].mX)),
+            std::min(std::min(cornerPoints[0].mY, cornerPoints[1].mY),
+                     std::min(cornerPoints[2].mY, cornerPoints[3].mY)) };
+        const Point2D<double> globalMaxPos {
+            std::max(std::max(cornerPoints[0].mX, cornerPoints[1].mX),
+                     std::max(cornerPoints[2].mX, cornerPoints[3].mX)),
+            std::max(std::max(cornerPoints[0].mY, cornerPoints[1].mY),
+                     std::max(cornerPoints[2].mY, cornerPoints[3].mY)) };
 
         /* Append the local map node information */
         localMapNodes.Append(nodeId, globalMinPos, globalMaxPos,
@@ -643,7 +660,7 @@ void LidarGraphSlam::AfterLoopClosure(
 /* Retrieve a latest map that contains latest scans */
 void LidarGraphSlam::GetLatestMap(
     RobotPose2D<double>& globalPose,
-    GridMapType& latestMap,
+    GridMap& latestMap,
     NodeId& scanNodeIdMin,
     NodeId& scanNodeIdMax) const
 {
@@ -667,7 +684,7 @@ void LidarGraphSlam::GetLatestMap(
 /* Build a global map that contains all local grid maps acquired */
 void LidarGraphSlam::GetGlobalMap(
     RobotPose2D<double>& globalPose,
-    GridMapType& globalMap,
+    GridMap& globalMap,
     const NodeId scanNodeIdMin,
     const NodeId scanNodeIdMax) const
 {

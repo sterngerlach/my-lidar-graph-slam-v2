@@ -110,7 +110,7 @@ public:
      * map in a map-local coordinate frame */
     void GetLatestData(
         RobotPose2D<double>& lastScanPose,
-        GridMapType& latestMap,
+        GridMap& latestMap,
         RobotPose2D<double>& latestMapPose,
         Point2D<double>& latestMapCenterPos) const;
 
@@ -146,12 +146,12 @@ public:
 
     /* Retrieve a latest map that contains latest scans */
     void GetLatestMap(RobotPose2D<double>& globalPose,
-                      GridMapType& latestMap,
+                      GridMap& latestMap,
                       NodeId& scanNodeIdMin,
                       NodeId& scanNodeIdMax) const;
     /* Build a global map that contains all local grid maps acquired */
     void GetGlobalMap(RobotPose2D<double>& globalPose,
-                      GridMapType& globalMap,
+                      GridMap& globalMap,
                       const NodeId scanNodeIdMin,
                       const NodeId scanNodeIdMax) const;
     /* Retrieve a collection of local grid maps */
