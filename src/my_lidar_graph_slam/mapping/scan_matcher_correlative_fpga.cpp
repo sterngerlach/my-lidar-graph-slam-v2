@@ -9,10 +9,10 @@ namespace Mapping {
 using namespace Hardware;
 
 /* Static assertions for safety */
-static_assert(std::is_same<GridMapType::StorageType, std::uint16_t>::value,
+static_assert(std::is_same<GridMap::GridType::ValueType, std::uint16_t>::value,
               "Grid map should store occupancy probability values as "
               "discretized 16-bit unsigned integers");
-static_assert(GridMapType::GridCellType::UnknownRaw == 0,
+static_assert(GridMap::GridType::UnknownValue == 0,
               "Unknown occupancy probability should be 0");
 
 /* Constructor */
@@ -190,7 +190,7 @@ ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
 
 /* Optimize the robot pose by scan matching */
 ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
-    const GridMapType& gridMap,
+    const GridMap& gridMap,
     const LocalMapId gridMapId,
     const Point2D<double>& gridMapCenterPos,
     const Sensor::ScanDataPtr<double>& scanData,
@@ -249,17 +249,17 @@ ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
     /* Use std::clamp() here since the above `gridMapCenterIdx` could be
      * out-of-bounds (the robot pose is outside of the grid map) */
     const Point2D<int> gridMapCenterIdx =
-        gridMap.LocalPosToGridCellIndex(gridMapCenterPos);
+        gridMap.PositionToIndex(gridMapCenterPos.mX, gridMapCenterPos.mY);
     const Point2D<int> minimumPossibleIdx {
         std::clamp(gridMapCenterIdx.mX - this->mConfig.mMaxMapSizeX,
-                   0, gridMap.NumOfGridCellsX() - 1),
+                   0, gridMap.Cols() - 1),
         std::clamp(gridMapCenterIdx.mY - this->mConfig.mMaxMapSizeY,
-                   0, gridMap.NumOfGridCellsY() - 1) };
+                   0, gridMap.Rows() - 1) };
     const Point2D<int> maximumPossibleIdx {
         std::clamp(gridMapCenterIdx.mX + this->mConfig.mMaxMapSizeX,
-                   1, gridMap.NumOfGridCellsX()),
+                   1, gridMap.Cols()),
         std::clamp(gridMapCenterIdx.mY + this->mConfig.mMaxMapSizeY,
-                   1, gridMap.NumOfGridCellsY()) };
+                   1, gridMap.Rows()) };
     const Point2D<int> finalCenterIdx {
         (maximumPossibleIdx.mX + minimumPossibleIdx.mX) / 2,
         (maximumPossibleIdx.mY + minimumPossibleIdx.mY) / 2 };
@@ -270,9 +270,9 @@ ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
         std::max(finalCenterIdx.mY - this->mConfig.mMaxMapSizeY / 2, 0) };
     const Point2D<int> gridMapMaxIdx {
         std::min(finalCenterIdx.mX + this->mConfig.mMaxMapSizeX / 2,
-                 gridMap.NumOfGridCellsX()),
+                 gridMap.Cols()),
         std::min(finalCenterIdx.mY + this->mConfig.mMaxMapSizeY / 2,
-                 gridMap.NumOfGridCellsY()) };
+                 gridMap.Rows()) };
 
     /* Compute the size of the cropped grid map */
     const Point2D<int> gridMapSize {
@@ -280,7 +280,7 @@ ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
         gridMapMaxIdx.mY - gridMapMinIdx.mY };
     /* Compute the minimum position of the cropped grid map */
     const Point2D<double> gridMapMinPos =
-        gridMap.GridCellIndexToLocalPos(gridMapMinIdx);
+        gridMap.IndexToPosition(gridMapMinIdx.mY, gridMapMinIdx.mX);
 
     /* Check if the grid map should be transferred */
     /* If the given grid map `gridMap` with an Id `gridMapId` is
@@ -403,7 +403,7 @@ ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
 
 /* Compute the search step */
 void ScanMatcherCorrelativeFPGA::ComputeSearchStep(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     double& stepX,
     double& stepY,
@@ -591,7 +591,7 @@ void ScanMatcherCorrelativeFPGA::SendScanData(
 
 /* Send the grid map through AXI DMA */
 void ScanMatcherCorrelativeFPGA::SendGridMap(
-    const GridMapType& gridMap,
+    const GridMap& gridMap,
     const bool gridMapTransferred,
     const Point2D<int>& gridMapMinIdx,
     const Point2D<int>& gridMapSize)
@@ -623,26 +623,26 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
     *pInput++ = static_cast<std::uint64_t>(1);
 
     /* Write the cropped grid map */
-    const std::uint16_t unknownRawValue = gridMap.UnknownRawValue();
+    const std::uint16_t unknownValue = gridMap.UnknownValue();
     const int numOfMapChunksPerRow =
         (gridMapSize.mX + this->mConfig.mMapChunkWidth - 1) /
         this->mConfig.mMapChunkWidth;
 
-    const int patchSize = gridMap.PatchSize();
-    const int numOfPatchesX = gridMap.NumOfPatchesX();
-    const int numOfPatchesY = gridMap.NumOfPatchesY();
+    const int blockSize = gridMap.BlockSize();
+    const int blockRows = gridMap.BlockRows();
+    const int blockCols = gridMap.BlockCols();
 
-    const Point2D<int> patchMinIdx = gridMap.GridCellIndexToPatchIndex(
-        gridMapMinIdx.mX, gridMapMinIdx.mY);
-    const Point2D<int> patchMinOffset = gridMap.GridCellIndexToPatchOffset(
-        gridMapMinIdx.mX, gridMapMinIdx.mY);
+    const Point2D<int> firstBlockIdx = gridMap.IndexToBlock(
+        gridMapMinIdx.mY, gridMapMinIdx.mX);
+    const Point2D<int> firstBlockOffset = gridMap.IndexToBlockOffset(
+        gridMapMinIdx.mY, gridMapMinIdx.mX);
 
-    /* Initialize the index of the current patch being used */
-    Point2D<int> patchIdx = patchMinIdx;
-    Point2D<int> patchOffset = patchMinOffset;
-    /* Initialize the pointer to the current patch */
-    auto* pPatch = gridMap.PatchPtrAt(patchIdx);
-    bool isPatchAllocated = pPatch->IsAllocated();
+    /* Initialize the index of the current block being used */
+    Point2D<int> blockIdx = firstBlockIdx;
+    Point2D<int> blockOffset = firstBlockOffset;
+    /* Initialize the pointer to the current block */
+    auto* pBlock = gridMap.Block(blockIdx.mY, blockIdx.mX);
+    bool isBlockAllocated = pBlock->IsAllocated();
 
     for (int y = 0; y < gridMapSize.mY; ++y) {
         for (int chunkX = 0; chunkX < numOfMapChunksPerRow; ++chunkX) {
@@ -651,47 +651,49 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
 
             for (int i = 0; i < this->mConfig.mMapChunkWidth; ++i) {
                 /* Retrieve the occupancy probability value */
-                const std::uint16_t rawValue = isPatchAllocated ?
-                    pPatch->RawValue(patchOffset) : unknownRawValue;
+                const std::uint16_t value = isBlockAllocated ?
+                    pBlock->ValueUnchecked(blockOffset.mY, blockOffset.mX) :
+                    unknownValue;
                 const std::uint64_t discretizedValue =
-                    static_cast<std::uint64_t>(rawValue & 0xFF00);
+                    static_cast<std::uint64_t>(value & 0xFF00);
 
                 /* Pack the 8-bit discretized occupancy probability value to
                  * the grid map chunk (consecutive grid map elements) */
                 gridMapChunk >>= 8;
                 gridMapChunk |= (discretizedValue << 48);
 
-                /* Update the index of the current patch */
-                const bool isEndOfPatchX = patchOffset.mX == (patchSize - 1);
-                patchOffset.mX = isEndOfPatchX ? 0 : patchOffset.mX + 1;
-                patchIdx.mX = isEndOfPatchX ? patchIdx.mX + 1 : patchIdx.mX;
-                patchIdx.mX = std::min(patchIdx.mX, numOfPatchesX - 1);
+                /* Update the index of the current block */
+                const bool isEndOfBlockX = blockOffset.mX == (blockSize - 1);
+                blockOffset.mX = isEndOfBlockX ? 0 : blockOffset.mX + 1;
+                blockIdx.mX = isEndOfBlockX ? blockIdx.mX + 1 : blockIdx.mX;
+                blockIdx.mX = std::min(blockIdx.mX, blockCols - 1);
 
-                /* Update the pointer to the current patch */
-                pPatch = isEndOfPatchX ? gridMap.PatchPtrAt(patchIdx) : pPatch;
-                /* Update the flag that indicates whether the current patch
+                /* Update the pointer to the current block */
+                pBlock = isEndOfBlockX ?
+                    gridMap.Block(blockIdx.mY, blockIdx.mX) : pBlock;
+                /* Update the flag that indicates whether the current block
                  * is allocated and has valid occupancy probability values */
-                isPatchAllocated = isEndOfPatchX ?
-                    pPatch->IsAllocated() : isPatchAllocated;
+                isBlockAllocated = isEndOfBlockX ?
+                    pBlock->IsAllocated() : isBlockAllocated;
             }
 
             /* Write the grid map chunk */
             *pInput++ = gridMapChunk;
         }
 
-        /* Update the index of the current patch */
-        const bool isEndOfPatchY = patchOffset.mY == (patchSize - 1);
-        patchOffset.mX = patchMinOffset.mX;
-        patchOffset.mY = isEndOfPatchY ? 0 : patchOffset.mY + 1;
-        patchIdx.mX = patchMinIdx.mX;
-        patchIdx.mY = isEndOfPatchY ? patchIdx.mY + 1 : patchIdx.mY;
-        patchIdx.mY = std::min(patchIdx.mY, numOfPatchesY - 1);
+        /* Update the index of the current block */
+        const bool isEndOfBlockY = blockOffset.mY == (blockSize - 1);
+        blockOffset.mX = firstBlockOffset.mX;
+        blockOffset.mY = isEndOfBlockY ? 0 : blockOffset.mY + 1;
+        blockIdx.mX = firstBlockIdx.mX;
+        blockIdx.mY = isEndOfBlockY ? blockIdx.mY + 1 : blockIdx.mY;
+        blockIdx.mY = std::min(blockIdx.mY, blockRows - 1);
 
-        /* Update the pointer to the current patch */
-        pPatch = gridMap.PatchPtrAt(patchIdx);
-        /* Update the flag that indicates whether the current patch
+        /* Update the pointer to the current block */
+        pBlock = gridMap.Block(blockIdx.mY, blockIdx.mX);
+        /* Update the flag that indicates whether the current block
          * is allocated and has valid occupancy probability values */
-        isPatchAllocated = pPatch->IsAllocated();
+        isBlockAllocated = pBlock->IsAllocated();
     }
 
     /* Transfer the grid map using the AXI DMA IP core */

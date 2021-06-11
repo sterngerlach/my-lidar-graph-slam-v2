@@ -190,7 +190,7 @@ public:
 
     /* Optimize the robot pose by scan matching */
     ScanMatchingSummary OptimizePose(
-        const GridMapType& gridMap,
+        const GridMap& gridMap,
         const LocalMapId gridMapId,
         const Point2D<double>& gridMapCenterPos,
         const Sensor::ScanDataPtr<double>& scanData,
@@ -200,12 +200,11 @@ public:
 
 private:
     /* Compute the search step */
-    void ComputeSearchStep(
-        const GridMapInterfaceType& gridMap,
-        const Sensor::ScanDataPtr<double>& scanData,
-        double& stepX,
-        double& stepY,
-        double& stepTheta) const;
+    void ComputeSearchStep(const GridMapInterface& gridMap,
+                           const Sensor::ScanDataPtr<double>& scanData,
+                           double& stepX,
+                           double& stepY,
+                           double& stepTheta) const;
 
     /* Initialize the CMA memory for the input data */
     void InitializeCMAMemoryInput();
@@ -226,7 +225,7 @@ private:
     /* Send the scan data through AXI DMA */
     void SendScanData(const Sensor::ScanDataPtr<double>& scanData);
     /* Send the grid map through AXI DMA */
-    void SendGridMap(const GridMapType& gridMap,
+    void SendGridMap(const GridMap& gridMap,
                      const bool gridMapTransferred,
                      const Point2D<int>& gridMapMinIdx,
                      const Point2D<int>& gridMapSize);
