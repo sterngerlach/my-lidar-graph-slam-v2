@@ -50,20 +50,20 @@ public:
 
     /* Calculate cost function (mismatch between scan data and map) */
     double Cost(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose) override;
 
     /* Calculate a gradient of the cost function with respect to
      * the sensor pose in map-local coordinate frame */
     Eigen::Vector3d ComputeGradient(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose) override;
 
     /* Calculate a covariance matrix */
     Eigen::Matrix3d ComputeCovariance(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose) override;
 
@@ -71,7 +71,7 @@ public:
      * a gradient of a smoothed map function with respect to
      * the sensor pose in a map-local coordinate frame */
     void ComputeHessianAndResidual(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose,
         Eigen::Matrix3d& hessianMat,
@@ -80,7 +80,7 @@ public:
     /* Calculate a numerical gradient of the cost function with respect to
      * the sensor pose in map-local coordinate frame */
     Eigen::Vector3d ComputeApproxGrad(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Sensor::ScanDataPtr<double>& scanData,
         const RobotPose2D<double>& mapLocalSensorPose);
 
@@ -99,7 +99,7 @@ public:
     /* Calculate a gradient of the smoothed map function
      * at the specified scan point with respect to the robot pose */
     Eigen::Vector3d ComputeApproxMapGradSensorPose(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const RobotPose2D<double>& mapLocalSensorPose,
         const double scanRange,
         const double scanAngle);
@@ -107,13 +107,13 @@ public:
     /* Get the four occupancy probability values at the integer coordinates
      * closest to the specified grid cell indices in floating-point */
     MapValues GetClosestMapValues(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Point2D<double>& gridCellIdx) const;
 
     /* Calculate the smoothed occupancy probability value
      * using bicubic interpolation */
     double ComputeBicubicValue(
-        const GridMapInterfaceType& gridMap,
+        const GridMapInterface& gridMap,
         const Point2D<double>& gridCellIdx) const;
 
 private:

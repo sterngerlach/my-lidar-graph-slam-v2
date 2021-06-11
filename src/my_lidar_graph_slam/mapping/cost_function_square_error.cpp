@@ -46,7 +46,7 @@ CostSquareError::CostSquareError(
 /* Calculate cost function based on the squared error of the
  * occupancy probability value */
 double CostSquareError::Cost(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -62,7 +62,7 @@ double CostSquareError::Cost(
         /* Calculate the smoothed occupancy probability value
          * this must be close to 1 since it corresponds to the hit point */
         const Point2D<double> floatIdx =
-            gridMap.LocalPosToGridCellIndexFloat(localHitPoint);
+            gridMap.PositionToIndexF(localHitPoint.mX, localHitPoint.mY);
         const auto mapValues = this->GetClosestMapValues(gridMap, floatIdx);
         const double smoothedValue = mapValues.BilinearInterpolation();
         /* Calculate the squared error */
@@ -77,7 +77,7 @@ double CostSquareError::Cost(
 /* Calculate a gradient of the cost function with respect to
  * the sensor pose in map-local coordinate frame */
 Eigen::Vector3d CostSquareError::ComputeGradient(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -95,7 +95,7 @@ Eigen::Vector3d CostSquareError::ComputeGradient(
         const Point2D<double> localHitPoint =
             scanData->HitPoint(mapLocalSensorPose, i);
         const Point2D<double> floatingIdx =
-            gridMap.LocalPosToGridCellIndexFloat(localHitPoint);
+            gridMap.PositionToIndexF(localHitPoint.mX, localHitPoint.mY);
 
         /* Calculate the smoothed map function */
         const auto mapValues = this->GetClosestMapValues(gridMap, floatingIdx);
@@ -129,7 +129,7 @@ Eigen::Vector3d CostSquareError::ComputeGradient(
 
 /* Calculate a covariance matrix in a map-local coordinate frame */
 Eigen::Matrix3d CostSquareError::ComputeCovariance(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -149,7 +149,7 @@ Eigen::Matrix3d CostSquareError::ComputeCovariance(
  * a gradient of a smoothed map function with respect to
  * the sensor pose in a map-local coordinate frame */
 void CostSquareError::ComputeHessianAndResidual(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose,
     Eigen::Matrix3d& hessianMat,
@@ -168,7 +168,7 @@ void CostSquareError::ComputeHessianAndResidual(
         const Point2D<double> localHitPoint =
             scanData->HitPoint(mapLocalSensorPose, i);
         const Point2D<double> floatingIdx =
-            gridMap.LocalPosToGridCellIndexFloat(localHitPoint);
+            gridMap.PositionToIndexF(localHitPoint.mX, localHitPoint.mY);
         /* Get the map values closest to the floating-point index */
         const auto mapValues = this->GetClosestMapValues(gridMap, floatingIdx);
 
@@ -196,7 +196,7 @@ void CostSquareError::ComputeHessianAndResidual(
 /* Calculate a numerical gradient of the cost function with respect to
  * the sensor pose in map-local coordinate frame */
 Eigen::Vector3d CostSquareError::ComputeApproxGrad(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Sensor::ScanDataPtr<double>& scanData,
     const RobotPose2D<double>& mapLocalSensorPose)
 {
@@ -277,7 +277,7 @@ Eigen::Vector3d CostSquareError::ComputeScaledMapGradSensorPose(
 /* Calculate a gradient of the smoothed map function
  * at the specified scan point with respect to the robot pose */
 Eigen::Vector3d CostSquareError::ComputeApproxMapGradSensorPose(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const RobotPose2D<double>& mapLocalSensorPose,
     const double scanRange,
     const double scanAngle)
@@ -291,7 +291,7 @@ Eigen::Vector3d CostSquareError::ComputeApproxMapGradSensorPose(
             pose.mX + scanRange * cosTheta,
             pose.mY + scanRange * sinTheta };
         const Point2D<double> floatingIdx =
-            gridMap.LocalPosToGridCellIndexFloat(localHitPoint);
+            gridMap.PositionToIndexF(localHitPoint.mX, localHitPoint.mY);
         const auto mapValues = this->GetClosestMapValues(gridMap, floatingIdx);
         return mapValues.BilinearInterpolation();
     };
@@ -321,7 +321,7 @@ Eigen::Vector3d CostSquareError::ComputeApproxMapGradSensorPose(
 /* Get the four occupancy probability values at the integer coordinates
  * closest to the specified grid cell indices in floating-point */
 CostSquareError::MapValues CostSquareError::GetClosestMapValues(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Point2D<double>& gridCellIdx) const
 {
     /* Obtain the closest integer coordinates */
@@ -334,14 +334,14 @@ CostSquareError::MapValues CostSquareError::GetClosestMapValues(
      * could be out-of-bounds */
     const int xc0 = std::max(static_cast<int>(x0), 0);
     const int yc0 = std::max(static_cast<int>(y0), 0);
-    const int xc1 = std::min(xc0 + 1, gridMap.NumOfGridCellsX() - 1);
-    const int yc1 = std::min(yc0 + 1, gridMap.NumOfGridCellsY() - 1);
+    const int xc1 = std::min(xc0 + 1, gridMap.Cols() - 1);
+    const int yc1 = std::min(yc0 + 1, gridMap.Rows() - 1);
 
     /* Obtain the occupancy probability values at four integer coordinates */
-    const double m00 = gridMap.Value(xc0, yc0, 0.5);
-    const double m01 = gridMap.Value(xc0, yc1, 0.5);
-    const double m10 = gridMap.Value(xc1, yc0, 0.5);
-    const double m11 = gridMap.Value(xc1, yc1, 0.5);
+    const double m00 = gridMap.ProbabilityOr(yc0, xc0, 0.5);
+    const double m01 = gridMap.ProbabilityOr(yc1, xc0, 0.5);
+    const double m10 = gridMap.ProbabilityOr(yc0, xc1, 0.5);
+    const double m11 = gridMap.ProbabilityOr(yc1, xc1, 0.5);
 
     return MapValues { dx, dy, m00, m01, m10, m11 };
 }
@@ -349,7 +349,7 @@ CostSquareError::MapValues CostSquareError::GetClosestMapValues(
 /* Calculate the smoothed occupancy probability value
  * using bicubic interpolation */
 double CostSquareError::ComputeBicubicValue(
-    const GridMapInterfaceType& gridMap,
+    const GridMapInterface& gridMap,
     const Point2D<double>& gridCellIdx) const
 {
     /* Interpolation kernel function */
@@ -373,15 +373,13 @@ double CostSquareError::ComputeBicubicValue(
     auto f = [&gridMap](double x, double y) -> double {
         /* If the specified grid cell index is out of bounds,
          * the value of the first/last row/column grid cell is returned */
-        const int xc = std::clamp(static_cast<int>(x),
-                                  0, gridMap.NumOfGridCellsX() - 1);
-        const int yc = std::clamp(static_cast<int>(y),
-                                  0, gridMap.NumOfGridCellsY() - 1);
+        const int xc = std::clamp(static_cast<int>(x), 0, gridMap.Cols() - 1);
+        const int yc = std::clamp(static_cast<int>(y), 0, gridMap.Rows() - 1);
 
         /* Default value is returned if the grid cell is not yet allocated */
         /* If the grid cell is allocated but not yet observed,
-         * the unknown value GridCell::Unknown (0) is returned */
-        return gridMap.Value(xc, yc, 0.0);
+         * the unknown probability (0) is returned */
+        return gridMap.ProbabilityOr(yc, xc, gridMap.UnknownProbability());
     };
 
     /* Perform bicubic interpolation */
@@ -417,7 +415,9 @@ double CostSquareError::ComputeBicubicValue(
     const double smoothedValue = vecX.transpose() * matValue * vecY;
 
     /* Clamp the occupancy value */
-    return std::clamp(smoothedValue, 0.0, 1.0);
+    return std::clamp(smoothedValue,
+                      gridMap.ProbabilityMin(),
+                      gridMap.ProbabilityMax());
 }
 
 } /* namespace Mapping */
