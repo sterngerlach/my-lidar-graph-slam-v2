@@ -232,8 +232,7 @@ private:
     /* Send the grid map through AXI DMA */
     void SendGridMap(const GridMap& gridMap,
                      const bool gridMapTransferred,
-                     const Point2D<int>& gridMapMinIdx,
-                     const Point2D<int>& gridMapSize);
+                     const BoundingBox<int>& desiredBox);
     /* Receive the result through AXI DMA */
     void ReceiveResult(int& scoreMax, int& bestX, int& bestY, int& bestTheta);
 

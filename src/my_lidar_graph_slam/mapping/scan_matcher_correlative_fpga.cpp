@@ -295,7 +295,7 @@ ScanMatchingSummary ScanMatcherCorrelativeFPGA::OptimizePose(
     timer.Start();
 
     /* Send the grid map */
-    this->SendGridMap(gridMap, mapTransferred, boundingBox.mMin, gridMapSize);
+    this->SendGridMap(gridMap, mapTransferred, boundingBox);
     /* Update the metrics and restart the timer */
     this->mMetrics.mMapSendTime->Observe(timer.ElapsedMicro());
     timer.Start();
@@ -604,8 +604,7 @@ void ScanMatcherCorrelativeFPGA::SendScanData(
 void ScanMatcherCorrelativeFPGA::SendGridMap(
     const GridMap& gridMap,
     const bool gridMapTransferred,
-    const Point2D<int>& gridMapMinIdx,
-    const Point2D<int>& gridMapSize)
+    const BoundingBox<int>& desiredBox)
 {
     /* Retrieve the pointer to the CMA memory */
     auto* pInput = this->mInputData.Ptr<volatile std::uint64_t>();
@@ -637,11 +636,11 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
     /* The below `chunkWidth` denotes the number of grid values in the
      * 64-bit data (DMA controller transfers the 64-bit data per clock) */
     const int chunkWidth = this->mConfig.mMapChunkWidth;
-    const int chunkCols = (gridMapSize.mX + chunkWidth - 1) / chunkWidth;
+    const int chunkCols = (desiredBox.Width() + chunkWidth - 1) / chunkWidth;
     const BoundingBox<int> boundingBox {
-        gridMapMinIdx.mX, gridMapMinIdx.mY,
-        gridMapMinIdx.mX + chunkCols * chunkWidth,
-        gridMapMinIdx.mY + gridMapSize.mY };
+        desiredBox.mMin.mX, desiredBox.mMin.mY,
+        desiredBox.mMin.mX + chunkCols * chunkWidth,
+        desiredBox.mMin.mY + desiredBox.Height() };
 
     auto* pBuffer = this->mInputData.Ptr<std::uint32_t>() +
                     sizeof(std::uint64_t) / sizeof(std::uint32_t);
@@ -649,7 +648,7 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
 
     /* Transfer the grid map using the AXI DMA IP core */
     const std::size_t transferLengthInBytes =
-        (gridMapSize.mY * chunkCols + 1) * sizeof(std::uint64_t);
+        (desiredBox.Height() * chunkCols + 1) * sizeof(std::uint64_t);
     this->mAxiDma->SendChannel().Transfer(
         transferLengthInBytes, this->mInputData.PhysicalAddress());
 
@@ -659,7 +658,7 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
         this->mAxiDma->SendChannel().Wait();
 
     /* Update the metrics */
-    const int numOfChunks = gridMapSize.mY * chunkCols;
+    const int numOfChunks = desiredBox.Height() * chunkCols;
     this->mMetrics.mMapChunks->Increment(numOfChunks);
     this->mMetrics.mMapTransferSkip->Increment(0);
 }
