@@ -74,105 +74,105 @@ inline bool AssertHandler(const char* predicateExpression,
 namespace MyLidarGraphSlam {
 
 /* Union type for data conversion */
-union UInt32Conversion
+union U32Conversion
 {
-    std::int32_t  mInt32Value;
-    std::uint32_t mUInt32Value;
-    float         mFloat32Value;
+    std::int32_t  mI32Value;
+    std::uint32_t mU32Value;
+    float         mF32Value;
 };
 
 /* Union type for data conversion */
-union UInt64Conversion
+union U64Conversion
 {
-    std::uint64_t mUInt64Value;
+    std::uint64_t mU64Value;
 
     struct
     {
         std::int32_t mValue0;
         std::int32_t mValue1;
-    } mInt32;
+    } mI32;
 
     struct
     {
         std::uint32_t mValue0;
         std::uint32_t mValue1;
-    } mUInt32;
+    } mU32;
 
     struct
     {
         float mValue0;
         float mValue1;
-    } mFloat32;
+    } mF32;
 };
 
 /* Reinterpret a 32-bit signed integer value (int) as
  * a 32-bit unsigned integer value (std::uint32_t) */
-inline std::uint32_t Int32ToUInt32(const int value)
+inline std::uint32_t I32ToU32(const int value)
 {
-    UInt32Conversion dataConv;
-    dataConv.mInt32Value = value;
-    return dataConv.mUInt32Value;
+    U32Conversion dataConv;
+    dataConv.mI32Value = value;
+    return dataConv.mU32Value;
 }
 
 /* Reinterpret a single-precision floating-point number (float) as
  * a 32-bit unsigned integer value (std::uint32_t) */
-inline std::uint32_t FloatToUInt32(const float value)
+inline std::uint32_t FloatToU32(const float value)
 {
-    UInt32Conversion dataConv;
-    dataConv.mFloat32Value = value;
-    return dataConv.mUInt32Value;
+    U32Conversion dataConv;
+    dataConv.mF32Value = value;
+    return dataConv.mU32Value;
 }
 
 /* Reinterpret a 32-bit unsigned integer value (std::uint32_t) as
  * a single-precision floating-point number (float) */
-inline float UInt32ToFloat(const std::uint32_t value)
+inline float U32ToFloat(const std::uint32_t value)
 {
-    UInt32Conversion dataConv;
-    dataConv.mUInt32Value = value;
-    return dataConv.mFloat32Value;
+    U32Conversion dataConv;
+    dataConv.mU32Value = value;
+    return dataConv.mF32Value;
 }
 
 /* Pack two 32-bit unsigned integer values (std::uint32_t) and
  * convert to a 64-bit unsigned integer value (std::uint64_t) */
-inline std::uint64_t PackUInt32(const std::uint32_t value0,
-                                const std::uint32_t value1)
+inline std::uint64_t PackU32(const std::uint32_t value0,
+                             const std::uint32_t value1)
 {
-    UInt64Conversion dataConv;
-    dataConv.mUInt32.mValue0 = value0;
-    dataConv.mUInt32.mValue1 = value1;
-    return dataConv.mUInt64Value;
+    U64Conversion dataConv;
+    dataConv.mU32.mValue0 = value0;
+    dataConv.mU32.mValue1 = value1;
+    return dataConv.mU64Value;
 }
 
 /* Pack two single-precision floating-point number (float) and
  * convert to a 64-bit unsigned integer value (std::uint64_t) */
 inline std::uint64_t PackFloat(const float value0, const float value1)
 {
-    UInt64Conversion dataConv;
-    dataConv.mFloat32.mValue0 = value0;
-    dataConv.mFloat32.mValue1 = value1;
-    return dataConv.mUInt64Value;
+    U64Conversion dataConv;
+    dataConv.mF32.mValue0 = value0;
+    dataConv.mF32.mValue1 = value1;
+    return dataConv.mU64Value;
 }
 
 /* Unpack a 64-bit unsigned integer value (std::uint64_t) and
  * return two 32-bit signed integer values (int) */
-inline void UnpackInt32(const std::uint64_t packedValue,
-                        std::int32_t& value0, std::int32_t& value1)
+inline void UnpackI32(const std::uint64_t packedValue,
+                      std::int32_t& value0, std::int32_t& value1)
 {
-    UInt64Conversion dataConv;
-    dataConv.mUInt64Value = packedValue;
-    value0 = dataConv.mInt32.mValue0;
-    value1 = dataConv.mInt32.mValue1;
+    U64Conversion dataConv;
+    dataConv.mU64Value = packedValue;
+    value0 = dataConv.mI32.mValue0;
+    value1 = dataConv.mI32.mValue1;
 }
 
 /* Unpack a 64-bit unsigned integer value (std::uint64_t) and
  * return two 32-bit unsigned integer values (std::uint32_t) */
-inline void UnpackUInt32(const std::uint64_t packedValue,
-                         std::uint32_t& value0, std::uint32_t& value1)
+inline void UnpackU32(const std::uint64_t packedValue,
+                      std::uint32_t& value0, std::uint32_t& value1)
 {
-    UInt64Conversion dataConv;
-    dataConv.mUInt64Value = packedValue;
-    value0 = dataConv.mUInt32.mValue0;
-    value1 = dataConv.mUInt32.mValue1;
+    U64Conversion dataConv;
+    dataConv.mU64Value = packedValue;
+    value0 = dataConv.mU32.mValue0;
+    value1 = dataConv.mU32.mValue1;
 }
 
 /* Unpack a 64-bit unsigned integer value (std::uint64_t) and
@@ -180,10 +180,10 @@ inline void UnpackUInt32(const std::uint64_t packedValue,
 inline void UnpackFloat(const std::uint64_t packedValue,
                         float& value0, float& value1)
 {
-    UInt64Conversion dataConv;
-    dataConv.mUInt64Value = packedValue;
-    value0 = dataConv.mFloat32.mValue0;
-    value1 = dataConv.mFloat32.mValue1;
+    U64Conversion dataConv;
+    dataConv.mU64Value = packedValue;
+    value0 = dataConv.mF32.mValue0;
+    value1 = dataConv.mF32.mValue1;
 }
 
 /* Join elements in a container with a delimiter */

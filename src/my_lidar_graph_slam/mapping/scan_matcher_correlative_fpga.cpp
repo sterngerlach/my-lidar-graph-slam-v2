@@ -449,18 +449,18 @@ void ScanMatcherCorrelativeFPGA::SetParameterRegisters(
     const double stepX, const double stepY, const double stepTheta)
 {
     const auto doubleToU32 = [](const double x) {
-        return FloatToUInt32(static_cast<double>(x)); };
+        return FloatToU32(static_cast<double>(x)); };
     const auto writeReg = [&](const std::uint32_t offsetInBytes,
                               const std::uint32_t value) {
         this->mControlRegisters->Write(offsetInBytes, value); };
     const auto& config = this->mConfig;
 
     /* Set the actual number of the scan points */
-    writeReg(config.mAxiLiteSNumOfScans, Int32ToUInt32(numOfScans));
+    writeReg(config.mAxiLiteSNumOfScans, I32ToU32(numOfScans));
     /* Set the maximum scan range considered valid */
     writeReg(config.mAxiLiteSScanRangeMax, doubleToU32(scanRangeMax));
     /* Set the score threshold (for loop detection) */
-    writeReg(config.mAxiLiteSScoreThreshold, Int32ToUInt32(scoreThreshold));
+    writeReg(config.mAxiLiteSScoreThreshold, I32ToU32(scoreThreshold));
 
     /* Set the minimum possible sensor pose */
     writeReg(config.mAxiLiteSPoseX, doubleToU32(minSensorPose.mX));
@@ -468,16 +468,16 @@ void ScanMatcherCorrelativeFPGA::SetParameterRegisters(
     writeReg(config.mAxiLiteSPoseTheta, doubleToU32(minSensorPose.mTheta));
 
     /* Set the actual size of the cropped grid map */
-    writeReg(config.mAxiLiteSMapSizeX, Int32ToUInt32(gridMapSize.mX));
-    writeReg(config.mAxiLiteSMapSizeY, Int32ToUInt32(gridMapSize.mY));
+    writeReg(config.mAxiLiteSMapSizeX, I32ToU32(gridMapSize.mX));
+    writeReg(config.mAxiLiteSMapSizeY, I32ToU32(gridMapSize.mY));
     /* Set the minimum coordinate of the cropped grid map */
     writeReg(config.mAxiLiteSMapMinX, doubleToU32(gridMapMinPos.mX));
     writeReg(config.mAxiLiteSMapMinY, doubleToU32(gridMapMinPos.mY));
 
     /* Set the size of the search window */
-    writeReg(config.mAxiLiteSWinX, Int32ToUInt32(winX));
-    writeReg(config.mAxiLiteSWinY, Int32ToUInt32(winY));
-    writeReg(config.mAxiLiteSWinTheta, Int32ToUInt32(winTheta));
+    writeReg(config.mAxiLiteSWinX, I32ToU32(winX));
+    writeReg(config.mAxiLiteSWinY, I32ToU32(winY));
+    writeReg(config.mAxiLiteSWinTheta, I32ToU32(winTheta));
     /* Set the search step */
     writeReg(config.mAxiLiteSStepX, doubleToU32(stepX));
     writeReg(config.mAxiLiteSStepY, doubleToU32(stepY));
@@ -661,8 +661,8 @@ void ScanMatcherCorrelativeFPGA::ReceiveResult(
     auto* pOutput = this->mOutputData.Ptr<volatile std::uint64_t>();
 
     /* Read the maximum score and the best X-coordinate */
-    UnpackInt32(*pOutput++, scoreMax, bestX);
-    UnpackInt32(*pOutput++, bestY, bestTheta);
+    UnpackI32(*pOutput++, scoreMax, bestX);
+    UnpackI32(*pOutput++, bestY, bestTheta);
 }
 
 /* Start the scan matcher IP core */
