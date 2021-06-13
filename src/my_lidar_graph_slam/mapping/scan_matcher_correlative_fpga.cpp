@@ -141,10 +141,9 @@ ScanMatcherCorrelativeFPGA::ScanMatcherCorrelativeFPGA(
             this->mConfig.mMapBitWidth <= 8,
             "Bit width of the discretized occupancy probability "
             "should be in the range between 1 and 8");
-    XAssert(this->mConfig.mMapChunkWidth > 0 &&
-            this->mConfig.mMapChunkWidth <= 8,
+    XAssert(this->mConfig.mMapChunkWidth == 8,
             "Width of the grid map chunk (consecutive grid map cells) "
-            "should be in the range between 1 and 8");
+            "should be 8");
 
     /* Initialize the scan matcher IP core */
     this->mControlRegisters = std::make_unique<MemoryMappedIO>(
@@ -635,82 +634,22 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
     *pInput++ = static_cast<std::uint64_t>(1);
 
     /* Write the cropped grid map */
-    const std::uint16_t unknownValue = gridMap.UnknownValue();
-    const int numOfMapChunksPerRow =
-        (gridMapSize.mX + this->mConfig.mMapChunkWidth - 1) /
-        this->mConfig.mMapChunkWidth;
+    /* The below `chunkWidth` denotes the number of grid values in the
+     * 64-bit data (DMA controller transfers the 64-bit data per clock) */
+    const int chunkWidth = this->mConfig.mMapChunkWidth;
+    const int chunkCols = (gridMapSize.mX + chunkWidth - 1) / chunkWidth;
+    const BoundingBox<int> boundingBox {
+        gridMapMinIdx.mX, gridMapMinIdx.mY,
+        gridMapMinIdx.mX + chunkCols * chunkWidth,
+        gridMapMinIdx.mY + gridMapSize.mY };
 
-    const int blockSize = gridMap.BlockSize();
-    const int blockRows = gridMap.BlockRows();
-    const int blockCols = gridMap.BlockCols();
-
-    const Point2D<int> firstBlockIdx = gridMap.IndexToBlock(
-        gridMapMinIdx.mY, gridMapMinIdx.mX);
-    const Point2D<int> firstBlockOffset = gridMap.IndexToBlockOffset(
-        gridMapMinIdx.mY, gridMapMinIdx.mX);
-
-    /* Initialize the index of the current block being used */
-    Point2D<int> blockIdx = firstBlockIdx;
-    Point2D<int> blockOffset = firstBlockOffset;
-    /* Initialize the pointer to the current block */
-    auto* pBlock = gridMap.Block(blockIdx.mY, blockIdx.mX);
-    bool isBlockAllocated = pBlock->IsAllocated();
-
-    for (int y = 0; y < gridMapSize.mY; ++y) {
-        for (int chunkX = 0; chunkX < numOfMapChunksPerRow; ++chunkX) {
-            /* Compute the grid map chunk (consecutive grid map elements) */
-            std::uint64_t gridMapChunk = 0;
-
-            for (int i = 0; i < this->mConfig.mMapChunkWidth; ++i) {
-                /* Retrieve the occupancy probability value */
-                const std::uint16_t value = isBlockAllocated ?
-                    pBlock->ValueUnchecked(blockOffset.mY, blockOffset.mX) :
-                    unknownValue;
-                const std::uint64_t discretizedValue =
-                    static_cast<std::uint64_t>(value & 0xFF00);
-
-                /* Pack the 8-bit discretized occupancy probability value to
-                 * the grid map chunk (consecutive grid map elements) */
-                gridMapChunk >>= 8;
-                gridMapChunk |= (discretizedValue << 48);
-
-                /* Update the index of the current block */
-                const bool isEndOfBlockX = blockOffset.mX == (blockSize - 1);
-                blockOffset.mX = isEndOfBlockX ? 0 : blockOffset.mX + 1;
-                blockIdx.mX = isEndOfBlockX ? blockIdx.mX + 1 : blockIdx.mX;
-                blockIdx.mX = std::min(blockIdx.mX, blockCols - 1);
-
-                /* Update the pointer to the current block */
-                pBlock = isEndOfBlockX ?
-                    gridMap.Block(blockIdx.mY, blockIdx.mX) : pBlock;
-                /* Update the flag that indicates whether the current block
-                 * is allocated and has valid occupancy probability values */
-                isBlockAllocated = isEndOfBlockX ?
-                    pBlock->IsAllocated() : isBlockAllocated;
-            }
-
-            /* Write the grid map chunk */
-            *pInput++ = gridMapChunk;
-        }
-
-        /* Update the index of the current block */
-        const bool isEndOfBlockY = blockOffset.mY == (blockSize - 1);
-        blockOffset.mX = firstBlockOffset.mX;
-        blockOffset.mY = isEndOfBlockY ? 0 : blockOffset.mY + 1;
-        blockIdx.mX = firstBlockIdx.mX;
-        blockIdx.mY = isEndOfBlockY ? blockIdx.mY + 1 : blockIdx.mY;
-        blockIdx.mY = std::min(blockIdx.mY, blockRows - 1);
-
-        /* Update the pointer to the current block */
-        pBlock = gridMap.Block(blockIdx.mY, blockIdx.mX);
-        /* Update the flag that indicates whether the current block
-         * is allocated and has valid occupancy probability values */
-        isBlockAllocated = pBlock->IsAllocated();
-    }
+    auto* pBuffer = this->mInputData.Ptr<std::uint32_t>() +
+                    sizeof(std::uint64_t) / sizeof(std::uint32_t);
+    gridMap.CopyValuesU8x4(pBuffer, boundingBox);
 
     /* Transfer the grid map using the AXI DMA IP core */
     const std::size_t transferLengthInBytes =
-        (gridMapSize.mY * numOfMapChunksPerRow + 1) * sizeof(std::uint64_t);
+        (gridMapSize.mY * chunkCols + 1) * sizeof(std::uint64_t);
     this->mAxiDma->SendChannel().Transfer(
         transferLengthInBytes, this->mInputData.PhysicalAddress());
 
@@ -720,8 +659,8 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
         this->mAxiDma->SendChannel().Wait();
 
     /* Update the metrics */
-    const int numOfChunksTransferred = gridMapSize.mY * numOfMapChunksPerRow;
-    this->mMetrics.mMapChunks->Increment(numOfChunksTransferred);
+    const int numOfChunks = gridMapSize.mY * chunkCols;
+    this->mMetrics.mMapChunks->Increment(numOfChunks);
     this->mMetrics.mMapTransferSkip->Increment(0);
 }
 
