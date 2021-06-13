@@ -200,6 +200,66 @@ void GridBinaryBayes::CopyValuesU8(
     }
 }
 
+/* Copy the internal values as std::uint8_t to the given buffer
+ * and ensure the 4-byte aligned access */
+void GridBinaryBayes::CopyValuesU8x4(
+    std::uint32_t* buffer, const int bufferCols) const
+{
+    const BoundingBox<int> boundingBox { 0, 0, this->mSize, this->mSize };
+    this->CopyValuesU8x4(buffer, bufferCols, boundingBox);
+}
+
+/* Copy the internal values as std::uint8_t to the given buffer
+ * and ensure the 4-byte aligned accesses */
+void GridBinaryBayes::CopyValuesU8x4(
+    std::uint32_t* buffer, const int bufferCols,
+    const BoundingBox<int>& boundingBox) const
+{
+    auto rawToU8 = [](const std::uint16_t value) {
+        return static_cast<std::uint32_t>(value >> 8); };
+
+    Assert(bufferCols % 4 == 0);
+    Assert(boundingBox.mMin.mX % 4 == 0);
+    Assert(boundingBox.mMax.mX % 4 == 0);
+
+    const int bufferColsBy4 = bufferCols >> 2;
+    const int colsBy4 = boundingBox.Width() >> 2;
+    const int rowMin = boundingBox.mMin.mY;
+    const int rowMax = boundingBox.mMax.mY;
+
+    const std::uint16_t* srcBuffer =
+        this->Data(boundingBox.mMin.mY, boundingBox.mMin.mX);
+    std::uint32_t* dstBuffer = buffer;
+
+    if (!this->IsAllocated()) {
+        for (int row = rowMin; row < rowMax; ++row) {
+            std::fill_n(dstBuffer, colsBy4, 0U);
+            dstBuffer += bufferColsBy4;
+        }
+    } else {
+        for (int row = rowMin; row < rowMax; ++row) {
+            const std::uint16_t* colBuffer = srcBuffer;
+            std::uint32_t* rowBuffer = dstBuffer;
+
+            for (int col4 = 0; col4 < colsBy4; ++col4) {
+                const std::uint32_t value0 = rawToU8(colBuffer[0]);
+                const std::uint32_t value1 = rawToU8(colBuffer[1]);
+                const std::uint32_t value2 = rawToU8(colBuffer[2]);
+                const std::uint32_t value3 = rawToU8(colBuffer[3]);
+                const std::uint32_t value = (value0) | (value1 << 8) |
+                                            (value2 << 16) | (value3 << 24);
+                *rowBuffer = value;
+
+                rowBuffer += 1;
+                colBuffer += 4;
+            }
+
+            srcBuffer += this->mSize;
+            dstBuffer += bufferColsBy4;
+        }
+    }
+}
+
 /* Update the grid value given an observation */
 void GridBinaryBayes::Update(
     const int row, const int col, const double prob)
