@@ -450,50 +450,38 @@ void ScanMatcherCorrelativeFPGA::SetParameterRegisters(
 {
     const auto doubleToU32 = [](const double x) {
         return FloatToUInt32(static_cast<double>(x)); };
+    const auto writeReg = [&](const std::uint32_t offsetInBytes,
+                              const std::uint32_t value) {
+        this->mControlRegisters->Write(offsetInBytes, value); };
+    const auto& config = this->mConfig;
 
     /* Set the actual number of the scan points */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSNumOfScans, Int32ToUInt32(numOfScans));
+    writeReg(config.mAxiLiteSNumOfScans, Int32ToUInt32(numOfScans));
     /* Set the maximum scan range considered valid */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSScanRangeMax, doubleToU32(scanRangeMax));
+    writeReg(config.mAxiLiteSScanRangeMax, doubleToU32(scanRangeMax));
     /* Set the score threshold (for loop detection) */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSScoreThreshold, Int32ToUInt32(scoreThreshold));
+    writeReg(config.mAxiLiteSScoreThreshold, Int32ToUInt32(scoreThreshold));
 
     /* Set the minimum possible sensor pose */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSPoseX, doubleToU32(minSensorPose.mX));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSPoseY, doubleToU32(minSensorPose.mY));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSPoseTheta, doubleToU32(minSensorPose.mTheta));
+    writeReg(config.mAxiLiteSPoseX, doubleToU32(minSensorPose.mX));
+    writeReg(config.mAxiLiteSPoseY, doubleToU32(minSensorPose.mY));
+    writeReg(config.mAxiLiteSPoseTheta, doubleToU32(minSensorPose.mTheta));
 
     /* Set the actual size of the cropped grid map */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSMapSizeX, Int32ToUInt32(gridMapSize.mX));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSMapSizeY, Int32ToUInt32(gridMapSize.mY));
+    writeReg(config.mAxiLiteSMapSizeX, Int32ToUInt32(gridMapSize.mX));
+    writeReg(config.mAxiLiteSMapSizeY, Int32ToUInt32(gridMapSize.mY));
     /* Set the minimum coordinate of the cropped grid map */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSMapMinX, doubleToU32(gridMapMinPos.mX));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSMapMinY, doubleToU32(gridMapMinPos.mY));
+    writeReg(config.mAxiLiteSMapMinX, doubleToU32(gridMapMinPos.mX));
+    writeReg(config.mAxiLiteSMapMinY, doubleToU32(gridMapMinPos.mY));
 
     /* Set the size of the search window */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSWinX, Int32ToUInt32(winX));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSWinY, Int32ToUInt32(winY));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSWinTheta, Int32ToUInt32(winTheta));
+    writeReg(config.mAxiLiteSWinX, Int32ToUInt32(winX));
+    writeReg(config.mAxiLiteSWinY, Int32ToUInt32(winY));
+    writeReg(config.mAxiLiteSWinTheta, Int32ToUInt32(winTheta));
     /* Set the search step */
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSStepX, doubleToU32(stepX));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSStepY, doubleToU32(stepY));
-    this->mControlRegisters->Write(
-        this->mConfig.mAxiLiteSStepTheta, doubleToU32(stepTheta));
+    writeReg(config.mAxiLiteSStepX, doubleToU32(stepX));
+    writeReg(config.mAxiLiteSStepY, doubleToU32(stepY));
+    writeReg(config.mAxiLiteSStepTheta, doubleToU32(stepTheta));
 }
 
 /* Compute the bounding box of the grid map */
