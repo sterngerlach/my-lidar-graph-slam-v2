@@ -458,11 +458,6 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherCorrelativeFPGA(
     const int mapChunkWidth =
         scanMatcherSettings.get<int>("MapChunkWidth");
 
-    const bool waitForControlRegister =
-        scanMatcherSettings.get<bool>("WaitForControlRegister");
-    const bool waitForDmaTransfer =
-        scanMatcherSettings.get<bool>("WaitForDmaTransfer");
-
     const std::string axiLiteSBaseAddress =
         scanMatcherSettings.get<std::string>("AxiLiteSBaseAddress");
     const std::string axiLiteSAddressRange =
@@ -479,9 +474,6 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherCorrelativeFPGA(
     hardwareConfig.mLowResolution = lowResolution;
     hardwareConfig.mMapBitWidth = mapBitWidth;
     hardwareConfig.mMapChunkWidth = mapChunkWidth;
-
-    hardwareConfig.mWaitForCtrlReg = waitForControlRegister;
-    hardwareConfig.mWaitForDmaTransfer = waitForDmaTransfer;
 
     hardwareConfig.mAxiLiteSBaseAddress = static_cast<std::uint32_t>(
         std::stoul(axiLiteSBaseAddress, nullptr, 0));

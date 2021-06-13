@@ -97,13 +97,6 @@ struct ScanMatcherHardwareConfig
     /* Width of the grid map chunk (consecutive grid map cells) */
     int    mMapChunkWidth;
 
-    /* Flag to determine whether the scan matcher waits until the IP core
-     * started or finished by polling the control registers */
-    bool   mWaitForCtrlReg;
-    /* Flag to determine whether the scan matcher waits until the data transfer
-     * is complete by polling the status register of the AXI DMA IP core */
-    bool   mWaitForDmaTransfer;
-
     /* Register offsets for the AXI4-Lite slave interface */
 
     /* AXI4-Lite slave interface base address */
