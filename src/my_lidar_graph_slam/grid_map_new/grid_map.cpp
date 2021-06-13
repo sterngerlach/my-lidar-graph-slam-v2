@@ -336,6 +336,10 @@ void GridMap<T>::CopyValuesInternal(
     Assert(boundingBox.mMax.mX > boundingBox.mMin.mX);
     Assert(boundingBox.mMax.mY > boundingBox.mMin.mY);
 
+    Assert(this->mBlockSize % sizeof(U) == 0);
+    Assert(boundingBox.mMin.mX % sizeof(U) == 0);
+    Assert(boundingBox.mMax.mX % sizeof(U) == 0);
+
     /* Buffer should have the same size as the bounding box */
 
     /* Convert the grid index to the block index */
@@ -373,13 +377,13 @@ void GridMap<T>::CopyValuesInternal(
             /* Advance the pointer to the block */
             currentBlock++;
             /* Advance the pointer to the buffer */
-            currentBuffer += (blockColMax - blockColMin);
+            currentBuffer += ((blockColMax - blockColMin) / sizeof(U));
         }
 
         /* Advance the pointer to the block */
         block += this->mBlockCols;
         /* Advance the pointer to the buffer */
-        buffer += cols * (blockRowMax - blockRowMin);
+        buffer += (cols * (blockRowMax - blockRowMin) / sizeof(U));
     }
 }
 
