@@ -127,6 +127,13 @@ public:
     /* Copy the internal values in the specified region as std::uint8_t */
     void CopyValuesU8(std::uint8_t* buffer,
                       const BoundingBox<int>& boundingBox) const override;
+    /* Copy the internal values as std::uint8_t to the buffer
+     * and ensure the 4-byte aligned accesses */
+    void CopyValuesU8x4(std::uint32_t* buffer) const override;
+    /* Copy the internal values as std::uint8_t to the buffer
+     * and ensure the 4-byte aligned accesses */
+    void CopyValuesU8x4(std::uint32_t* buffer,
+                        const BoundingBox<int>& boundingBox) const override;
 
     /* Set the internal value of the grid cell */
     void SetValue(const int row, const int col,

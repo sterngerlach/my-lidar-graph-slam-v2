@@ -511,6 +511,29 @@ void GridMap<T>::CopyValuesU8(std::uint8_t* buffer,
     this->CopyValuesInternal(buffer, boundingBox, copyFunc);
 }
 
+/* Copy the internal values as std::uint8_t to the buffer
+ * and ensure the 4-byte aligned accesses */
+template <typename T>
+void GridMap<T>::CopyValuesU8x4(std::uint32_t* buffer) const
+{
+    const BoundingBox<int> boundingBox {
+        0, 0, this->mGeometry.mCols, this->mGeometry.mRows };
+    this->CopyValuesU8x4(buffer, boundingBox);
+}
+
+/* Copy the internal values as std::uint8_t to the buffer
+ * and ensure the 4-byte aligned accesses */
+template <typename T>
+void GridMap<T>::CopyValuesU8x4(std::uint32_t* buffer,
+                                const BoundingBox<int>& boundingBox) const
+{
+    const auto copyFunc = [](const T* currentBlock,
+                             std::uint32_t* currentBuffer,
+                             int bufferCols, const BoundingBox<int>& box) {
+        currentBlock->CopyValuesU8x4(currentBuffer, bufferCols, box); };
+    this->CopyValuesInternal(buffer, boundingBox, copyFunc);
+}
+
 /* Set the internal value of the grid cell */
 template <typename T>
 void GridMap<T>::SetValue(
