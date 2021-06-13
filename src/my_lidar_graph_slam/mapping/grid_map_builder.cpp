@@ -12,6 +12,8 @@
 
 #include "my_lidar_graph_slam/mapping/grid_map_builder.hpp"
 
+#include "my_lidar_graph_slam/bresenham.hpp"
+
 namespace MyLidarGraphSlam {
 namespace Mapping {
 

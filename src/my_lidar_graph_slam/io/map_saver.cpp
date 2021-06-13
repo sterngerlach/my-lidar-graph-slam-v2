@@ -14,6 +14,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#include "my_lidar_graph_slam/bresenham.hpp"
 #include "my_lidar_graph_slam/point.hpp"
 #include "my_lidar_graph_slam/pose.hpp"
 #include "my_lidar_graph_slam/grid_map/grid_map.hpp"
