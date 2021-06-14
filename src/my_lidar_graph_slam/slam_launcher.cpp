@@ -338,89 +338,54 @@ void LoadScanMatcherHardwareRegisterOffsets(
     const pt::ptree& jsonSettings,
     Mapping::ScanMatcherHardwareConfig& scanMatcherConfig)
 {
+    const auto getString = [&jsonSettings](const std::string& configName) {
+        return jsonSettings.get<std::string>(configName); };
+    const auto toAddress = [](const std::string& value) {
+        return std::stoul(value, nullptr, 0); };
+
     /* Load settings for the register offsets */
-    const std::string offsetApCtrl =
-        jsonSettings.get<std::string>("AxiLiteSApCtrl");
-    const std::string offsetGIE =
-        jsonSettings.get<std::string>("AxiLiteSGIE");
-    const std::string offsetIER =
-        jsonSettings.get<std::string>("AxiLiteSIER");
-    const std::string offsetISR =
-        jsonSettings.get<std::string>("AxiLiteSISR");
-    const std::string offsetNumOfScans =
-        jsonSettings.get<std::string>("AxiLiteSNumOfScans");
-    const std::string offsetScanRangeMax =
-        jsonSettings.get<std::string>("AxiLiteSScanRangeMax");
-    const std::string offsetScoreThreshold =
-        jsonSettings.get<std::string>("AxiLiteSScoreThreshold");
-    const std::string offsetPoseX =
-        jsonSettings.get<std::string>("AxiLiteSPoseX");
-    const std::string offsetPoseY =
-        jsonSettings.get<std::string>("AxiLiteSPoseY");
-    const std::string offsetPoseTheta =
-        jsonSettings.get<std::string>("AxiLiteSPoseTheta");
-    const std::string offsetMapSizeX =
-        jsonSettings.get<std::string>("AxiLiteSMapSizeX");
-    const std::string offsetMapSizeY =
-        jsonSettings.get<std::string>("AxiLiteSMapSizeY");
-    const std::string offsetMapMinX =
-        jsonSettings.get<std::string>("AxiLiteSMapMinX");
-    const std::string offsetMapMinY =
-        jsonSettings.get<std::string>("AxiLiteSMapMinY");
-    const std::string offsetWinX =
-        jsonSettings.get<std::string>("AxiLiteSWinX");
-    const std::string offsetWinY =
-        jsonSettings.get<std::string>("AxiLiteSWinY");
-    const std::string offsetWinTheta =
-        jsonSettings.get<std::string>("AxiLiteSWinTheta");
-    const std::string offsetStepX =
-        jsonSettings.get<std::string>("AxiLiteSStepX");
-    const std::string offsetStepY =
-        jsonSettings.get<std::string>("AxiLiteSStepY");
-    const std::string offsetStepTheta =
-        jsonSettings.get<std::string>("AxiLiteSStepTheta");
+    const auto offsetApCtrl = getString("AxiLiteSApCtrl");
+    const auto offsetGIE = getString("AxiLiteSGIE");
+    const auto offsetIER = getString("AxiLiteSIER");
+    const auto offsetISR = getString("AxiLiteSISR");
+    const auto offsetNumOfScans = getString("AxiLiteSNumOfScans");
+    const auto offsetScanRangeMax = getString("AxiLiteSScanRangeMax");
+    const auto offsetScoreThreshold = getString("AxiLiteSScoreThreshold");
+    const auto offsetPoseX = getString("AxiLiteSPoseX");
+    const auto offsetPoseY = getString("AxiLiteSPoseY");
+    const auto offsetPoseTheta = getString("AxiLiteSPoseTheta");
+    const auto offsetMapSizeX = getString("AxiLiteSMapSizeX");
+    const auto offsetMapSizeY = getString("AxiLiteSMapSizeY");
+    const auto offsetMapMinX = getString("AxiLiteSMapMinX");
+    const auto offsetMapMinY = getString("AxiLiteSMapMinY");
+    const auto offsetWinX = getString("AxiLiteSWinX");
+    const auto offsetWinY = getString("AxiLiteSWinY");
+    const auto offsetWinTheta = getString("AxiLiteSWinTheta");
+    const auto offsetStepX = getString("AxiLiteSStepX");
+    const auto offsetStepY = getString("AxiLiteSStepY");
+    const auto offsetStepTheta = getString("AxiLiteSStepTheta");
 
     /* Set the register offsets */
-    scanMatcherConfig.mAxiLiteSApCtrl = static_cast<std::uint32_t>(
-        std::stoul(offsetApCtrl, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSGIE = static_cast<std::uint32_t>(
-        std::stoul(offsetGIE, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSIER = static_cast<std::uint32_t>(
-        std::stoul(offsetIER, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSISR = static_cast<std::uint32_t>(
-        std::stoul(offsetISR, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSNumOfScans = static_cast<std::uint32_t>(
-        std::stoul(offsetNumOfScans, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSScanRangeMax = static_cast<std::uint32_t>(
-        std::stoul(offsetScanRangeMax, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSScoreThreshold = static_cast<std::uint32_t>(
-        std::stoul(offsetScoreThreshold, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSPoseX = static_cast<std::uint32_t>(
-        std::stoul(offsetPoseX, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSPoseY = static_cast<std::uint32_t>(
-        std::stoul(offsetPoseY, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSPoseTheta = static_cast<std::uint32_t>(
-        std::stoul(offsetPoseTheta, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSMapSizeX = static_cast<std::uint32_t>(
-        std::stoul(offsetMapSizeX, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSMapSizeY = static_cast<std::uint32_t>(
-        std::stoul(offsetMapSizeY, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSMapMinX = static_cast<std::uint32_t>(
-        std::stoul(offsetMapMinX, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSMapMinY = static_cast<std::uint32_t>(
-        std::stoul(offsetMapMinY, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSWinX = static_cast<std::uint32_t>(
-        std::stoul(offsetWinX, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSWinY = static_cast<std::uint32_t>(
-        std::stoul(offsetWinY, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSWinTheta = static_cast<std::uint32_t>(
-        std::stoul(offsetWinTheta, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSStepX = static_cast<std::uint32_t>(
-        std::stoul(offsetStepX, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSStepY = static_cast<std::uint32_t>(
-        std::stoul(offsetStepY, nullptr, 0));
-    scanMatcherConfig.mAxiLiteSStepTheta = static_cast<std::uint32_t>(
-        std::stoul(offsetStepTheta, nullptr, 0));
+    scanMatcherConfig.mAxiLiteSApCtrl = toAddress(offsetApCtrl);
+    scanMatcherConfig.mAxiLiteSGIE = toAddress(offsetGIE);
+    scanMatcherConfig.mAxiLiteSIER = toAddress(offsetIER);
+    scanMatcherConfig.mAxiLiteSISR = toAddress(offsetISR);
+    scanMatcherConfig.mAxiLiteSNumOfScans = toAddress(offsetNumOfScans);
+    scanMatcherConfig.mAxiLiteSScanRangeMax = toAddress(offsetScanRangeMax);
+    scanMatcherConfig.mAxiLiteSScoreThreshold = toAddress(offsetScoreThreshold);
+    scanMatcherConfig.mAxiLiteSPoseX = toAddress(offsetPoseX);
+    scanMatcherConfig.mAxiLiteSPoseY = toAddress(offsetPoseY);
+    scanMatcherConfig.mAxiLiteSPoseTheta = toAddress(offsetPoseTheta);
+    scanMatcherConfig.mAxiLiteSMapSizeX = toAddress(offsetMapSizeX);
+    scanMatcherConfig.mAxiLiteSMapSizeY = toAddress(offsetMapSizeY);
+    scanMatcherConfig.mAxiLiteSMapMinX = toAddress(offsetMapMinX);
+    scanMatcherConfig.mAxiLiteSMapMinY = toAddress(offsetMapMinY);
+    scanMatcherConfig.mAxiLiteSWinX = toAddress(offsetWinX);
+    scanMatcherConfig.mAxiLiteSWinY = toAddress(offsetWinY);
+    scanMatcherConfig.mAxiLiteSWinTheta = toAddress(offsetWinTheta);
+    scanMatcherConfig.mAxiLiteSStepX = toAddress(offsetStepX);
+    scanMatcherConfig.mAxiLiteSStepY = toAddress(offsetStepY);
+    scanMatcherConfig.mAxiLiteSStepTheta = toAddress(offsetStepTheta);
 }
 
 /* Create the real-time correlative-based scan matcher IP core interface */
