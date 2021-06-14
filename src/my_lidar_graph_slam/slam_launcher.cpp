@@ -712,6 +712,8 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelativeFPGA(
     const double knownRateThreshold =
         config.get<double>("KnownRateThreshold");
 
+    const std::string scanMatcherConfigGroup =
+        config.get<std::string>("ScanMatcherConfigGroup");
     const std::string finalScanMatcherType =
         config.get<std::string>("FinalScanMatcherType");
     const std::string finalScanMatcherConfigGroup =
@@ -721,7 +723,7 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelativeFPGA(
     auto pScanMatcher = std::dynamic_pointer_cast<
         Mapping::ScanMatcherCorrelativeFPGA>(
             CreateScanMatcherCorrelativeFPGA(
-                jsonSettings, configGroup));
+                jsonSettings, scanMatcherConfigGroup));
     /* Construct a final scan matcher for refinements */
     auto pFinalScanMatcher = CreateScanMatcher(
         jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
