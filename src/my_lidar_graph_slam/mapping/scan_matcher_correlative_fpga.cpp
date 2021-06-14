@@ -45,45 +45,32 @@ ScanMatcherFPGAMetrics::ScanMatcherFPGAMetrics(
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
+    const auto addCounter = [&](const std::string& metricName) {
+        return pMetricManager->AddCounter(scanMatcherName + metricName); };
+    const auto addDist = [&](const std::string& metricName) {
+        return pMetricManager->AddDistribution(scanMatcherName + metricName); };
+
     /* Register the counter metrics */
-    this->mMapChunks = pMetricManager->AddCounter(
-        scanMatcherName + ".MapChunks");
-    this->mScanTransferSkip = pMetricManager->AddCounter(
-        scanMatcherName + ".ScanTransferSkip");
-    this->mMapTransferSkip = pMetricManager->AddCounter(
-        scanMatcherName + ".MapTransferSkip");
+    this->mMapChunks = addCounter(".MapChunks");
+    this->mScanTransferSkip = addCounter(".ScanTransferSkip");
+    this->mMapTransferSkip = addCounter(".MapTransferSkip");
 
     /* Register the distribution metrics */
-    this->mInputSetupTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".InputSetupTime");
-    this->mSetupIPTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".SetupIPTime");
-    this->mScanSendTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".ScanSendTime");
-    this->mMapSendTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".MapSendTime");
-    this->mOptimizationTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".OptimizationTime");
-    this->mWaitIPTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".WaitIPTime");
-    this->mScanMatchingTime = pMetricManager->AddDistribution(
-        scanMatcherName + ".ScanMatchingTime");
-    this->mDiffTranslation = pMetricManager->AddDistribution(
-        scanMatcherName + ".DiffTranslation");
-    this->mDiffRotation = pMetricManager->AddDistribution(
-        scanMatcherName + ".DiffRotation");
-    this->mWinSizeX = pMetricManager->AddDistribution(
-        scanMatcherName + ".WinSizeX");
-    this->mWinSizeY = pMetricManager->AddDistribution(
-        scanMatcherName + ".WinSizeY");
-    this->mWinSizeTheta = pMetricManager->AddDistribution(
-        scanMatcherName + ".WinSizeTheta");
-    this->mStepSizeX = pMetricManager->AddDistribution(
-        scanMatcherName + ".StepSizeX");
-    this->mStepSizeY = pMetricManager->AddDistribution(
-        scanMatcherName + ".StepSizeY");
-    this->mStepSizeTheta = pMetricManager->AddDistribution(
-        scanMatcherName + ".StepSizeTheta");
+    this->mInputSetupTime = addDist(".InputSetupTime");
+    this->mSetupIPTime = addDist(".SetupIPTime");
+    this->mScanSendTime = addDist(".ScanSendTime");
+    this->mMapSendTime = addDist(".MapSendTime");
+    this->mOptimizationTime = addDist(".OptimizationTime");
+    this->mWaitIPTime = addDist(".WaitIPTime");
+    this->mScanMatchingTime = addDist(".ScanMatchingTime");
+    this->mDiffTranslation = addDist(".DiffTranslation");
+    this->mDiffRotation = addDist(".DiffRotation");
+    this->mWinSizeX = addDist(".WinSizeX");
+    this->mWinSizeY = addDist(".WinSizeY");
+    this->mWinSizeTheta = addDist(".WinSizeTheta");
+    this->mStepSizeX = addDist(".StepSizeX");
+    this->mStepSizeY = addDist(".StepSizeY");
+    this->mStepSizeTheta = addDist(".StepSizeTheta");
 
     /* Register the histogram metrics */
     const Metric::BucketBoundaries mapSizeBuckets =
