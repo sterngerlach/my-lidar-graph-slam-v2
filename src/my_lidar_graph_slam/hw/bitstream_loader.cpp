@@ -60,24 +60,39 @@ std::uint32_t SwapBytes(const std::uint32_t value)
 std::uint8_t ReadUInt8(const char* bitstreamData,
                        const std::size_t dataOffset)
 {
-    return *(reinterpret_cast<const std::uint8_t*>(
-        bitstreamData + dataOffset));
+    const auto* ptr = reinterpret_cast<const std::uint8_t*>(
+        bitstreamData + dataOffset);
+    return *ptr;
 }
 
 /* Read a 16-bit unsigned integer at a specified location */
 std::uint16_t ReadUInt16(const char* bitstreamData,
                          const std::size_t dataOffset)
 {
-    return *(reinterpret_cast<const std::uint16_t*>(
-        bitstreamData + dataOffset));
+    const auto* ptr = reinterpret_cast<const std::uint8_t*>(
+        bitstreamData + dataOffset);
+
+    std::uint16_t value = 0;
+    value |= static_cast<std::uint16_t>(*ptr++);
+    value |= static_cast<std::uint16_t>(*ptr++) << 8;
+
+    return value;
 }
 
 /* Read a 32-bit unsigned integer at a specified location */
 std::uint32_t ReadUInt32(const char* bitstreamData,
                          const std::size_t dataOffset)
 {
-    return *(reinterpret_cast<const std::uint32_t*>(
-        bitstreamData + dataOffset));
+    const auto* ptr = reinterpret_cast<const std::uint8_t*>(
+        bitstreamData + dataOffset);
+
+    std::uint32_t value = 0;
+    value |= static_cast<std::uint32_t>(*ptr++);
+    value |= static_cast<std::uint32_t>(*ptr++) << 8;
+    value |= static_cast<std::uint32_t>(*ptr++) << 16;
+    value |= static_cast<std::uint32_t>(*ptr++) << 24;
+
+    return value;
 }
 
 /* Write a 16-bit unsigned integer at a specified location */
@@ -85,8 +100,10 @@ void WriteUInt16(char* bitstreamData,
                  const std::size_t dataOffset,
                  const std::uint16_t value)
 {
-    *(reinterpret_cast<std::uint16_t*>(
-        bitstreamData + dataOffset)) = value;
+    auto* ptr = reinterpret_cast<std::uint8_t*>(bitstreamData + dataOffset);
+
+    *ptr++ = static_cast<std::uint8_t>((value & 0x00FF));
+    *ptr++ = static_cast<std::uint8_t>((value & 0xFF00) >> 8);
 }
 
 /* Write a 32-bit unsigned integer at a specified location */
@@ -94,8 +111,12 @@ void WriteUInt32(char* bitstreamData,
                  const std::size_t dataOffset,
                  const std::uint32_t value)
 {
-    *(reinterpret_cast<std::uint32_t*>(
-        bitstreamData + dataOffset)) = value;
+    auto* ptr = reinterpret_cast<std::uint8_t*>(bitstreamData + dataOffset);
+
+    *ptr++ = static_cast<std::uint8_t>((value & 0x000000FF));
+    *ptr++ = static_cast<std::uint8_t>((value & 0x0000FF00) >> 8);
+    *ptr++ = static_cast<std::uint8_t>((value & 0x00FF0000) >> 16);
+    *ptr++ = static_cast<std::uint8_t>((value & 0xFF000000) >> 24);
 }
 
 /*
