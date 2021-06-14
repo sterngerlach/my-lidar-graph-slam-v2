@@ -869,6 +869,30 @@ void GridMapBuilder::ComputeMissedGridCellIndices(
     gridCellIndices.pop_back();
 }
 
+/* Compute the indices of the missed grid cells using the Bresenham
+ * algorithm at the subpixel accuracy */
+void GridMapBuilder::ComputeMissedIndicesScaled(
+    const Point2D<int>& scaledStartIdx,
+    const Point2D<int>& scaledEndIdx,
+    const int subpixelScale,
+    std::vector<Point2D<int>>& missedIndices) const
+{
+    /* Clear the grid cell indices */
+    missedIndices.clear();
+    /* Use the Bresenham algorithm at the subpixel accuracy to compute
+     * the indices of the missed grid cells (i.e., raycasting) */
+    BresenhamScaled(scaledStartIdx, scaledEndIdx,
+                    subpixelScale, missedIndices);
+
+    /* Remove the end index since it corresponds to the hit grid cell */
+    const Point2D<int> endIdx { scaledEndIdx.mX / subpixelScale,
+                                scaledEndIdx.mY / subpixelScale };
+    const auto endIt = std::find(missedIndices.begin(),
+                                 missedIndices.end(), endIdx);
+    Assert(endIt != missedIndices.end());
+    missedIndices.erase(endIt);
+}
+
 /*
  * Utility function implementations
  */

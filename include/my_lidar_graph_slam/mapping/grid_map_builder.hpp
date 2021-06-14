@@ -264,6 +264,18 @@ private:
         const Point2D<int>& endGridCellIdx,
         std::vector<Point2D<int>>& gridCellIndices) const;
 
+    /* Compute the indices of the missed grid cells using the Bresenham
+     * algorithm at the subpixel accuracy */
+    void ComputeMissedIndicesScaled(
+        const Point2D<int>& scaledStartIdx,
+        const Point2D<int>& scaledEndIdx,
+        const int subpixelScale,
+        std::vector<Point2D<int>>& missedIndices) const;
+
+private:
+    /* Subpixel scale for computing the missed grid cell indices */
+    static constexpr int SubpixelScale = 100;
+
 private:
     /* Map resolution (in meters) */
     const double                mResolution;
