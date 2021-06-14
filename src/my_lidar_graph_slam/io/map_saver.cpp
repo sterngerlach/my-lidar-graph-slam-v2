@@ -543,16 +543,18 @@ void MapSaver::DrawTrajectory(const gil::rgb8_view_t& mapImageView,
     /* Draw the trajectory lines to the image */
     const RobotPose2D<double> firstPose =
         InverseCompound(gridMapPose, trajectoryPoses.front());
-    Point2D<int> prevGridCellIdx =
-        gridMap->PositionToIndex(firstPose.mX, firstPose.mY);
+    const auto scaledGeometry =
+        gridMap->Geometry().ScaledGeometry(SubpixelScale);
+    Point2D<int> prevIdx = scaledGeometry.PositionToIndex(
+        firstPose.mX, firstPose.mY);
 
     for (std::size_t i = 1; i < trajectoryPoses.size(); ++i) {
         const RobotPose2D<double> trajectoryPose =
             InverseCompound(gridMapPose, trajectoryPoses[i]);
-        const Point2D<int> gridCellIdx =
-            gridMap->PositionToIndex(trajectoryPose.mX, trajectoryPose.mY);
+        const Point2D<int> scaledIdx = scaledGeometry.PositionToIndex(
+            trajectoryPose.mX, trajectoryPose.mY);
         std::vector<Point2D<int>> lineIndices;
-        Bresenham(prevGridCellIdx, gridCellIdx, lineIndices);
+        BresenhamScaled(prevIdx, scaledIdx, SubpixelScale, lineIndices);
 
         for (const auto& interpolatedIdx : lineIndices) {
             if (interpolatedIdx.mX < boundingBox.mMin.mX ||
@@ -568,7 +570,7 @@ void MapSaver::DrawTrajectory(const gil::rgb8_view_t& mapImageView,
             gil::fill_pixels(subView, trajectoryColor);
         }
 
-        prevGridCellIdx = gridCellIdx;
+        prevIdx = scaledIdx;
     }
 }
 
