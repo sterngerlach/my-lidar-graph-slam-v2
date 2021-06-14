@@ -38,6 +38,9 @@ struct GridMapGeometry final
     /* Move assignment operator */
     GridMapGeometry& operator=(GridMapGeometry&&) noexcept = default;
 
+    /* Create the scaled geometry */
+    GridMapGeometry ScaledGeometry(const int subpixelScale) const;
+
     /* Resize the grid map */
     void Resize(const int rowMin, const int colMin,
                 const int rows, const int cols);

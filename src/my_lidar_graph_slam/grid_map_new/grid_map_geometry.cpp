@@ -44,6 +44,21 @@ void GridMapGeometry::Reset()
     this->mPosOffset = Point2D<double>::Zero;
 }
 
+/* Create the scaled geometry */
+GridMapGeometry GridMapGeometry::ScaledGeometry(const int subpixelScale) const
+{
+    GridMapGeometry scaledGeometry;
+
+    scaledGeometry.mResolution = this->mResolution / subpixelScale;
+    scaledGeometry.mRows = this->mRows * subpixelScale;
+    scaledGeometry.mCols = this->mCols * subpixelScale;
+    scaledGeometry.mWidth = this->mWidth;
+    scaledGeometry.mHeight = this->mHeight;
+    scaledGeometry.mPosOffset = this->mPosOffset;
+
+    return scaledGeometry;
+}
+
 /* Resize the grid map given the bounding box (index range) */
 void GridMapGeometry::Resize(const int rowMin, const int colMin,
                              const int rows, const int cols)
