@@ -57,7 +57,7 @@ FrontendMetrics::FrontendMetrics() :
 
     /* Register the value sequence metrics */
     this->mProcessFrame =
-        pMetricManager->AddValueSequenceInt("Frontend.ProcessFrame");
+        pMetricManager->AddValueSequence<int>("Frontend.ProcessFrame");
 }
 
 /* Constructor */

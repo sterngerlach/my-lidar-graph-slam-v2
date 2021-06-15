@@ -26,38 +26,38 @@ struct BackendMetrics
     ~BackendMetrics() = default;
 
     /* Total processing time of the SLAM backend */
-    Metric::CounterBase*       mProcessTime;
+    Metric::CounterBase*            mProcessTime;
     /* Total processing time of the one step of the SLAM backend */
-    Metric::ValueSequenceBase* mProcessStepTime;
+    Metric::ValueSequenceBase<int>* mProcessStepTime;
     /* Total processing time for setting up the loop search */
-    Metric::ValueSequenceBase* mLoopSearchSetupTime;
+    Metric::ValueSequenceBase<int>* mLoopSearchSetupTime;
     /* Total processing time for the loop search */
-    Metric::ValueSequenceBase* mLoopSearchTime;
+    Metric::ValueSequenceBase<int>* mLoopSearchTime;
     /* Total processing time for setting up the loop detection */
-    Metric::ValueSequenceBase* mLoopDetectionSetupTime;
+    Metric::ValueSequenceBase<int>* mLoopDetectionSetupTime;
     /* Total processing time for the loop detection */
-    Metric::ValueSequenceBase* mLoopDetectionTime;
+    Metric::ValueSequenceBase<int>* mLoopDetectionTime;
     /* Total processing time for adding loop constraints to the pose graph */
-    Metric::ValueSequenceBase* mPoseGraphAppendTime;
+    Metric::ValueSequenceBase<int>* mPoseGraphAppendTime;
     /* Total processing time for setting up the pose graph optimization */
-    Metric::ValueSequenceBase* mOptimizationSetupTime;
+    Metric::ValueSequenceBase<int>* mOptimizationSetupTime;
     /* Total processing time for the pose graph optimization */
-    Metric::ValueSequenceBase* mOptimizationTime;
+    Metric::ValueSequenceBase<int>* mOptimizationTime;
     /* Total processing time for updating the pose graph */
-    Metric::ValueSequenceBase* mPoseGraphUpdateTime;
+    Metric::ValueSequenceBase<int>* mPoseGraphUpdateTime;
 
     /* Collections of iteration counters, in that iteration,
      * information for the loop detection was empty */
-    Metric::ValueSequenceBase* mEndAtLoopSearchSetup;
+    Metric::ValueSequenceBase<int>* mEndAtLoopSearchSetup;
     /* Collections of iteration counters, in that iteration,
      * loop candidates were not found */
-    Metric::ValueSequenceBase* mEndAtLoopSearch;
+    Metric::ValueSequenceBase<int>* mEndAtLoopSearch;
     /* Collections of iteration counters, in that iteration,
      * loop was not detected */
-    Metric::ValueSequenceBase* mEndAtLoopDetection;
+    Metric::ValueSequenceBase<int>* mEndAtLoopDetection;
     /* Collections of iteration counters, in that iteration,
      * loop detection and graph optimization were performed */
-    Metric::ValueSequenceBase* mEndAtLoopClosure;
+    Metric::ValueSequenceBase<int>* mEndAtLoopClosure;
 };
 
 class LidarGraphSlamBackend

@@ -44,9 +44,9 @@ GridMapBuilderMetrics::GridMapBuilderMetrics() :
         "GridMapBuilder.LocalMapIntervalTravelDist");
 
     /* Register the value sequence metrics */
-    this->mNumOfLocalMapNodes = pMetricManager->AddValueSequenceInt(
+    this->mNumOfLocalMapNodes = pMetricManager->AddValueSequence<int>(
         "GridMapBuilder.NumOfLocalMapNodes");
-    this->mNumOfEdges = pMetricManager->AddValueSequenceInt(
+    this->mNumOfEdges = pMetricManager->AddValueSequence<int>(
         "GridMapBuilder.NumOfEdges");
 }
 

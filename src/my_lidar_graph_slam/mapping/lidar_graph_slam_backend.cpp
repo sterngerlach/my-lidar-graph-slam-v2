@@ -29,32 +29,32 @@ BackendMetrics::BackendMetrics() :
     this->mProcessTime = pMetricManager->AddCounter("Backend.ProcessTime");
 
     /* Register the value sequence metrics */
-    this->mProcessStepTime = pMetricManager->AddValueSequenceInt(
+    this->mProcessStepTime = pMetricManager->AddValueSequence<int>(
         "Backend.ProcessStepTime");
-    this->mLoopSearchSetupTime = pMetricManager->AddValueSequenceInt(
+    this->mLoopSearchSetupTime = pMetricManager->AddValueSequence<int>(
         "Backend.LoopSearchSetupTime");
-    this->mLoopSearchTime = pMetricManager->AddValueSequenceInt(
+    this->mLoopSearchTime = pMetricManager->AddValueSequence<int>(
         "Backend.LoopSearchTime");
-    this->mLoopDetectionSetupTime = pMetricManager->AddValueSequenceInt(
+    this->mLoopDetectionSetupTime = pMetricManager->AddValueSequence<int>(
         "Backend.LoopDetectionSetupTime");
-    this->mLoopDetectionTime = pMetricManager->AddValueSequenceInt(
+    this->mLoopDetectionTime = pMetricManager->AddValueSequence<int>(
         "Backend.LoopDetectionTime");
-    this->mPoseGraphAppendTime = pMetricManager->AddValueSequenceInt(
+    this->mPoseGraphAppendTime = pMetricManager->AddValueSequence<int>(
         "Backend.PoseGraphAppendTime");
-    this->mOptimizationSetupTime = pMetricManager->AddValueSequenceInt(
+    this->mOptimizationSetupTime = pMetricManager->AddValueSequence<int>(
         "Backend.OptimizationSetupTime");
-    this->mOptimizationTime = pMetricManager->AddValueSequenceInt(
+    this->mOptimizationTime = pMetricManager->AddValueSequence<int>(
         "Backend.OptimizationTime");
-    this->mPoseGraphUpdateTime = pMetricManager->AddValueSequenceInt(
+    this->mPoseGraphUpdateTime = pMetricManager->AddValueSequence<int>(
         "Backend.PoseGraphUpdateTime");
 
-    this->mEndAtLoopSearchSetup = pMetricManager->AddValueSequenceInt(
+    this->mEndAtLoopSearchSetup = pMetricManager->AddValueSequence<int>(
         "Backend.EndAtLoopSearchSetup");
-    this->mEndAtLoopSearch = pMetricManager->AddValueSequenceInt(
+    this->mEndAtLoopSearch = pMetricManager->AddValueSequence<int>(
         "Backend.EndAtLoopSearch");
-    this->mEndAtLoopDetection = pMetricManager->AddValueSequenceInt(
+    this->mEndAtLoopDetection = pMetricManager->AddValueSequence<int>(
         "Backend.EndAtLoopDetection");
-    this->mEndAtLoopClosure = pMetricManager->AddValueSequenceInt(
+    this->mEndAtLoopClosure = pMetricManager->AddValueSequence<int>(
         "Backend.EndAtLoopClosure");
 }
 

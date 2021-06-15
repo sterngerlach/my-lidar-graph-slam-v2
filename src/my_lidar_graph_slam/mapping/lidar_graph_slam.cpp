@@ -25,7 +25,7 @@ LidarGraphSlamMetrics::LidarGraphSlamMetrics() :
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
     /* Register the value sequence metrics */
-    this->mNumOfNewLoopEdges = pMetricManager->AddValueSequenceInt(
+    this->mNumOfNewLoopEdges = pMetricManager->AddValueSequence<int>(
         "LidarGraphSlam.NumOfNewLoopEdges");
 }
 

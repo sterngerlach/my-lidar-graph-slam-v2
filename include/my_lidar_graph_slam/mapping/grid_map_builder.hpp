@@ -26,17 +26,17 @@ struct GridMapBuilderMetrics
     ~GridMapBuilderMetrics() = default;
 
     /* Total processing time for updating the pose graph */
-    Metric::DistributionBase*  mPoseGraphUpdateTime;
+    Metric::DistributionBase*       mPoseGraphUpdateTime;
     /* Total processing time for updating the local grid map */
-    Metric::DistributionBase*  mLocalMapUpdateTime;
+    Metric::DistributionBase*       mLocalMapUpdateTime;
     /* Total processing time for updating the latest grid map */
-    Metric::DistributionBase*  mLatestMapUpdateTime;
+    Metric::DistributionBase*       mLatestMapUpdateTime;
     /* Travel distance since the last local map is created */
-    Metric::DistributionBase*  mLocalMapIntervalTravelDist;
+    Metric::DistributionBase*       mLocalMapIntervalTravelDist;
     /* Number of the local map nodes in the pose graph */
-    Metric::ValueSequenceBase* mNumOfLocalMapNodes;
+    Metric::ValueSequenceBase<int>* mNumOfLocalMapNodes;
     /* Number of the edges in the pose graph */
-    Metric::ValueSequenceBase* mNumOfEdges;
+    Metric::ValueSequenceBase<int>* mNumOfEdges;
 };
 
 /*

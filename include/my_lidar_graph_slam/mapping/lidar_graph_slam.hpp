@@ -37,7 +37,7 @@ struct LidarGraphSlamMetrics
     ~LidarGraphSlamMetrics() = default;
 
     /* Number of the loop constraints added to the pose graph */
-    Metric::ValueSequenceBase* mNumOfNewLoopEdges;
+    Metric::ValueSequenceBase<int>* mNumOfNewLoopEdges;
 };
 
 /* Type definitions for convenience */
