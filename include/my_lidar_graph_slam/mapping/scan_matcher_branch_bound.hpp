@@ -27,35 +27,35 @@ struct ScanMatcherBranchBoundMetrics
     ~ScanMatcherBranchBoundMetrics() = default;
 
     /* Total processing time for setting up the input */
-    Metric::DistributionBase*  mInputSetupTime;
+    Metric::DistributionBase*         mInputSetupTime;
     /* Total processing time for the optimization */
-    Metric::DistributionBase*  mOptimizationTime;
+    Metric::DistributionBase*         mOptimizationTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*  mDiffTranslation;
+    Metric::DistributionBase*         mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*  mDiffRotation;
+    Metric::DistributionBase*         mDiffRotation;
     /* Size of the search window along the X-axis */
-    Metric::DistributionBase*  mWinSizeX;
+    Metric::DistributionBase*         mWinSizeX;
     /* Size of the search window along the Y-axis */
-    Metric::DistributionBase*  mWinSizeY;
+    Metric::DistributionBase*         mWinSizeY;
     /* Size of the search window along the Theta-axis */
-    Metric::DistributionBase*  mWinSizeTheta;
+    Metric::DistributionBase*         mWinSizeTheta;
     /* Step size along the X-axis */
-    Metric::DistributionBase*  mStepSizeX;
+    Metric::DistributionBase*         mStepSizeX;
     /* Step size along the Y-axis */
-    Metric::DistributionBase*  mStepSizeY;
+    Metric::DistributionBase*         mStepSizeY;
     /* Step size along the Theta-axis */
-    Metric::DistributionBase*  mStepSizeTheta;
+    Metric::DistributionBase*         mStepSizeTheta;
     /* Total number of the ignored nodes */
-    Metric::CounterBase*       mNumOfIgnoredNodes;
+    Metric::CounterBase*              mNumOfIgnoredNodes;
     /* Total number of the processed nodes */
-    Metric::CounterBase*       mNumOfProcessedNodes;
+    Metric::CounterBase*              mNumOfProcessedNodes;
     /* Normalized score value of the best solution */
-    Metric::ValueSequenceBase* mScoreValue;
+    Metric::ValueSequenceBase<float>* mScoreValue;
     /* Normalized cost value of the best solution */
-    Metric::ValueSequenceBase* mCostValue;
+    Metric::ValueSequenceBase<float>* mCostValue;
     /* Number of the scan points in the given scan */
-    Metric::ValueSequenceBase* mNumOfScans;
+    Metric::ValueSequenceBase<int>*   mNumOfScans;
 };
 
 class ScanMatcherBranchBound final : public ScanMatcher

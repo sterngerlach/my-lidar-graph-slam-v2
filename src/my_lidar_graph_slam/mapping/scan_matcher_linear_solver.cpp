@@ -34,13 +34,13 @@ ScanMatcherLinearSolverMetrics::ScanMatcherLinearSolverMetrics(
         scanMatcherName + ".DiffRotation");
 
     /* Register the value sequence metrics */
-    this->mNumOfIterations = pMetricManager->AddValueSequenceInt(
+    this->mNumOfIterations = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfIterations");
-    this->mInitialCost = pMetricManager->AddValueSequenceFloat(
+    this->mInitialCost = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".InitialCost");
-    this->mFinalCost = pMetricManager->AddValueSequenceFloat(
+    this->mFinalCost = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".FinalCost");
-    this->mNumOfScans = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScans = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfScans");
 }
 

@@ -24,21 +24,21 @@ struct ScanMatcherGridSearchMetrics
     ~ScanMatcherGridSearchMetrics() = default;
 
     /* Total processing time for the optimization */
-    Metric::DistributionBase*  mOptimizationTime;
+    Metric::DistributionBase*         mOptimizationTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*  mDiffTranslation;
+    Metric::DistributionBase*         mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*  mDiffRotation;
+    Metric::DistributionBase*         mDiffRotation;
     /* Total number of the score evaluations */
-    Metric::ValueSequenceBase* mNumOfScoreEvaluations;
+    Metric::ValueSequenceBase<int>*   mNumOfScoreEvaluations;
     /* Total number of the score updates */
-    Metric::ValueSequenceBase* mNumOfScoreUpdates;
+    Metric::ValueSequenceBase<int>*   mNumOfScoreUpdates;
     /* Normalized score value of the best solution */
-    Metric::ValueSequenceBase* mScoreValue;
+    Metric::ValueSequenceBase<float>* mScoreValue;
     /* Normalized cost value of the best solution */
-    Metric::ValueSequenceBase* mCostValue;
+    Metric::ValueSequenceBase<float>* mCostValue;
     /* Number of the scan points in the given scan */
-    Metric::ValueSequenceBase* mNumOfScans;
+    Metric::ValueSequenceBase<int>*   mNumOfScans;
 };
 
 class ScanMatcherGridSearch final : public ScanMatcher

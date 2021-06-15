@@ -81,11 +81,11 @@ ScanMatcherFPGAMetrics::ScanMatcherFPGAMetrics(
         scanMatcherName + ".MapSizeY", mapSizeBuckets);
 
     /* Register the value sequence metrics */
-    this->mScoreValue = pMetricManager->AddValueSequenceFloat(
+    this->mScoreValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".ScoreValue");
-    this->mCostValue = pMetricManager->AddValueSequenceFloat(
+    this->mCostValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".CostValue");
-    this->mNumOfTransferredScans = pMetricManager->AddValueSequenceInt(
+    this->mNumOfTransferredScans = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfTransferredScans");
 }
 

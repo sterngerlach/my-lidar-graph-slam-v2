@@ -21,19 +21,19 @@ struct ScanMatcherLinearSolverMetrics
     ~ScanMatcherLinearSolverMetrics() = default;
 
     /* Total processing time for the optimization */
-    Metric::DistributionBase*  mOptimizationTime;
+    Metric::DistributionBase*         mOptimizationTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*  mDiffTranslation;
+    Metric::DistributionBase*         mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*  mDiffRotation;
+    Metric::DistributionBase*         mDiffRotation;
     /* Total number of the iterations */
-    Metric::ValueSequenceBase* mNumOfIterations;
+    Metric::ValueSequenceBase<int>*   mNumOfIterations;
     /* Initial normalized cost value */
-    Metric::ValueSequenceBase* mInitialCost;
+    Metric::ValueSequenceBase<float>* mInitialCost;
     /* Final normalized cost value */
-    Metric::ValueSequenceBase* mFinalCost;
+    Metric::ValueSequenceBase<float>* mFinalCost;
     /* Number of the scan points in the given scan */
-    Metric::ValueSequenceBase* mNumOfScans;
+    Metric::ValueSequenceBase<int>*   mNumOfScans;
 };
 
 class ScanMatcherLinearSolver final : public ScanMatcher

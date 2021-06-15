@@ -58,11 +58,11 @@ ScanMatcherBranchBoundMetrics::ScanMatcherBranchBoundMetrics(
         scanMatcherName + ".StepSizeTheta");
 
     /* Register the value sequence metrics */
-    this->mScoreValue = pMetricManager->AddValueSequenceFloat(
+    this->mScoreValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".ScoreValue");
-    this->mCostValue = pMetricManager->AddValueSequenceFloat(
+    this->mCostValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".CostValue");
-    this->mNumOfScans = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScans = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfScans");
 }
 

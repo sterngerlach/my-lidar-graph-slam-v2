@@ -30,15 +30,15 @@ ScanMatcherGridSearchMetrics::ScanMatcherGridSearchMetrics(
         scanMatcherName + ".DiffRotation");
 
     /* Register the value sequence metrics */
-    this->mNumOfScoreEvaluations = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScoreEvaluations = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfScoreEvaluations");
-    this->mNumOfScoreUpdates = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScoreUpdates = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfScoreUpdates");
-    this->mScoreValue = pMetricManager->AddValueSequenceFloat(
+    this->mScoreValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".ScoreValue");
-    this->mCostValue = pMetricManager->AddValueSequenceFloat(
+    this->mCostValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".CostValue");
-    this->mNumOfScans = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScans = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfScans");
 }
 
