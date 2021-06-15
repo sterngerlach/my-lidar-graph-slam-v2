@@ -19,11 +19,11 @@ LoopSearcherNearestMetrics::LoopSearcherNearestMetrics() :
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
     /* Register the value sequence metrics */
-    this->mAccumTravelDist = pMetricManager->AddValueSequenceFloat(
+    this->mAccumTravelDist = pMetricManager->AddValueSequence<float>(
         "LoopSearcherNearest.AccumTravelDist");
-    this->mNodeDist = pMetricManager->AddValueSequenceFloat(
+    this->mNodeDist = pMetricManager->AddValueSequence<float>(
         "LoopSearcherNearest.NodeDist");
-    this->mNumOfCandidateNodes = pMetricManager->AddValueSequenceInt(
+    this->mNumOfCandidateNodes = pMetricManager->AddValueSequence<int>(
         "LoopSearcherNearest.NumOfCandidateNodes");
 }
 

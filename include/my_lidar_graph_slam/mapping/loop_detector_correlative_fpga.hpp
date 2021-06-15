@@ -20,11 +20,11 @@ struct LoopDetectorFPGAMetrics
     ~LoopDetectorFPGAMetrics() = default;
 
     /* Total processing time for loop detection */
-    Metric::DistributionBase*  mLoopDetectionTime;
+    Metric::DistributionBase*       mLoopDetectionTime;
     /* Number of the loop detection queries */
-    Metric::ValueSequenceBase* mNumOfQueries;
+    Metric::ValueSequenceBase<int>* mNumOfQueries;
     /* Number of the successful loop detections */
-    Metric::ValueSequenceBase* mNumOfDetections;
+    Metric::ValueSequenceBase<int>* mNumOfDetections;
 };
 
 class LoopDetectorCorrelativeFPGA final : public LoopDetector

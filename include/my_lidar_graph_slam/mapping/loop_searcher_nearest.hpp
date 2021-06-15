@@ -18,12 +18,12 @@ struct LoopSearcherNearestMetrics
     ~LoopSearcherNearestMetrics() = default;
 
     /* Accumulated travel distance of the robot */
-    Metric::ValueSequenceBase* mAccumTravelDist;
+    Metric::ValueSequenceBase<float>* mAccumTravelDist;
     /* Distance from the query scan node in the last finished local map to
      * the scan node in the reference local map */
-    Metric::ValueSequenceBase* mNodeDist;
+    Metric::ValueSequenceBase<float>* mNodeDist;
     /* Number of the query scan nodes (0 if not found) */
-    Metric::ValueSequenceBase* mNumOfCandidateNodes;
+    Metric::ValueSequenceBase<int>*   mNumOfCandidateNodes;
 };
 
 class LoopSearcherNearest final : public LoopSearcher

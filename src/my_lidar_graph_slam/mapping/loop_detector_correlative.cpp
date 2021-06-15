@@ -29,9 +29,9 @@ LoopDetectorCorrelativeMetrics::LoopDetectorCorrelativeMetrics(
         loopDetectorName + ".LoopDetectionTime");
 
     /* Register the value sequence metrics */
-    this->mNumOfQueries = pMetricManager->AddValueSequenceInt(
+    this->mNumOfQueries = pMetricManager->AddValueSequence<int>(
         loopDetectorName + ".NumOfQueries");
-    this->mNumOfDetections = pMetricManager->AddValueSequenceInt(
+    this->mNumOfDetections = pMetricManager->AddValueSequence<int>(
         loopDetectorName + ".NumOfDetections");
 }
 

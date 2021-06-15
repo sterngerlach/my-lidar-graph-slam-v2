@@ -29,13 +29,13 @@ struct LoopDetectorBranchBoundMetrics
     ~LoopDetectorBranchBoundMetrics() = default;
 
     /* Total processing time for grid map precomputations */
-    Metric::DistributionBase*  mInputSetupTime;
+    Metric::DistributionBase*       mInputSetupTime;
     /* Total processing time for loop detection */
-    Metric::DistributionBase*  mLoopDetectionTime;
+    Metric::DistributionBase*       mLoopDetectionTime;
     /* Number of the loop detection queries */
-    Metric::ValueSequenceBase* mNumOfQueries;
+    Metric::ValueSequenceBase<int>* mNumOfQueries;
     /* Number of the successful loop detections */
-    Metric::ValueSequenceBase* mNumOfDetections;
+    Metric::ValueSequenceBase<int>* mNumOfDetections;
 };
 
 class LoopDetectorBranchBound final : public LoopDetector
