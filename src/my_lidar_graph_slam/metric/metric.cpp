@@ -583,22 +583,25 @@ MetricManager::ptree MetricManager::ToPropertyTree() const
 /* Append the counter metric */
 CounterBase* MetricManager::AddCounter(const std::string& metricName)
 {
-    this->mCounterMetrics.Append(new Counter(metricName));
-    return this->mCounterMetrics(metricName);
+    auto* counter = new Counter(metricName);
+    this->Append(this->mCounters, counter);
+    return counter;
 }
 
 /* Append the gauge metric */
 GaugeBase* MetricManager::AddGauge(const std::string& metricName)
 {
-    this->mGaugeMetrics.Append(new Gauge(metricName));
-    return this->mGaugeMetrics(metricName);
+    auto* gauge = new Gauge(metricName);
+    this->Append(this->mGauges, gauge);
+    return gauge;
 }
 
 /* Append the distribution metric */
 DistributionBase* MetricManager::AddDistribution(const std::string& metricName)
 {
-    this->mDistributionMetrics.Append(new Distribution(metricName));
-    return this->mDistributionMetrics(metricName);
+    auto* dist = new Distribution(metricName);
+    this->Append(this->mDists, dist);
+    return dist;
 }
 
 /* Append the histogram metric */
@@ -606,40 +609,19 @@ HistogramBase* MetricManager::AddHistogram(
     const std::string& metricName,
     const BucketBoundaries& bucketBoundaries)
 {
-    this->mHistogramMetrics.Append(new Histogram(metricName, bucketBoundaries));
-    return this->mHistogramMetrics(metricName);
+    auto* hist = new Histogram(metricName, bucketBoundaries);
+    this->Append(this->mHists, hist);
+    return hist;
 }
 
 /* Append the value sequence metric */
-ValueSequenceBase* MetricManager::AddValueSequenceDouble(
+template <typename T>
+ValueSequenceBase<T>* MetricManager::AddValueSequence(
     const std::string& metricName)
 {
-    this->mValueSequenceMetrics.Append(new ValueSequence<double>(metricName));
-    return this->mValueSequenceMetrics(metricName);
-}
-
-/* Append the value sequence metric */
-ValueSequenceBase* MetricManager::AddValueSequenceFloat(
-    const std::string& metricName)
-{
-    this->mValueSequenceMetrics.Append(new ValueSequence<float>(metricName));
-    return this->mValueSequenceMetrics(metricName);
-}
-
-/* Append the value sequence metric */
-ValueSequenceBase* MetricManager::AddValueSequenceInt(
-    const std::string& metricName)
-{
-    this->mValueSequenceMetrics.Append(new ValueSequence<int>(metricName));
-    return this->mValueSequenceMetrics(metricName);
-}
-
-/* Append the value sequence metric */
-ValueSequenceBase* MetricManager::AddValueSequenceBool(
-    const std::string& metricName)
-{
-    this->mValueSequenceMetrics.Append(new ValueSequence<bool>(metricName));
-    return this->mValueSequenceMetrics(metricName);
+    auto* valueSeq = new ValueSequence<T>(metricName);
+    this->Append(this->mValueSeqs, valueSeq);
+    return valueSeq;
 }
 
 } /* namespace Metric */
