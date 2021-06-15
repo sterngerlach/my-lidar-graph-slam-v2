@@ -631,33 +631,35 @@ public:
     ptree ToPropertyTree() const;
 
     /* Retrieve the counter metrics */
-    inline const CounterBase* Counter(const std::string& metricId) const;
+    inline const CounterBase* CounterMetric(const std::string& metricId) const;
     /* Retrieve the counter metrics */
-    inline CounterBase* Counter(const std::string& metricId);
+    inline CounterBase* CounterMetric(const std::string& metricId);
 
     /* Retrieve the gauge metrics */
-    inline const GaugeBase* Gauge(const std::string& metricId) const;
+    inline const GaugeBase* GaugeMetric(const std::string& metricId) const;
     /* Retrieve the gauge metrics */
-    inline GaugeBase* Gauge(const std::string& metricId);
+    inline GaugeBase* GaugeMetric(const std::string& metricId);
 
     /* Retrieve the distribution metrics */
-    inline const DistributionBase* Distribution(
+    inline const DistributionBase* DistributionMetric(
         const std::string& metricId) const;
     /* Retrieve the distribution metrics */
-    inline DistributionBase* Distribution(const std::string& metricId);
+    inline DistributionBase* DistributionMetric(const std::string& metricId);
 
     /* Retrieve the histogram metrics */
-    inline const HistogramBase* Histogram(const std::string& metricId) const;
+    inline const HistogramBase* HistogramMetric(
+        const std::string& metricId) const;
     /* Retrieve the histogram metrics */
-    inline HistogramBase* Histogram(const std::string& metricId);
+    inline HistogramBase* HistogramMetric(const std::string& metricId);
 
     /* Retrieve the value sequence metrics */
     template <typename T>
-    inline const ValueSequenceBase<T>* ValueSequence(
+    inline const ValueSequenceBase<T>* ValueSequenceMetric(
         const std::string& metricId) const;
     /* Retrieve the value sequence metrics */
     template <typename T>
-    inline ValueSequenceBase<T>* ValueSequence(const std::string& metricId);
+    inline ValueSequenceBase<T>* ValueSequenceMetric(
+        const std::string& metricId);
 
     /* Append the counter metric */
     CounterBase* AddCounter(const std::string& metricName);
@@ -700,7 +702,8 @@ private:
 };
 
 /* Retrieve the counter metrics */
-const CounterBase* MetricManager::Counter(const std::string& metricId) const
+const CounterBase* MetricManager::CounterMetric(
+    const std::string& metricId) const
 {
     static const auto nullCounter = std::make_unique<NullCounter>();
     const MetricBase* metric = this->Find(this->mCounters, metricId);
@@ -714,14 +717,14 @@ const CounterBase* MetricManager::Counter(const std::string& metricId) const
 }
 
 /* Retrieve the counter metrics */
-CounterBase* MetricManager::Counter(const std::string& metricId)
+CounterBase* MetricManager::CounterMetric(const std::string& metricId)
 {
-    return const_cast<CounterBase*>(
-        static_cast<const MetricManager*>(this)->Counter(metricId));
+    const auto* constThis = this;
+    return const_cast<CounterBase*>(constThis->CounterMetric(metricId));
 }
 
 /* Retrieve the gauge metrics */
-const GaugeBase* MetricManager::Gauge(const std::string& metricId) const
+const GaugeBase* MetricManager::GaugeMetric(const std::string& metricId) const
 {
     static const auto nullGauge = std::make_unique<NullGauge>();
     const MetricBase* metric = this->Find(this->mGauges, metricId);
@@ -735,14 +738,14 @@ const GaugeBase* MetricManager::Gauge(const std::string& metricId) const
 }
 
 /* Retrieve the gauge metrics */
-GaugeBase* MetricManager::Gauge(const std::string& metricId)
+GaugeBase* MetricManager::GaugeMetric(const std::string& metricId)
 {
-    return const_cast<GaugeBase*>(
-        static_cast<const MetricManager*>(this)->Gauge(metricId));
+    const auto* constThis = this;
+    return const_cast<GaugeBase*>(constThis->GaugeMetric(metricId));
 }
 
 /* Retrieve the distribution metrics */
-const DistributionBase* MetricManager::Distribution(
+const DistributionBase* MetricManager::DistributionMetric(
     const std::string& metricId) const
 {
     static const auto nullDist = std::make_unique<NullDistribution>();
@@ -757,15 +760,16 @@ const DistributionBase* MetricManager::Distribution(
 }
 
 /* Retrieve the distribution metrics */
-DistributionBase* MetricManager::Distribution(
+DistributionBase* MetricManager::DistributionMetric(
     const std::string& metricId)
 {
+    const auto* constThis = this;
     return const_cast<DistributionBase*>(
-        static_cast<const MetricManager*>(this)->Distribution(metricId));
+        constThis->DistributionMetric(metricId));
 }
 
 /* Retrieve the histogram metrics */
-const HistogramBase* MetricManager::Histogram(
+const HistogramBase* MetricManager::HistogramMetric(
     const std::string& metricId) const
 {
     static const auto nullHist = std::make_unique<NullHistogram>();
@@ -780,16 +784,17 @@ const HistogramBase* MetricManager::Histogram(
 }
 
 /* Retrieve the histogram metrics */
-HistogramBase* MetricManager::Histogram(
+HistogramBase* MetricManager::HistogramMetric(
     const std::string& metricId)
 {
+    const auto* constThis = this;
     return const_cast<HistogramBase*>(
-        static_cast<const MetricManager*>(this)->Histogram(metricId));
+        constThis->HistogramMetric(metricId));
 }
 
 /* Retrieve the value sequence metrics */
 template <typename T>
-const ValueSequenceBase<T>* MetricManager::ValueSequence(
+const ValueSequenceBase<T>* MetricManager::ValueSequenceMetric(
     const std::string& metricId) const
 {
     static const auto nullValueSeq = std::make_unique<NullValueSequence<T>>();
@@ -805,11 +810,12 @@ const ValueSequenceBase<T>* MetricManager::ValueSequence(
 
 /* Retrieve the value sequence metrics */
 template <typename T>
-ValueSequenceBase<T>* MetricManager::ValueSequence(
+ValueSequenceBase<T>* MetricManager::ValueSequenceMetric(
     const std::string& metricId)
 {
+    const auto* constThis = this;
     return const_cast<ValueSequenceBase<T>*>(
-        static_cast<const MetricManager*>(this)->ValueSequence<T>(metricId));
+        constThis->ValueSequenceMetric<T>(metricId));
 }
 
 struct Timer
