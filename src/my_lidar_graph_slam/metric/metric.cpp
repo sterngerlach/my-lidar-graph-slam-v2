@@ -391,67 +391,6 @@ void Histogram::Dump(std::ostream& outStream, bool isVerbose) const
 }
 
 /*
- * MetricFamily class implementations
- */
-
-/* Append the new metric */
-template <typename T>
-void MetricFamily<T>::Append(T* pMetric)
-{
-    const auto metricIt = std::find_if(
-        this->mMetrics.cbegin(), this->mMetrics.cend(),
-        [pMetric](const std::unique_ptr<T>& m) {
-            return m->Id() == pMetric->Id(); });
-    assert(metricIt == this->mMetrics.end());
-    static_cast<void>(metricIt);
-    this->mMetrics.push_back(std::unique_ptr<T>(pMetric));
-}
-
-/* Remove the metric */
-template <typename T>
-void MetricFamily<T>::Remove(const std::string& metricId)
-{
-    const auto metricIt = std::find_if(
-        this->mMetrics.cbegin(), this->mMetrics.cend(),
-        [metricId](const std::unique_ptr<T>& m) {
-            return m->Id() == metricId; });
-    assert(metricIt != this->mMetrics.end());
-    this->mMetrics.erase(metricIt);
-}
-
-/* Retrieve the specified metric object */
-template <typename T>
-const T* MetricFamily<T>::Metric(const std::string& metricId) const
-{
-    const auto metricIt = std::find_if(
-        this->mMetrics.cbegin(), this->mMetrics.cend(),
-        [metricId](const std::unique_ptr<T>& m) {
-            return m->Id() == metricId; });
-
-    if (metricIt == this->mMetrics.end())
-        return this->mNullMetric.get();
-
-    const auto metricIdx = static_cast<std::size_t>(
-        std::distance(this->mMetrics.cbegin(), metricIt));
-    return this->mMetrics.at(metricIdx).get();
-}
-
-/* Retrieve the specified metric object */
-template <typename T>
-T* MetricFamily<T>::Metric(const std::string& metricId)
-{
-    return const_cast<T*>(
-        static_cast<const MetricFamily<T>&>(*this).Metric(metricId));
-}
-
-/* Template class declarations */
-template class MetricFamily<CounterBase>;
-template class MetricFamily<GaugeBase>;
-template class MetricFamily<DistributionBase>;
-template class MetricFamily<HistogramBase>;
-template class MetricFamily<ValueSequenceBase>;
-
-/*
  * MetricManager class implementations
  */
 

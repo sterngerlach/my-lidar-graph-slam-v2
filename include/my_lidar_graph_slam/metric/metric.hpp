@@ -600,52 +600,6 @@ void ValueSequence<T>::Dump(std::ostream& outStream) const
     outStream << Join(this->mValues, ", ") << '\n';
 }
 
-template <typename T>
-class MetricFamily final : public MetricBase
-{
-public:
-    /* Constructor */
-    MetricFamily(const std::string& metricId,
-                 T* pNullMetric) :
-        MetricBase(MetricType::MetricFamily, metricId),
-        mNullMetric(pNullMetric) { }
-    /* Destructor */
-    ~MetricFamily() = default;
-
-    /* Append the new metric */
-    void Append(T* pMetric);
-    /* Remove the metric */
-    void Remove(const std::string& metricId);
-
-    /* Retrieve the number of the metrics */
-    inline std::size_t NumOfMetrics() const
-    { return this->mMetrics.size(); }
-    /* Retrieve the metric at a specified index */
-    inline const T* MetricAt(std::size_t metricIdx) const
-    { return this->mMetrics.at(metricIdx).get(); }
-    /* Retrieve the metric at a specified index */
-    T* MetricAt(std::size_t metricIdx)
-    { return this->mMetrics.at(metricIdx).get(); }
-
-    /* Retrieve the specified metric object */
-    const T* Metric(const std::string& metricId) const;
-    /* Retrieve the specified metric object */
-    T* Metric(const std::string& metricId);
-
-    /* Retrieve the specified metric object */
-    const T* operator()(const std::string& metricId) const
-    { return this->Metric(metricId); }
-    /* Retrieve the specified metric object */
-    T* operator()(const std::string& metricId)
-    { return this->Metric(metricId); }
-
-private:
-    /* List of the metric Ids and metric objects */
-    std::vector<std::unique_ptr<T>> mMetrics;
-    /* Null metric */
-    std::unique_ptr<T>              mNullMetric;
-};
-
 class MetricManager final
 {
 private:
