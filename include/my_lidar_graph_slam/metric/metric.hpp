@@ -480,6 +480,7 @@ private:
     mutable std::shared_mutex mMutex;
 };
 
+template <typename T>
 class ValueSequenceBase : public MetricBase
 {
 public:
@@ -493,18 +494,21 @@ public:
     virtual void Reset() = 0;
 
     /* Observe the value and append to the sequence */
-    virtual void Observe(double val) = 0;
+    virtual void Observe(T val) = 0;
 
     /* Retrieve the number of data points */
     virtual std::size_t NumOfValues() const = 0;
+    /* Retrieve the values */
+    virtual const std::vector<T>* Values() const = 0;
     /* Retrieve the value in the container */
-    virtual double ValueAt(std::size_t valueIdx) const = 0;
+    virtual T ValueAt(std::size_t valueIdx) const = 0;
 
     /* Dump the value sequence object */
     virtual void Dump(std::ostream& outStream) const = 0;
 };
 
-class NullValueSequence final : public ValueSequenceBase
+template <typename T>
+class NullValueSequence final : public ValueSequenceBase<T>
 {
 public:
     /* Constructor */
@@ -516,19 +520,21 @@ public:
     void Reset() override { }
 
     /* Observe the value and append to the sequence */
-    void Observe(double) override { }
+    void Observe(T) override { }
 
     /* Retrieve the number of data points */
     std::size_t NumOfValues() const override { return 0; }
+    /* Retrieve the values */
+    const std::vector<T>* Values() const override { return nullptr; }
     /* Retrieve the value in the container */
-    double ValueAt(std::size_t) const override { return 0.0; }
+    T ValueAt(std::size_t) const override { return {}; }
 
     /* Dump the value sequence object */
     void Dump(std::ostream&) const override { }
 };
 
 template <typename T>
-class ValueSequence final : public ValueSequenceBase
+class ValueSequence final : public ValueSequenceBase<T>
 {
 public:
     /* Constructor */
@@ -541,12 +547,17 @@ public:
     void Reset() override;
 
     /* Observe the value and append to the sequence */
-    void Observe(double val) override;
+    void Observe(T val) override;
 
     /* Retrieve the number of data points */
-    std::size_t NumOfValues() const override;
+    std::size_t NumOfValues() const override
+    { return this->mValues.size(); }
+    /* Retrieve the values */
+    const std::vector<T>* Values() const override
+    { return &this->mValues; }
     /* Retrieve the value in the container */
-    double ValueAt(std::size_t valueIdx) const override;
+    T ValueAt(std::size_t valueIdx) const override
+    { return this->mValues.at(valueIdx); }
 
     /* Dump the value sequence object */
     void Dump(std::ostream& outStream) const override;
@@ -557,6 +568,37 @@ private:
     /* Shared mutex */
     mutable std::shared_mutex mMutex;
 };
+
+/*
+ * ValueSequence class implementations
+ */
+
+/* Reset the value sequence */
+template <typename T>
+void ValueSequence<T>::Reset()
+{
+    std::lock_guard<std::shared_mutex> lock { this->mMutex };
+    this->mValues.clear();
+}
+
+/* Observe the value and append to the sequence */
+template <typename T>
+void ValueSequence<T>::Observe(T val)
+{
+    std::lock_guard<std::shared_mutex> lock { this->mMutex };
+    this->mValues.push_back(static_cast<T>(val));
+}
+
+/* Dump the value sequence object */
+template <typename T>
+void ValueSequence<T>::Dump(std::ostream& outStream) const
+{
+    std::shared_lock<std::shared_mutex> lock { this->mMutex };
+
+    outStream << "ValueSequence Id: " << this->mId << ", "
+              << "Number of samples: " << this->mValues.size() << '\n';
+    outStream << Join(this->mValues, ", ") << '\n';
+}
 
 template <typename T>
 class MetricFamily final : public MetricBase

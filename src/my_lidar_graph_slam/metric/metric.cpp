@@ -391,59 +391,6 @@ void Histogram::Dump(std::ostream& outStream, bool isVerbose) const
 }
 
 /*
- * ValueSequence class implementations
- */
-
-/* Reset the value sequence */
-template <typename T>
-void ValueSequence<T>::Reset()
-{
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
-    this->mValues.clear();
-}
-
-/* Observe the value and append to the sequence */
-template <typename T>
-void ValueSequence<T>::Observe(double val)
-{
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
-    this->mValues.push_back(static_cast<T>(val));
-}
-
-/* Retrieve the number of data points */
-template <typename T>
-std::size_t ValueSequence<T>::NumOfValues() const
-{
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->mValues.size();
-}
-
-/* Retrieve the value in the container */
-template <typename T>
-double ValueSequence<T>::ValueAt(std::size_t valueIdx) const
-{
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return static_cast<double>(this->mValues.at(valueIdx));
-}
-
-/* Dump the value sequence object */
-template <typename T>
-void ValueSequence<T>::Dump(std::ostream& outStream) const
-{
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
-    outStream << "ValueSequence Id: " << this->mId << ", "
-              << "Number of samples: " << this->mValues.size() << '\n';
-    outStream << Join(this->mValues, ", ") << '\n';
-}
-
-/* Template class declarations */
-template class ValueSequence<double>;
-template class ValueSequence<float>;
-template class ValueSequence<int>;
-template class ValueSequence<bool>;
-
-/*
  * MetricFamily class implementations
  */
 
