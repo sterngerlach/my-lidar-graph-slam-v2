@@ -5,12 +5,23 @@
 
 #include "my_lidar_graph_slam/util.hpp"
 
+namespace pt = boost::property_tree;
+
 namespace MyLidarGraphSlam {
 namespace Metric {
 
 /*
  * Counter class implementations
  */
+
+/* Convert the metric to the Boost property tree */
+pt::ptree Counter::ToPropertyTree() const
+{
+    const auto valueStr = DoubleToString(this->Value());
+    pt::ptree metric;
+    metric.put("Value", valueStr);
+    return metric;
+}
 
 /* Reset the counter value */
 void Counter::Reset()
@@ -45,6 +56,15 @@ void Counter::Dump(std::ostream& outStream) const
 /*
  * Gauge class implementations
  */
+
+/* Convert the metric to the Boost property tree */
+pt::ptree Gauge::ToPropertyTree() const
+{
+    const auto valueStr = DoubleToString(this->Value());
+    pt::ptree metric;
+    metric.put("Value", valueStr);
+    return metric;
+}
 
 /* Reset the gauge value */
 void Gauge::Reset()
@@ -93,6 +113,26 @@ void Gauge::Dump(std::ostream& outStream) const
 /*
  * Distribution class implementations
  */
+
+/* Convert the metric to the Boost property tree */
+pt::ptree Distribution::ToPropertyTree() const
+{
+    const auto sumStr = DoubleToString(this->Sum());
+    const auto meanStr = DoubleToString(this->Mean());
+    const auto stdDevStr = DoubleToString(this->StandardDeviation());
+    const auto maxStr = DoubleToString(this->Maximum());
+    const auto minStr = DoubleToString(this->Minimum());
+
+    pt::ptree metric;
+    metric.put("NumOfSamples", this->NumOfSamples());
+    metric.put("Sum", sumStr);
+    metric.put("Mean", meanStr);
+    metric.put("StandardDeviation", stdDevStr);
+    metric.put("Maximum", maxStr);
+    metric.put("Minimum", minStr);
+
+    return metric;
+}
 
 /* Reset the distribution */
 void Distribution::Reset()
@@ -225,6 +265,27 @@ void NullHistogram::ValueRange(std::size_t,
 /*
  * Histogram class implementations
  */
+
+/* Convert the metric to the Boost property tree */
+pt::ptree Histogram::ToPropertyTree() const
+{
+    const auto sumStr = DoubleToString(this->SumValues());
+    const double mean = this->NumOfSamples() > 0 ? this->Mean() : 0.0;
+    const auto meanStr = DoubleToString(mean);
+    const auto boundariesStr = this->Boundaries() != nullptr ?
+        VecToString(*this->Boundaries()) : std::string();
+    const auto bucketCountsStr = this->Counts() != nullptr ?
+        VecToString(*this->Counts()) : std::string();
+
+    pt::ptree metric;
+    metric.put("NumOfSamples", this->NumOfSamples());
+    metric.put("SumValues", sumStr);
+    metric.put("Mean", meanStr);
+    metric.put("BucketBoundaries", boundariesStr);
+    metric.put("BucketCounts", bucketCountsStr);
+
+    return metric;
+}
 
 /* Create the bucket boundaries with fixed width */
 BucketBoundaries Histogram::CreateFixedWidthBoundaries(

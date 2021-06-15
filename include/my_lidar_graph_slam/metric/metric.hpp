@@ -17,6 +17,7 @@
 #include <numeric>
 #include <shared_mutex>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
@@ -26,6 +27,35 @@
 
 namespace MyLidarGraphSlam {
 namespace Metric {
+
+/* Convert the double to the std::string */
+inline std::string DoubleToString(const double value)
+{
+    std::stringstream strStream;
+    strStream << std::fixed << std::setprecision(6);
+    strStream << value;
+    return strStream.str();
+}
+
+/* Convert the vector to the std::string */
+template <typename T>
+inline std::string VecToString(const std::vector<T>& values)
+{
+    std::stringstream strStream;
+
+    if (std::is_floating_point<T>::value)
+        strStream << std::fixed << std::setprecision(6);
+
+    const std::size_t numOfValues = values.size();
+
+    for (std::size_t i = 0; i < numOfValues; ++i)
+        if (i == numOfValues - 1)
+            strStream << values[i];
+        else
+            strStream << values[i] << ' ';
+
+    return strStream.str();
+}
 
 enum class MetricType
 {
@@ -53,6 +83,9 @@ public:
     virtual MetricType Type() const final { return this->mType; }
     /* Retrieve the metric Id string */
     virtual const std::string& Id() const final { return this->mId; }
+
+    /* Convert the metric to the Boost property tree */
+    virtual boost::property_tree::ptree ToPropertyTree() const { return {}; }
 
 protected:
     /* Metric type */
@@ -115,6 +148,9 @@ public:
         CounterBase(metricId), mValue(initVal) { }
     /* Destructor */
     ~Counter() = default;
+
+    /* Convert the metric to the Boost property tree */
+    boost::property_tree::ptree ToPropertyTree() const override;
 
     /* Reset the counter value */
     void Reset() override;
@@ -194,6 +230,9 @@ public:
         GaugeBase(metricId), mValue(initVal), mMutex() { }
     /* Destructor */
     ~Gauge() = default;
+
+    /* Convert the metric to the Boost property tree */
+    boost::property_tree::ptree ToPropertyTree() const override;
 
     /* Reset the gauge value */
     void Reset() override;
@@ -300,6 +339,9 @@ public:
         mMutex() { }
     /* Destructor */
     ~Distribution() = default;
+
+    /* Convert the metric to the Boost property tree */
+    boost::property_tree::ptree ToPropertyTree() const override;
 
     /* Reset the distribution */
     void Reset() override;
@@ -443,6 +485,9 @@ public:
     /* Destructor */
     ~Histogram() = default;
 
+    /* Convert the metric to the Boost property tree */
+    boost::property_tree::ptree ToPropertyTree() const override;
+
     /* Reset the histogram */
     void Reset() override;
 
@@ -545,6 +590,9 @@ public:
     /* Destructor */
     ~ValueSequence() = default;
 
+    /* Convert the metric to the Boost property tree */
+    boost::property_tree::ptree ToPropertyTree() const override;
+
     /* Reset the value sequence */
     void Reset() override;
 
@@ -574,6 +622,20 @@ private:
 /*
  * ValueSequence class implementations
  */
+
+/* Convert the metric to the Boost property tree */
+template <typename T>
+boost::property_tree::ptree ValueSequence<T>::ToPropertyTree() const
+{
+    const auto valuesStr = this->Values() != nullptr ?
+        VecToString(*this->Values()) : std::string();
+
+    boost::property_tree::ptree metric;
+    metric.put("NumOfSamples", this->NumOfValues());
+    metric.put("Values", valuesStr);
+
+    return metric;
+}
 
 /* Reset the value sequence */
 template <typename T>
