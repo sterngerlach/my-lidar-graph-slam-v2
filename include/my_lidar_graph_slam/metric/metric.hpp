@@ -22,6 +22,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/timer/timer.hpp>
 
+#include "my_lidar_graph_slam/util.hpp"
+
 namespace MyLidarGraphSlam {
 namespace Metric {
 
@@ -512,7 +514,7 @@ class NullValueSequence final : public ValueSequenceBase<T>
 {
 public:
     /* Constructor */
-    NullValueSequence() : ValueSequenceBase("") { }
+    NullValueSequence() : ValueSequenceBase<T>("") { }
     /* Destructor */
     ~NullValueSequence() = default;
 
@@ -539,7 +541,7 @@ class ValueSequence final : public ValueSequenceBase<T>
 public:
     /* Constructor */
     ValueSequence(const std::string& metricId) :
-        ValueSequenceBase(metricId), mValues(), mMutex() { }
+        ValueSequenceBase<T>(metricId), mValues(), mMutex() { }
     /* Destructor */
     ~ValueSequence() = default;
 
