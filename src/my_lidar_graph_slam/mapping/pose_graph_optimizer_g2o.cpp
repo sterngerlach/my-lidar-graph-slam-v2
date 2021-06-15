@@ -19,17 +19,17 @@ PoseGraphOptimizerG2OMetrics::PoseGraphOptimizerG2OMetrics() :
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
     /* Register the value sequence metrics */
-    this->mNumOfIterations = pMetricManager->AddValueSequenceInt(
+    this->mNumOfIterations = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerG2O.NumOfIterations");
-    this->mInitialError = pMetricManager->AddValueSequenceFloat(
+    this->mInitialError = pMetricManager->AddValueSequence<float>(
         "PoseGraphOptimizerG2O.InitialError");
-    this->mFinalError = pMetricManager->AddValueSequenceFloat(
+    this->mFinalError = pMetricManager->AddValueSequence<float>(
         "PoseGraphOptimizerG2O.FinalError");
-    this->mNumOfLocalMapNodes = pMetricManager->AddValueSequenceInt(
+    this->mNumOfLocalMapNodes = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerG2O.NumOfLocalMapNodes");
-    this->mNumOfScanNodes = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScanNodes = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerG2O.NumOfScanNodes");
-    this->mNumOfEdges = pMetricManager->AddValueSequenceInt(
+    this->mNumOfEdges = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerG2O.NumOfEdges");
 }
 

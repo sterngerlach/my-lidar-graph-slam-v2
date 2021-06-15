@@ -30,17 +30,17 @@ struct PoseGraphOptimizerG2OMetrics
     ~PoseGraphOptimizerG2OMetrics() = default;
 
     /* Total number of the iterations */
-    Metric::ValueSequenceBase* mNumOfIterations;
+    Metric::ValueSequenceBase<int>*   mNumOfIterations;
     /* Initial error value */
-    Metric::ValueSequenceBase* mInitialError;
+    Metric::ValueSequenceBase<float>* mInitialError;
     /* Final error value */
-    Metric::ValueSequenceBase* mFinalError;
+    Metric::ValueSequenceBase<float>* mFinalError;
     /* Total number of the pose graph local map nodes */
-    Metric::ValueSequenceBase* mNumOfLocalMapNodes;
+    Metric::ValueSequenceBase<int>*   mNumOfLocalMapNodes;
     /* Total number of the pose graph scan nodes */
-    Metric::ValueSequenceBase* mNumOfScanNodes;
+    Metric::ValueSequenceBase<int>*   mNumOfScanNodes;
     /* Total number of the pose graph edges */
-    Metric::ValueSequenceBase* mNumOfEdges;
+    Metric::ValueSequenceBase<int>*   mNumOfEdges;
 };
 
 /*

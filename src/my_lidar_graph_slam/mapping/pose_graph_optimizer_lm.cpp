@@ -19,17 +19,17 @@ PoseGraphOptimizerLMMetrics::PoseGraphOptimizerLMMetrics() :
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
     /* Register the value sequence metrics */
-    this->mNumOfIterations = pMetricManager->AddValueSequenceInt(
+    this->mNumOfIterations = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerLM.NumOfIterations");
-    this->mInitialError = pMetricManager->AddValueSequenceFloat(
+    this->mInitialError = pMetricManager->AddValueSequence<float>(
         "PoseGraphOptimizerLM.InitialError");
-    this->mFinalError = pMetricManager->AddValueSequenceFloat(
+    this->mFinalError = pMetricManager->AddValueSequence<float>(
         "PoseGraphOptimizerLM.FinalError");
-    this->mNumOfLocalMapNodes = pMetricManager->AddValueSequenceInt(
+    this->mNumOfLocalMapNodes = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerLM.NumOfLocalMapNodes");
-    this->mNumOfScanNodes = pMetricManager->AddValueSequenceInt(
+    this->mNumOfScanNodes = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerLM.NumOfScanNodes");
-    this->mNumOfEdges = pMetricManager->AddValueSequenceInt(
+    this->mNumOfEdges = pMetricManager->AddValueSequence<int>(
         "PoseGraphOptimizerLM.NumOfEdges");
 }
 
