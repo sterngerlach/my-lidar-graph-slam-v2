@@ -604,18 +604,14 @@ class MetricManager final
 {
 private:
     /* Constructor */
-    MetricManager() :
-        mCounterMetrics("Counters", new NullCounter()),
-        mGaugeMetrics("Gauges", new NullGauge()),
-        mDistributionMetrics("Distributions", new NullDistribution()),
-        mHistogramMetrics("Histograms", new NullHistogram()),
-        mValueSequenceMetrics("ValueSequences", new NullValueSequence()) { }
+    MetricManager() = default;
     /* Destructor */
     ~MetricManager() = default;
 
 public:
     /* Type definitions */
     using ptree = boost::property_tree::ptree;
+    using MetricPtr = std::unique_ptr<MetricBase>;
 
     /* Copy constructor (disabled) */
     MetricManager(const MetricManager&) = delete;
@@ -633,39 +629,33 @@ public:
     ptree ToPropertyTree() const;
 
     /* Retrieve the counter metrics */
-    const MetricFamily<CounterBase>& CounterMetrics() const
-    { return this->mCounterMetrics; }
+    inline const CounterBase* Counter(const std::string& metricId) const;
     /* Retrieve the counter metrics */
-    MetricFamily<CounterBase>& CounterMetrics()
-    { return this->mCounterMetrics; }
+    inline CounterBase* Counter(const std::string& metricId);
 
     /* Retrieve the gauge metrics */
-    const MetricFamily<GaugeBase>& GaugeMetrics() const
-    { return this->mGaugeMetrics; }
+    inline const GaugeBase* Gauge(const std::string& metricId) const;
     /* Retrieve the gauge metrics */
-    MetricFamily<GaugeBase>& GaugeMetrics()
-    { return this->mGaugeMetrics; }
+    inline GaugeBase* Gauge(const std::string& metricId);
 
     /* Retrieve the distribution metrics */
-    const MetricFamily<DistributionBase>& DistributionMetrics() const
-    { return this->mDistributionMetrics; }
+    inline const DistributionBase* Distribution(
+        const std::string& metricId) const;
     /* Retrieve the distribution metrics */
-    MetricFamily<DistributionBase>& DistributionMetrics()
-    { return this->mDistributionMetrics; }
+    inline DistributionBase* Distribution(const std::string& metricId);
 
     /* Retrieve the histogram metrics */
-    const MetricFamily<HistogramBase>& HistogramMetrics() const
-    { return this->mHistogramMetrics; }
+    inline const HistogramBase* Histogram(const std::string& metricId) const;
     /* Retrieve the histogram metrics */
-    MetricFamily<HistogramBase>& HistogramMetrics()
-    { return this->mHistogramMetrics; }
+    inline HistogramBase* Histogram(const std::string& metricId);
 
     /* Retrieve the value sequence metrics */
-    const MetricFamily<ValueSequenceBase>& ValueSequenceMetrics() const
-    { return this->mValueSequenceMetrics; }
+    template <typename T>
+    inline const ValueSequenceBase<T>* ValueSequence(
+        const std::string& metricId) const;
     /* Retrieve the value sequence metrics */
-    MetricFamily<ValueSequenceBase>& ValueSequenceMetrics()
-    { return this->mValueSequenceMetrics; }
+    template <typename T>
+    inline ValueSequenceBase<T>* ValueSequence(const std::string& metricId);
 
     /* Append the counter metric */
     CounterBase* AddCounter(const std::string& metricName);
@@ -677,26 +667,148 @@ public:
     HistogramBase* AddHistogram(const std::string& metricName,
                                 const BucketBoundaries& bucketBoundaries);
     /* Append the value sequence metric */
-    ValueSequenceBase* AddValueSequenceDouble(const std::string& metricName);
-    /* Append the value sequence metric */
-    ValueSequenceBase* AddValueSequenceFloat(const std::string& metricName);
-    /* Append the value sequence metric */
-    ValueSequenceBase* AddValueSequenceInt(const std::string& metricName);
-    /* Append the value sequence metric */
-    ValueSequenceBase* AddValueSequenceBool(const std::string& metricName);
+    template <typename T>
+    ValueSequenceBase<T>* AddValueSequence(const std::string& metricName);
+
+private:
+    /* Append the metric to the list */
+    void Append(std::vector<MetricPtr>& metrics,
+                MetricBase* metric);
+    /* Remove the metric from the list */
+    void Remove(std::vector<MetricPtr>& metrics,
+                const std::string& metricId);
+    /* Find the metric from the list */
+    MetricBase* Find(std::vector<MetricPtr>& metrics,
+                     const std::string& metricId);
+    /* Find the metric from the list */
+    const MetricBase* Find(const std::vector<MetricPtr>& metrics,
+                           const std::string& metricId) const;
 
 private:
     /* List of the counter metrics */
-    MetricFamily<CounterBase>       mCounterMetrics;
+    std::vector<MetricPtr> mCounters;
     /* List of the gauge metrics */
-    MetricFamily<GaugeBase>         mGaugeMetrics;
+    std::vector<MetricPtr> mGauges;
     /* List of the distribution metrics */
-    MetricFamily<DistributionBase>  mDistributionMetrics;
+    std::vector<MetricPtr> mDists;
     /* List of the histogram metrics */
-    MetricFamily<HistogramBase>     mHistogramMetrics;
+    std::vector<MetricPtr> mHists;
     /* List of the value sequence metrics */
-    MetricFamily<ValueSequenceBase> mValueSequenceMetrics;
+    std::vector<MetricPtr> mValueSeqs;
 };
+
+/* Retrieve the counter metrics */
+const CounterBase* MetricManager::Counter(const std::string& metricId) const
+{
+    static const auto nullCounter = std::make_unique<NullCounter>();
+    const MetricBase* metric = this->Find(this->mCounters, metricId);
+
+    if (metric == nullptr)
+        return nullCounter.get();
+
+    const auto* counter = dynamic_cast<const CounterBase*>(metric);
+    Assert(counter != nullptr);
+    return counter;
+}
+
+/* Retrieve the counter metrics */
+CounterBase* MetricManager::Counter(const std::string& metricId)
+{
+    return const_cast<CounterBase*>(
+        static_cast<const MetricManager*>(this)->Counter(metricId));
+}
+
+/* Retrieve the gauge metrics */
+const GaugeBase* MetricManager::Gauge(const std::string& metricId) const
+{
+    static const auto nullGauge = std::make_unique<NullGauge>();
+    const MetricBase* metric = this->Find(this->mGauges, metricId);
+
+    if (metric == nullptr)
+        return nullGauge.get();
+
+    const auto* gauge = dynamic_cast<const GaugeBase*>(metric);
+    Assert(gauge != nullptr);
+    return gauge;
+}
+
+/* Retrieve the gauge metrics */
+GaugeBase* MetricManager::Gauge(const std::string& metricId)
+{
+    return const_cast<GaugeBase*>(
+        static_cast<const MetricManager*>(this)->Gauge(metricId));
+}
+
+/* Retrieve the distribution metrics */
+const DistributionBase* MetricManager::Distribution(
+    const std::string& metricId) const
+{
+    static const auto nullDist = std::make_unique<NullDistribution>();
+    const MetricBase* metric = this->Find(this->mDists, metricId);
+
+    if (metric == nullptr)
+        return nullDist.get();
+
+    const auto* dist = dynamic_cast<const DistributionBase*>(metric);
+    Assert(dist != nullptr);
+    return dist;
+}
+
+/* Retrieve the distribution metrics */
+DistributionBase* MetricManager::Distribution(
+    const std::string& metricId)
+{
+    return const_cast<DistributionBase*>(
+        static_cast<const MetricManager*>(this)->Distribution(metricId));
+}
+
+/* Retrieve the histogram metrics */
+const HistogramBase* MetricManager::Histogram(
+    const std::string& metricId) const
+{
+    static const auto nullHist = std::make_unique<NullHistogram>();
+    const MetricBase* metric = this->Find(this->mHists, metricId);
+
+    if (metric == nullptr)
+        return nullHist.get();
+
+    const auto* hist = dynamic_cast<const HistogramBase*>(metric);
+    Assert(hist != nullptr);
+    return hist;
+}
+
+/* Retrieve the histogram metrics */
+HistogramBase* MetricManager::Histogram(
+    const std::string& metricId)
+{
+    return const_cast<HistogramBase*>(
+        static_cast<const MetricManager*>(this)->Histogram(metricId));
+}
+
+/* Retrieve the value sequence metrics */
+template <typename T>
+const ValueSequenceBase<T>* MetricManager::ValueSequence(
+    const std::string& metricId) const
+{
+    static const auto nullValueSeq = std::make_unique<NullValueSequence<T>>();
+    const MetricBase* metric = this->Find(this->mValueSeqs, metricId);
+
+    if (metric == nullptr)
+        return nullValueSeq.get();
+
+    const auto* valueSeq = dynamic_cast<const ValueSequenceBase<T>*>(metric);
+    Assert(valueSeq != nullptr);
+    return valueSeq;
+}
+
+/* Retrieve the value sequence metrics */
+template <typename T>
+ValueSequenceBase<T>* MetricManager::ValueSequence(
+    const std::string& metricId)
+{
+    return const_cast<ValueSequenceBase<T>*>(
+        static_cast<const MetricManager*>(this)->ValueSequence<T>(metricId));
+}
 
 struct Timer
 {

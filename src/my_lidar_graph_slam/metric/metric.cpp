@@ -401,6 +401,46 @@ MetricManager* MetricManager::Instance()
     return &theInstance;
 }
 
+/* Append the metric to the list */
+void MetricManager::Append(std::vector<MetricPtr>& metrics,
+                           MetricBase* metric)
+{
+    const auto metricIt = std::find_if(
+        metrics.begin(), metrics.end(),
+        [metric](const MetricPtr& m) { return m->Id() == metric->Id(); });
+    Assert(metricIt == metrics.end());
+    metrics.push_back(std::unique_ptr<MetricPtr>(metric));
+}
+
+/* Remove the metric from the list */
+void MetricManager::Remove(std::vector<MetricPtr>& metrics,
+                           const std::string& metricId)
+{
+    const auto metricIt = std::find_if(
+        metrics.begin(), metrics.end(),
+        [&metricId](const MetricPtr& m) { return m->Id() == metricId; });
+    Assert(metricIt != metrics.end());
+    metrics.erase(metricIt);
+}
+
+/* Find the metric from the list */
+MetricBase* MetricManager::Find(std::vector<MetricPtr>& metrics,
+                                const std::string& metricId)
+{
+    return const_cast<MetricBase*>(
+        static_cast<const MetricManager*>(this)->Find(metrics, metricId));
+}
+
+/* Find the metric from the list */
+const MetricBase* MetricManager::Find(const std::vector<MetricPtr>& metrics,
+                                      const std::string& metricId) const
+{
+    const auto metricIt = std::find_if(
+        metrics.begin(), metrics.end(),
+        [metricId](const MetricPtr& m) { return m->Id() == metricId; });
+    return (metricIt == metrics.end()) ? nullptr : metricIt->get();
+}
+
 /* Convert all metrics to the Boost property tree */
 MetricManager::ptree MetricManager::ToPropertyTree() const
 {
