@@ -555,6 +555,43 @@ MetricManager* MetricManager::Instance()
 /* Convert all metrics to the Boost property tree */
 MetricManager::ptree MetricManager::ToPropertyTree() const
 {
+    const auto doubleToString = [](const double value) {
+        std::stringstream strStream;
+        strStream << std::fixed << std::setprecision(6);
+        strStream << value;
+        return strStream.str();
+    };
+
+    const auto doubleVecToString = [](const std::vector<double> values) {
+        std::stringstream strStream;
+        strStream << std::fixed << std::setprecision(6);
+
+        const std::size_t numOfValues = values.size();
+
+        for (std::size_t i = 0; i < numOfValues; ++i)
+            if (i == numOfValues - 1)
+                strStream << values[i];
+            else
+                strStream << values[i] << ' ';
+
+        return strStream.str();
+    };
+
+    const auto valueSeqToString = [](const ValueSequenceBase* pValueSeq) {
+        std::stringstream strStream;
+        strStream << std::fixed << std::setprecision(6);
+
+        const std::size_t numOfValues = pValueSeq->NumOfValues();
+
+        for (std::size_t i = 0; i < numOfValues; ++i)
+            if (i == numOfValues - 1)
+                strStream << pValueSeq->ValueAt(i);
+            else
+                strStream << pValueSeq->ValueAt(i) << ' ';
+
+        return strStream.str();
+    };
+
     ptree rootTree;
 
     /* Process counter metrics */
@@ -563,10 +600,10 @@ MetricManager::ptree MetricManager::ToPropertyTree() const
 
     for (std::size_t i = 0; i < numOfCounters; ++i) {
         const CounterBase* pCounter = this->mCounterMetrics.MetricAt(i);
+        const auto valueStr = doubleToString(pCounter->Value());
         ptree metricTree;
-        metricTree.put("Id", pCounter->Id());
-        metricTree.put("Value", pCounter->Value());
-        counterTree.push_back(std::make_pair("", metricTree));
+        metricTree.put("Value", valueStr);
+        counterTree.push_back(std::make_pair(pCounter->Id(), metricTree));
     }
 
     /* Process gauge metrics */
@@ -575,98 +612,81 @@ MetricManager::ptree MetricManager::ToPropertyTree() const
 
     for (std::size_t i = 0; i < numOfGauges; ++i) {
         const GaugeBase* pGauge = this->mGaugeMetrics.MetricAt(i);
+        const auto valueStr = doubleToString(pGauge->Value());
         ptree metricTree;
-        metricTree.put("Id", pGauge->Id());
-        metricTree.put("Value", pGauge->Value());
-        gaugeTree.push_back(std::make_pair("", metricTree));
+        metricTree.put("Value", valueStr);
+        gaugeTree.push_back(std::make_pair(pGauge->Id(), metricTree));
     }
 
     /* Process distribution metrics */
-    const std::size_t numOfDistributions =
-        this->mDistributionMetrics.NumOfMetrics();
+    const std::size_t numOfDists = this->mDistributionMetrics.NumOfMetrics();
     ptree distributionTree;
 
-    for (std::size_t i = 0; i < numOfDistributions; ++i) {
-        const DistributionBase* pDistribution =
-            this->mDistributionMetrics.MetricAt(i);
+    for (std::size_t i = 0; i < numOfDists; ++i) {
+        const DistributionBase* pDist = this->mDistributionMetrics.MetricAt(i);
+
+        const auto sumStr = doubleToString(pDist->Sum());
+        const auto meanStr = doubleToString(pDist->Mean());
+        const auto stdDevStr = doubleToString(pDist->StandardDeviation());
+        const auto maxStr = doubleToString(pDist->Maximum());
+        const auto minStr = doubleToString(pDist->Minimum());
+
         ptree distTree;
-        distTree.put("Id", pDistribution->Id());
-        distTree.put("NumOfSamples", pDistribution->NumOfSamples());
-        distTree.put("Sum", pDistribution->Sum());
-        distTree.put("Mean", pDistribution->Mean());
-        distTree.put("StandardDeviation", pDistribution->StandardDeviation());
-        distTree.put("Maximum", pDistribution->Maximum());
-        distTree.put("Minimum", pDistribution->Minimum());
-        distributionTree.push_back(std::make_pair("", distTree));
+        distTree.put("NumOfSamples", pDist->NumOfSamples());
+        distTree.put("Sum", sumStr);
+        distTree.put("Mean", meanStr);
+        distTree.put("StandardDeviation", stdDevStr);
+        distTree.put("Maximum", maxStr);
+        distTree.put("Minimum", minStr);
+
+        distributionTree.push_back(std::make_pair(pDist->Id(), distTree));
     }
 
     /* Process histogram metrics */
-    const std::size_t numOfHistograms =
-        this->mHistogramMetrics.NumOfMetrics();
+    const std::size_t numOfHists = this->mHistogramMetrics.NumOfMetrics();
     ptree histogramTree;
 
-    for (std::size_t i = 0; i < numOfHistograms; ++i) {
-        const HistogramBase* pHistogram =
-            this->mHistogramMetrics.MetricAt(i);
+    for (std::size_t i = 0; i < numOfHists; ++i) {
+        const HistogramBase* pHist = this->mHistogramMetrics.MetricAt(i);
+
+        const auto sumStr = doubleToString(pHist->SumValues());
+        const double mean = pHist->NumOfSamples() > 0 ? pHist->Mean() : 0.0;
+        const auto meanStr = doubleToString(mean);
+        const auto boundariesStr = doubleVecToString(pHist->Boundaries());
+        const auto bucketCountsStr = doubleVecToString(pHist->Counts());
+
         ptree metricTree;
-        metricTree.put("Id", pHistogram->Id());
-        metricTree.put("NumOfSamples", pHistogram->NumOfSamples());
-        metricTree.put("SumValues", pHistogram->SumValues());
+        metricTree.put("NumOfSamples", pHist->NumOfSamples());
+        metricTree.put("SumValues", sumStr);
+        metricTree.put("Mean", meanStr);
+        metricTree.put("BucketBoundaries", boundariesStr);
+        metricTree.put("BucketCounts", bucketCountsStr);
 
-        const double safeMean = pHistogram->NumOfSamples() > 0.0 ?
-                                pHistogram->Mean() : 0.0;
-        metricTree.put("Mean", safeMean);
-
-        /* Process bucket boundaries */
-        ptree boundariesTree;
-        for (const double boundary : pHistogram->Boundaries()) {
-            ptree elementTree;
-            elementTree.put_value(boundary);
-            boundariesTree.push_back(std::make_pair("", elementTree));
-        }
-
-        /* Process bucket counts */
-        ptree countsTree;
-        for (const double count : pHistogram->Counts()) {
-            ptree elementTree;
-            elementTree.put_value(count);
-            countsTree.push_back(std::make_pair("", elementTree));
-        }
-
-        metricTree.add_child("BucketBoundaries", boundariesTree);
-        metricTree.add_child("BucketCounts", countsTree);
-        histogramTree.push_back(std::make_pair("", metricTree));
+        histogramTree.push_back(std::make_pair(pHist->Id(), metricTree));
     }
 
     /* Process value sequence metrics */
-    const std::size_t numOfValueSequences =
-        this->mValueSequenceMetrics.NumOfMetrics();
-    ptree valueSequenceTree;
+    const std::size_t numOfSeqs = this->mValueSequenceMetrics.NumOfMetrics();
+    ptree valueSeqTree;
 
-    for (std::size_t i = 0; i < numOfValueSequences; ++i) {
-        const ValueSequenceBase* pValueSequence =
+    for (std::size_t i = 0; i < numOfSeqs; ++i) {
+        const ValueSequenceBase* pValueSeq =
             this->mValueSequenceMetrics.MetricAt(i);
+
+        const auto valuesStr = valueSeqToString(pValueSeq);
+
         ptree metricTree;
-        metricTree.put("Id", pValueSequence->Id());
-        metricTree.put("NumOfValues", pValueSequence->NumOfValues());
+        metricTree.put("NumOfValues", pValueSeq->NumOfValues());
+        metricTree.put("Values", valuesStr);
 
-        /* Process values in the container */
-        ptree valuesTree;
-        for (std::size_t j = 0; j < pValueSequence->NumOfValues(); ++j) {
-            ptree elementTree;
-            elementTree.put_value(pValueSequence->ValueAt(j));
-            valuesTree.push_back(std::make_pair("", elementTree));
-        }
-
-        metricTree.add_child("Values", valuesTree);
-        valueSequenceTree.push_back(std::make_pair("", metricTree));
+        valueSeqTree.push_back(std::make_pair(pValueSeq->Id(), metricTree));
     }
 
     rootTree.add_child("Counters", counterTree);
     rootTree.add_child("Gauges", gaugeTree);
     rootTree.add_child("Distributions", distributionTree);
     rootTree.add_child("Histograms", histogramTree);
-    rootTree.add_child("ValueSequences", valueSequenceTree);
+    rootTree.add_child("ValueSequences", valueSeqTree);
 
     return rootTree;
 }
