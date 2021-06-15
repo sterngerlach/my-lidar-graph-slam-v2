@@ -365,9 +365,9 @@ public:
     virtual void Observe(double val) = 0;
 
     /* Retrieve the boundary values */
-    virtual BucketBoundaries Boundaries() const = 0;
+    virtual const BucketBoundaries* Boundaries() const = 0;
     /* Retrieve the bucket counts */
-    virtual std::vector<double> Counts() const = 0;
+    virtual const std::vector<double>* Counts() const = 0;
     /* Retrieve the summation counter */
     virtual double SumValues() const = 0;
 
@@ -400,11 +400,9 @@ public:
     void Observe(double) override { }
 
     /* Retrieve the boundary values */
-    BucketBoundaries Boundaries() const override
-    { return BucketBoundaries(); }
+    const BucketBoundaries* Boundaries() const override { return nullptr; }
     /* Retrieve the bucket counts */
-    std::vector<double> Counts() const override
-    { return std::vector<double>(); }
+    const std::vector<double>* Counts() const override { return nullptr; }
     /* Retrieve the summation counter */
     double SumValues() const override { return 0.0; }
 
@@ -450,11 +448,13 @@ public:
     void Observe(double val) override;
 
     /* Retrieve the boundary values */
-    BucketBoundaries Boundaries() const override;
+    const BucketBoundaries* Boundaries() const override
+    { return &this->mBucketBoundaries; }
     /* Retrieve the bucket counts */
-    std::vector<double> Counts() const override;
+    const std::vector<double>* Counts() const override
+    { return &this->mBucketCounts; }
     /* Retrieve the summation counter */
-    double SumValues() const override;
+    double SumValues() const override { return this->mSumValues; }
 
     /* Retrieve the number of observed values */
     double NumOfSamples() const override;
@@ -468,12 +468,6 @@ public:
 
     /* Dump the histogram object */
     void Dump(std::ostream& outStream, bool isVerbose) const override;
-
-private:
-    /* Compute the number of the observed values */
-    double UnlockedNumOfSamples() const;
-    /* Compute the mean of the observed values */
-    double UnlockedMean() const;
 
 private:
     /* Bucket boundaries */

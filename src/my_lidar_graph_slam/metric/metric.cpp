@@ -329,39 +329,17 @@ void Histogram::Observe(double val)
     this->mSumValues += val;
 }
 
-/* Retrieve the boundary values */
-BucketBoundaries Histogram::Boundaries() const
-{
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->mBucketBoundaries;
-}
-
-/* Retrieve the bucket counts */
-std::vector<double> Histogram::Counts() const
-{
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->mBucketCounts;
-}
-
-/* Retrieve the summation counter */
-double Histogram::SumValues() const
-{
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->mSumValues;
-}
-
 /* Retrieve the number of observed values */
 double Histogram::NumOfSamples() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->UnlockedNumOfSamples();
+    return std::accumulate(this->mBucketCounts.cbegin(),
+                           this->mBucketCounts.cend(), 0.0);
 }
 
 /* Retrieve the mean of the observed values */
 double Histogram::Mean() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->UnlockedMean();
+    return this->mSumValues / this->NumOfSamples();
 }
 
 /* Retrieve the value range of the specified bucket */
@@ -383,21 +361,6 @@ void Histogram::ValueRange(std::size_t bucketIdx,
         this->mBucketBoundaries[bucketIdx];
 
     return;
-}
-
-/* Compute the number of the observed values */
-double Histogram::UnlockedNumOfSamples() const
-{
-    const double numOfSamples = std::accumulate(
-        this->mBucketCounts.cbegin(), this->mBucketCounts.cend(), 0.0);
-
-    return numOfSamples;
-}
-
-/* Compute the mean of the observed values */
-double Histogram::UnlockedMean() const
-{
-    return this->mSumValues / this->UnlockedNumOfSamples();
 }
 
 /* Dump the histogram object */
