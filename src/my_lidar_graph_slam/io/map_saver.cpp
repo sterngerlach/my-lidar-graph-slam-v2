@@ -208,104 +208,93 @@ bool MapSaver::SavePoseGraph(
     const std::vector<PoseGraphEdge>& poseGraphEdges,
     const std::string& fileName) const
 {
+    const auto poseToString = [](const RobotPose2D<double>& pose) {
+        std::stringstream strStream;
+        strStream << std::fixed << std::setprecision(6);
+        strStream << pose.mX << ' '
+                  << pose.mY << ' '
+                  << pose.mTheta;
+        return strStream.str();
+    };
+
+    const auto matrixToString = [](const Eigen::Matrix3d& mat) {
+        std::stringstream strStream;
+        strStream << std::fixed << std::setprecision(6);
+
+        for (Eigen::Index i = 0; i < mat.rows(); ++i)
+            for (Eigen::Index j = i; j < mat.cols(); ++j)
+                if (i == mat.rows() - 1 && j == mat.cols() - 1)
+                    strStream << mat(i, j);
+                else
+                    strStream << mat(i, j) << ' ';
+
+        return strStream.str();
+    };
+
     pt::ptree jsonPoseGraph;
 
     /* Write the local map nodes */
     pt::ptree localMapNodesTree;
 
     for (const auto& [localMapId, localMapNode] : localMapNodes) {
-        pt::ptree nodeInfo;
-
-        /* Convert to single-precision floating point */
-        const RobotPose2D<float> globalPose =
-            static_cast<RobotPose2D<float>>(localMapNode.mGlobalPose);
-
         /* Write the data for the local map node */
-        nodeInfo.put("Id", localMapNode.mLocalMapId.mId);
-        nodeInfo.put("GlobalPose.X", globalPose.mX);
-        nodeInfo.put("GlobalPose.Y", globalPose.mY);
-        nodeInfo.put("GlobalPose.Theta", globalPose.mTheta);
+        const auto idStr = std::to_string(localMapNode.mLocalMapId.mId);
+        const auto poseStr = poseToString(localMapNode.mGlobalPose);
+
+        pt::ptree nodeInfo;
+        nodeInfo.put("GlobalPose", poseStr);
 
         /* Append the local map node */
-        localMapNodesTree.push_back(std::make_pair("", nodeInfo));
+        localMapNodesTree.push_back(std::make_pair(idStr, nodeInfo));
     }
 
-    jsonPoseGraph.add_child("PoseGraph.LocalMapNodes", localMapNodesTree);
+    jsonPoseGraph.add_child("LocalMapNodes", localMapNodesTree);
 
     /* Write the scan nodes */
     pt::ptree scanNodesTree;
 
     for (const auto& [nodeId, scanNode] : scanNodes) {
-        pt::ptree nodeInfo;
-
-        /* Convert to single-precision floating point */
-        const RobotPose2D<float> localPose =
-            static_cast<RobotPose2D<float>>(scanNode.mLocalPose);
-        const RobotPose2D<float> globalPose =
-            static_cast<RobotPose2D<float>>(scanNode.mGlobalPose);
-
         /* Write the data for the scan node */
-        nodeInfo.put("Id", scanNode.mNodeId.mId);
+        const auto idStr = std::to_string(scanNode.mNodeId.mId);
+        const auto localPoseStr = poseToString(scanNode.mLocalPose);
+        const auto globalPoseStr = poseToString(scanNode.mGlobalPose);
+
+        pt::ptree nodeInfo;
         nodeInfo.put("LocalMapId", scanNode.mLocalMapId.mId);
-        nodeInfo.put("LocalPose.X", localPose.mX);
-        nodeInfo.put("LocalPose.Y", localPose.mY);
-        nodeInfo.put("LocalPose.Theta", localPose.mTheta);
+        nodeInfo.put("LocalPose", localPoseStr);
         nodeInfo.put("TimeStamp", scanNode.mScanData->TimeStamp());
-        nodeInfo.put("GlobalPose.X", globalPose.mX);
-        nodeInfo.put("GlobalPose.Y", globalPose.mY);
-        nodeInfo.put("GlobalPose.Theta", globalPose.mTheta);
+        nodeInfo.put("GlobalPose", globalPoseStr);
 
         /* Append the scan node */
-        scanNodesTree.push_back(std::make_pair("", nodeInfo));
+        scanNodesTree.push_back(std::make_pair(idStr, nodeInfo));
     }
 
-    jsonPoseGraph.add_child("PoseGraph.ScanNodes", scanNodesTree);
+    jsonPoseGraph.add_child("ScanNodes", scanNodesTree);
 
     /* Write the pose graph edges */
     pt::ptree poseGraphEdgesTree;
 
     for (const auto& edge : poseGraphEdges) {
-        pt::ptree edgeInfo;
-
-        /* Convert to single-precision floating point */
-        const RobotPose2D<float> relativePose =
-            static_cast<RobotPose2D<float>>(edge.mRelativePose);
-
         /* Write the data for the edge */
+        const auto relativePoseStr = poseToString(edge.mRelativePose);
+        const auto infoMatStr = matrixToString(edge.mInformationMat);
+        const Eigen::Matrix3d covMat = edge.mInformationMat.inverse();
+        const auto covMatStr = matrixToString(covMat);
+
+        pt::ptree edgeInfo;
         edgeInfo.put("LocalMapNodeId", edge.mLocalMapNodeId.mId);
         edgeInfo.put("ScanNodeId", edge.mScanNodeId.mId);
         edgeInfo.put("EdgeType", static_cast<int>(edge.mEdgeType));
         edgeInfo.put("ConstraintType", static_cast<int>(edge.mConstraintType));
-        edgeInfo.put("RelativePose.X", relativePose.mX);
-        edgeInfo.put("RelativePose.Y", relativePose.mY);
-        edgeInfo.put("RelativePose.Theta", relativePose.mTheta);
-
-        /* Store elements of information matrix and covariance matrix
-         * (upper triangular elements only) */
-        pt::ptree infoMatElements;
-        pt::ptree covMatElements;
-        const Eigen::Matrix3d& infoMat = edge.mInformationMat;
-        const Eigen::Matrix3d covMat = infoMat.inverse();
-
-        for (Eigen::Index i = 0; i < infoMat.rows(); ++i) {
-            for (Eigen::Index j = i; j < infoMat.cols(); ++j) {
-                pt::ptree infoMatElement;
-                pt::ptree covMatElement;
-                infoMatElement.put_value(static_cast<float>(infoMat(i, j)));
-                covMatElement.put_value(static_cast<float>(covMat(i, j)));
-                infoMatElements.push_back(std::make_pair("", infoMatElement));
-                covMatElements.push_back(std::make_pair("", covMatElement));
-            }
-        }
-
-        edgeInfo.add_child("InformationMatrix", infoMatElements);
-        edgeInfo.add_child("CovarianceMatrix", covMatElements);
+        edgeInfo.put("RelativePose", relativePoseStr);
+        edgeInfo.put("InformationMatrix", infoMatStr);
+        edgeInfo.put("CovarianceMatrix", covMatStr);
 
         /* Append the pose graph edge */
         poseGraphEdgesTree.push_back(std::make_pair("", edgeInfo));
     }
 
-    jsonPoseGraph.add_child("PoseGraph.Edges", poseGraphEdgesTree);
+    jsonPoseGraph.add_child("Edges", poseGraphEdgesTree);
 
     /* Save the pose graph as JSON format */
     try {
