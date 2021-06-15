@@ -818,6 +818,16 @@ ValueSequenceBase<T>* MetricManager::ValueSequenceMetric(
         constThis->ValueSequenceMetric<T>(metricId));
 }
 
+/* Append the value sequence metric */
+template <typename T>
+ValueSequenceBase<T>* MetricManager::AddValueSequence(
+    const std::string& metricName)
+{
+    auto* valueSeq = new ValueSequence<T>(metricName);
+    this->Append(this->mValueSeqs, valueSeq);
+    return valueSeq;
+}
+
 struct Timer
 {
     /* Constructor (internal timer is automatically started) */

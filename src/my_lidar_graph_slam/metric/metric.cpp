@@ -614,15 +614,5 @@ HistogramBase* MetricManager::AddHistogram(
     return hist;
 }
 
-/* Append the value sequence metric */
-template <typename T>
-ValueSequenceBase<T>* MetricManager::AddValueSequence(
-    const std::string& metricName)
-{
-    auto* valueSeq = new ValueSequence<T>(metricName);
-    this->Append(this->mValueSeqs, valueSeq);
-    return valueSeq;
-}
-
 } /* namespace Metric */
 } /* namespace MyLidarGraphSlam */
