@@ -11,6 +11,7 @@
 
 #include "my_lidar_graph_slam/mapping/loop_detector.hpp"
 #include "my_lidar_graph_slam/mapping/loop_detector_correlative_fpga.hpp"
+#include "my_lidar_graph_slam/mapping/loop_detector_fpga_parallel.hpp"
 #include "my_lidar_graph_slam/mapping/scan_matcher.hpp"
 #include "my_lidar_graph_slam/mapping/scan_matcher_correlative_fpga.hpp"
 
@@ -23,12 +24,19 @@ void LoadScanMatcherHardwareRegisterOffsets(
     Mapping::ScanMatcherHardwareConfig& scanMatcherConfig);
 
 /* Create the real-time correlative-based scan matcher IP core interface */
-std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherCorrelativeFPGA(
-    const boost::property_tree::ptree& jsonSettings,
-    const std::string& configGroup);
+std::shared_ptr<Mapping::ScanMatcherCorrelativeFPGA>
+    CreateScanMatcherCorrelativeFPGA(
+        const boost::property_tree::ptree& jsonSettings,
+        const std::string& configGroup);
 
 /* Create the real-time correlative-based loop detector IP core interface */
 std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelativeFPGA(
+    const boost::property_tree::ptree& jsonSettings,
+    const std::string& configGroup);
+
+/* Create the real-time correlative-based loop detector which uses two IP cores
+ * at the same time to improve the loop detection performance */
+std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorFPGAParallel(
     const boost::property_tree::ptree& jsonSettings,
     const std::string& configGroup);
 

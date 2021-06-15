@@ -178,13 +178,19 @@ std::shared_ptr<Mapping::LidarGraphSlamBackend> CreateSlamBackend(
     /* Check if the loop detection is offloaded to the FPGA device */
     const bool useHardwareLoopDetector =
         config.get<bool>("UseHardwareLoopDetector");
+    const bool useParallelLoopDetector =
+        config.get<bool>("UseParallelLoopDetector");
 
     std::unique_ptr<Mapping::LoopDetector> pLoopDetector = nullptr;
 
     if (useHardwareLoopDetector) {
         /* Create the FPGA-based loop detector */
-        pLoopDetector = CreateLoopDetectorCorrelativeFPGA(
-            jsonSettings, "Hardware.LoopDetector");
+        if (!useParallelLoopDetector)
+            pLoopDetector = CreateLoopDetectorCorrelativeFPGA(
+                jsonSettings, "Hardware.LoopDetector");
+        else
+            pLoopDetector = CreateLoopDetectorFPGAParallel(
+                jsonSettings, "Hardware.LoopDetectorParallel");
     } else {
         /* Create the software loop detector */
         const std::string loopDetectorType =

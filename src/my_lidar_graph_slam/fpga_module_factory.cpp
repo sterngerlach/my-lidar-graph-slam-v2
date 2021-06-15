@@ -67,9 +67,10 @@ void LoadScanMatcherHardwareRegisterOffsets(
 }
 
 /* Create the real-time correlative-based scan matcher IP core interface */
-std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherCorrelativeFPGA(
-    const pt::ptree& jsonSettings,
-    const std::string& configGroup)
+std::shared_ptr<Mapping::ScanMatcherCorrelativeFPGA>
+    CreateScanMatcherCorrelativeFPGA(
+        const pt::ptree& jsonSettings,
+        const std::string& configGroup)
 {
     /* Load settings for the real-time correlative scan matcher */
     Mapping::ScanMatcherHardwareConfig hardwareConfig;
@@ -176,10 +177,8 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelativeFPGA(
         config.get<std::string>("FinalScanMatcherConfigGroup");
 
     /* Create a new real-time correlative scan matcher */
-    auto pScanMatcher = std::dynamic_pointer_cast<
-        Mapping::ScanMatcherCorrelativeFPGA>(
-            CreateScanMatcherCorrelativeFPGA(
-                jsonSettings, scanMatcherConfigGroup));
+    auto pScanMatcher =  CreateScanMatcherCorrelativeFPGA(
+        jsonSettings, scanMatcherConfigGroup);
     /* Construct a final scan matcher for refinements */
     auto pFinalScanMatcher = CreateScanMatcher(
         jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
@@ -191,6 +190,48 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelativeFPGA(
             scoreThreshold, knownRateThreshold);
 
     return pLoopDetector;
+}
+
+/* Create the real-time correlative-based loop detector which uses two IP cores
+ * at the same time to improve the loop detection performance */
+std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorFPGAParallel(
+    const boost::property_tree::ptree& jsonSettings,
+    const std::string& configGroup)
+{
+    const pt::ptree& config = jsonSettings.get_child(configGroup);
+
+    const std::string loopDetectorName =
+        config.get<std::string>("LoopDetectorName");
+    const double scoreThreshold =
+        config.get<double>("ScoreThreshold");
+    const double knownRateThreshold =
+        config.get<double>("KnownRateThreshold");
+
+    const std::string scanMatcher0ConfigGroup =
+        config.get<std::string>("ScanMatcher0ConfigGroup");
+    const std::string scanMatcher1ConfigGroup =
+        config.get<std::string>("ScanMatcher1ConfigGroup");
+    const std::string finalScanMatcherType =
+        config.get<std::string>("FinalScanMatcherType");
+    const std::string finalScanMatcherConfigGroup =
+        config.get<std::string>("FinalScanMatcherConfigGroup");
+
+    /* Create a new real-time correlative scan matcher */
+    auto pScanMatcher0 = CreateScanMatcherCorrelativeFPGA(
+        jsonSettings, scanMatcher0ConfigGroup);
+    auto pScanMatcher1 = CreateScanMatcherCorrelativeFPGA(
+        jsonSettings, scanMatcher1ConfigGroup);
+    /* Create a final scan matcher for refinement */
+    auto pFinalScanMatcher0 = CreateScanMatcher(
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+    auto pFinalScanMatcher1 = CreateScanMatcher(
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+
+    /* Create a real-time correlative-based loop detector */
+    return std::make_unique<Mapping::LoopDetectorFPGAParallel>(
+        loopDetectorName, pScanMatcher0, pScanMatcher1,
+        pFinalScanMatcher0, pFinalScanMatcher1,
+        scoreThreshold, knownRateThreshold);
 }
 
 } /* namespace MyLidarGraphSlam */
