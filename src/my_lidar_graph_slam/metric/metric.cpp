@@ -369,9 +369,9 @@ void Histogram::Dump(std::ostream& outStream, bool isVerbose) const
     std::shared_lock<std::shared_mutex> lock { this->mMutex };
 
     outStream << "Histogram Id: " << this->mId << ", "
-              << "Number of samples: " << this->UnlockedNumOfSamples() << ", "
+              << "Number of samples: " << this->NumOfSamples() << ", "
               << "Sum: " << this->mSumValues << ", "
-              << "Mean: " << this->UnlockedMean() << '\n';
+              << "Mean: " << this->Mean() << '\n';
 
     /* Print the number of data points in each bins in verbose mode */
     if (!isVerbose)
@@ -409,7 +409,7 @@ void MetricManager::Append(std::vector<MetricPtr>& metrics,
         metrics.begin(), metrics.end(),
         [metric](const MetricPtr& m) { return m->Id() == metric->Id(); });
     Assert(metricIt == metrics.end());
-    metrics.push_back(std::unique_ptr<MetricPtr>(metric));
+    metrics.push_back(std::unique_ptr<MetricBase>(metric));
 }
 
 /* Remove the metric from the list */
