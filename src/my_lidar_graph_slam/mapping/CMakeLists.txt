@@ -13,6 +13,7 @@ target_sources(lidar_graph_slam PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector_grid_search.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector_correlative.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector_correlative_fpga.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector_fpga_parallel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/loop_searcher_nearest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/motion_model_velocity.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pose_graph_optimizer_g2o.cpp
