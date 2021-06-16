@@ -26,29 +26,24 @@ pt::ptree Counter::ToPropertyTree() const
 /* Reset the counter value */
 void Counter::Reset()
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValue = 0.0;
 }
 
 /* Retrieve the counter value */
 double Counter::Value() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mValue;
 }
 
 /* Increment the counter by the specified value */
 void Counter::Increment(double val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValue += std::max(0.0, val);
 }
 
 /* Dump the counter object */
 void Counter::Dump(std::ostream& outStream) const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
     outStream << "Counter Id: " << this->mId << ", "
               << "Value: " << this->mValue << '\n';
 }
@@ -69,43 +64,36 @@ pt::ptree Gauge::ToPropertyTree() const
 /* Reset the gauge value */
 void Gauge::Reset()
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValue = 0.0;
 }
 
 /* Retrieve the gauge value */
 double Gauge::Value() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mValue;
 }
 
 /* Set the gauge value */
 void Gauge::SetValue(double val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValue = val;
 }
 
 /* Increment the gauge by the specified value */
 void Gauge::Increment(double val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValue += val;
 }
 
 /* Decrement the gauge by the specified value */
 void Gauge::Decrement(double val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValue -= val;
 }
 
 /* Dump the gauge object */
 void Gauge::Dump(std::ostream& outStream) const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
     outStream << "Gauge Id: " << this->mId << ", "
               << "Value: " << this->mValue << '\n';
 }
@@ -137,8 +125,6 @@ pt::ptree Distribution::ToPropertyTree() const
 /* Reset the distribution */
 void Distribution::Reset()
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
-
     this->mNumOfSamples = 0;
     this->mSum = 0.0;
     this->mMean = 0.0;
@@ -150,8 +136,6 @@ void Distribution::Reset()
 /* Observe the value and update mean and variance */
 void Distribution::Observe(double val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
-
     ++this->mNumOfSamples;
     this->mSum += val;
 
@@ -172,72 +156,51 @@ void Distribution::Observe(double val)
 /* Retrieve the number of the observed values */
 int Distribution::NumOfSamples() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mNumOfSamples;
 }
 
 /* Retrieve the sum of the observed values */
 double Distribution::Sum() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mSum;
 }
 
 /* Retrieve the mean of the observed values */
 double Distribution::Mean() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mMean;
 }
 
 /* Retrieve the unbiased variance of the observed values */
 double Distribution::Variance() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->UnlockedVariance();
+    return this->mNumOfSamples > 1 ?
+        this->mScaledVariance / (this->mNumOfSamples - 1) : 0.0;
 }
 
 /* Retrieve the standard deviation of the observed values */
 double Distribution::StandardDeviation() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-    return this->UnlockedStandardDeviation();
+    return std::sqrt(this->Variance());
 }
 
 /* Retrieve the maximum of the observed values */
 double Distribution::Maximum() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mMaximum;
 }
 
 /* Retrieve the minimum of the observed values */
 double Distribution::Minimum() const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
     return this->mMinimum;
-}
-
-/* Compute the unbiased variance of the observed values */
-double Distribution::UnlockedVariance() const
-{
-    return this->mNumOfSamples > 1 ?
-        this->mScaledVariance / (this->mNumOfSamples - 1) : 0.0;
-}
-
-/* Compute the standard deviation of the observed values */
-double Distribution::UnlockedStandardDeviation() const
-{
-    return std::sqrt(this->UnlockedVariance());
 }
 
 /* Dump the distribution object */
 void Distribution::Dump(std::ostream& outStream) const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
-    const double variance = this->UnlockedVariance();
-    const double standardDeviation = this->UnlockedStandardDeviation();
+    const double variance = this->Variance();
+    const double standardDeviation = this->StandardDeviation();
 
     outStream << "Distribution Id: " << this->mId << ", "
               << "Number of samples: " << this->mNumOfSamples << ", "
@@ -352,8 +315,7 @@ Histogram::Histogram(const std::string& metricId,
     HistogramBase(metricId),
     mBucketBoundaries(bucketBoundaries),
     mBucketCounts(bucketBoundaries.size() + 1),
-    mSumValues(0.0),
-    mMutex()
+    mSumValues(0.0)
 {
     assert(!this->mBucketBoundaries.empty());
     assert(std::is_sorted(this->mBucketBoundaries.cbegin(),
@@ -363,8 +325,6 @@ Histogram::Histogram(const std::string& metricId,
 /* Reset the histogram */
 void Histogram::Reset()
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
-
     std::fill(this->mBucketCounts.begin(),
               this->mBucketCounts.end(), 0.0);
     this->mSumValues = 0.0;
@@ -373,8 +333,6 @@ void Histogram::Reset()
 /* Observe the value */
 void Histogram::Observe(double val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
-
     /* Determine the bucket index */
     const auto bucketIt = std::find_if(
         this->mBucketBoundaries.cbegin(),
@@ -408,8 +366,6 @@ void Histogram::ValueRange(std::size_t bucketIdx,
                            double& rangeMin,
                            double& rangeMax) const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
     /* Input checks */
     assert(bucketIdx < this->mBucketCounts.size());
 
@@ -427,8 +383,6 @@ void Histogram::ValueRange(std::size_t bucketIdx,
 /* Dump the histogram object */
 void Histogram::Dump(std::ostream& outStream, bool isVerbose) const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
     outStream << "Histogram Id: " << this->mId << ", "
               << "Number of samples: " << this->NumOfSamples() << ", "
               << "Sum: " << this->mSumValues << ", "

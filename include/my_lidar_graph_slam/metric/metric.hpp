@@ -142,7 +142,7 @@ class Counter final : public CounterBase
 public:
     /* Constructor */
     Counter(const std::string& metricId) :
-        CounterBase(metricId), mValue(0.0), mMutex() { }
+        CounterBase(metricId), mValue(0.0) { }
     /* Constructor with default counter */
     Counter(const std::string& metricId, double initVal) :
         CounterBase(metricId), mValue(initVal) { }
@@ -163,9 +163,7 @@ public:
 
 private:
     /* Counter value */
-    double                    mValue;
-    /* Shared mutex */
-    mutable std::shared_mutex mMutex;
+    double mValue;
 };
 
 class GaugeBase : public MetricBase
@@ -224,10 +222,10 @@ class Gauge final : public GaugeBase
 public:
     /* Constructor */
     Gauge(const std::string& metricId) :
-        GaugeBase(metricId), mValue(0.0), mMutex() { }
+        GaugeBase(metricId), mValue(0.0) { }
     /* Constructor with default value */
     Gauge(const std::string& metricId, double initVal) :
-        GaugeBase(metricId), mValue(initVal), mMutex() { }
+        GaugeBase(metricId), mValue(initVal) { }
     /* Destructor */
     ~Gauge() = default;
 
@@ -252,9 +250,7 @@ public:
 
 private:
     /* Gauge value */
-    double                    mValue;
-    /* Shared mutex */
-    mutable std::shared_mutex mMutex;
+    double mValue;
 };
 
 class DistributionBase : public MetricBase
@@ -335,8 +331,7 @@ public:
         mMean(0.0),
         mScaledVariance(0.0),
         mMaximum(0.0),
-        mMinimum(0.0),
-        mMutex() { }
+        mMinimum(0.0) { }
     /* Destructor */
     ~Distribution() = default;
 
@@ -368,26 +363,18 @@ public:
     void Dump(std::ostream& outStream) const override;
 
 private:
-    /* Compute the unbiased variance of the observed values */
-    double UnlockedVariance() const;
-    /* Compute the standard deviation of the observed values */
-    double UnlockedStandardDeviation() const;
-
-private:
     /* Number of the observed values */
-    int                       mNumOfSamples;
+    int    mNumOfSamples;
     /* Sum of the observed values */
-    double                    mSum;
+    double mSum;
     /* Mean of the observed values */
-    double                    mMean;
+    double mMean;
     /* Scaled variance of the observed values */
-    double                    mScaledVariance;
+    double mScaledVariance;
     /* Maximum of the observed values */
-    double                    mMaximum;
+    double mMaximum;
     /* Minimum of the observed values */
-    double                    mMinimum;
-    /* Shared mutex */
-    mutable std::shared_mutex mMutex;
+    double mMinimum;
 };
 
 /* Type declarations */
@@ -518,13 +505,11 @@ public:
 
 private:
     /* Bucket boundaries */
-    BucketBoundaries          mBucketBoundaries;
+    BucketBoundaries    mBucketBoundaries;
     /* Bucket counters */
-    std::vector<double>       mBucketCounts;
+    std::vector<double> mBucketCounts;
     /* Sum of the observed values */
-    double                    mSumValues;
-    /* Shared mutex */
-    mutable std::shared_mutex mMutex;
+    double              mSumValues;
 };
 
 template <typename T>
@@ -586,7 +571,7 @@ class ValueSequence final : public ValueSequenceBase<T>
 public:
     /* Constructor */
     ValueSequence(const std::string& metricId) :
-        ValueSequenceBase<T>(metricId), mValues(), mMutex() { }
+        ValueSequenceBase<T>(metricId), mValues() { }
     /* Destructor */
     ~ValueSequence() = default;
 
@@ -614,9 +599,7 @@ public:
 
 private:
     /* Value sequence */
-    std::vector<T>            mValues;
-    /* Shared mutex */
-    mutable std::shared_mutex mMutex;
+    std::vector<T> mValues;
 };
 
 /*
@@ -641,7 +624,6 @@ boost::property_tree::ptree ValueSequence<T>::ToPropertyTree() const
 template <typename T>
 void ValueSequence<T>::Reset()
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValues.clear();
 }
 
@@ -649,7 +631,6 @@ void ValueSequence<T>::Reset()
 template <typename T>
 void ValueSequence<T>::Observe(T val)
 {
-    std::lock_guard<std::shared_mutex> lock { this->mMutex };
     this->mValues.push_back(static_cast<T>(val));
 }
 
@@ -657,8 +638,6 @@ void ValueSequence<T>::Observe(T val)
 template <typename T>
 void ValueSequence<T>::Dump(std::ostream& outStream) const
 {
-    std::shared_lock<std::shared_mutex> lock { this->mMutex };
-
     outStream << "ValueSequence Id: " << this->mId << ", "
               << "Number of samples: " << this->mValues.size() << '\n';
     outStream << Join(this->mValues, ", ") << '\n';
