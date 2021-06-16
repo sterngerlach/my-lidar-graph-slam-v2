@@ -53,21 +53,19 @@ LoopDetectorCorrelative::LoopDetectorCorrelative(
 
 /* Find a loop and return a loop constraint */
 LoopDetectionResultVector LoopDetectorCorrelative::Detect(
-    const LoopDetectionQueryVector& loopDetectionQueries)
+    const LoopDetectionQueryVector& queries)
 {
-    LoopDetectionResultVector loopDetectionResults;
+    LoopDetectionResultVector results;
 
-    /* Count the number of the successful loop detections */
-    int numOfSuccessfulDetections = 0;
     /* Create the timer */
     Metric::Timer timer;
 
     /* Perform loop detection for each query */
-    for (auto& loopDetectionQuery : loopDetectionQueries) {
+    for (auto& query : queries) {
         /* Retrieve the information for each query */
-        const auto& scanNode = loopDetectionQuery.mQueryScanNode;
-        const auto& localMap = loopDetectionQuery.mReferenceLocalMap;
-        const auto& localMapNode = loopDetectionQuery.mReferenceLocalMapNode;
+        const auto& scanNode = query.mQueryScanNode;
+        const auto& localMap = query.mReferenceLocalMap;
+        const auto& localMapNode = query.mReferenceLocalMapNode;
 
         /* Check the local map Id */
         Assert(localMap.mId == localMapNode.mLocalMapId);
@@ -96,47 +94,41 @@ LoopDetectionResultVector LoopDetectorCorrelative::Detect(
             localMapNode.mGlobalPose, scanNode.mGlobalPose);
         /* Find the corresponding position of the scan node
          * inside the local grid map */
-        RobotPose2D<double> correspondingPose;
-        Eigen::Matrix3d covarianceMatrix;
-        const bool loopDetected = this->FindCorrespondingPose(
+        const ScanMatchingSummary summary = this->mScanMatcher->OptimizePose(
             localMap.mMap, this->mPrecompMaps.at(localMap.mId).mMap,
             scanNode.mScanData, mapLocalScanPose,
-            correspondingPose, covarianceMatrix);
+            this->mScoreThreshold, this->mKnownRateThreshold);
 
         /* Do not build a new loop closing edge if loop not detected */
-        if (!loopDetected)
+        if (!summary.mPoseFound)
             continue;
 
         /* Check that the reference scan node which is closest to the query
          * scan node `scanNode` resides in the reference local grid map */
-        const auto& refScanNode = loopDetectionQuery.mReferenceScanNode;
+        const auto& refScanNode = query.mReferenceScanNode;
         Assert(refScanNode.mLocalMapId == localMapNode.mLocalMapId);
 
         /* Use the pose of the reference scan node `refScanNode` as the
          * center position of the reference local grid map `localMap`,
          * which is represented in the coordinate frame local to `localMap` */
-        const auto& localMapCenterPose = refScanNode.mLocalPose;
         const Point2D<double> localMapCenterPos {
-            localMapCenterPose.mX, localMapCenterPose.mY };
+            refScanNode.mLocalPose.mX, refScanNode.mLocalPose.mY };
 
         /* Refine the loop detection results (relative poses) by performing
          * the scan-matching at sub-pixel accuracy */
-        const ScanMatchingQuery finalScanMatchingQuery {
+        const ScanMatchingQuery finalQuery {
             localMap.mMap, localMapCenterPos,
-            scanNode.mScanData, correspondingPose };
-        const ScanMatchingSummary finalScanMatchingSummary =
-            this->mFinalScanMatcher->OptimizePose(finalScanMatchingQuery);
+            scanNode.mScanData, summary.mEstimatedPose };
+        const ScanMatchingSummary finalSummary =
+            this->mFinalScanMatcher->OptimizePose(finalQuery);
         /* Make sure that the relative pose estimate is found */
-        Assert(finalScanMatchingSummary.mPoseFound);
+        Assert(finalSummary.mPoseFound);
 
         /* Append to the loop detection results */
-        loopDetectionResults.emplace_back(
-            finalScanMatchingSummary.mEstimatedPose,
-            localMapNode.mGlobalPose,
-            localMapNode.mLocalMapId, scanNode.mNodeId,
-            finalScanMatchingSummary.mEstimatedCovariance);
-        /* Update the number of the successful loop detections */
-        numOfSuccessfulDetections++;
+        results.emplace_back(finalSummary.mEstimatedPose,
+                             localMapNode.mGlobalPose,
+                             localMapNode.mLocalMapId, scanNode.mNodeId,
+                             finalSummary.mEstimatedCovariance);
 
         /* Update the processing time for loop detections */
         this->mMetrics.mLoopDetectionTime->Observe(timer.ElapsedMicro());
@@ -145,36 +137,10 @@ LoopDetectionResultVector LoopDetectorCorrelative::Detect(
     }
 
     /* Update the metrics */
-    this->mMetrics.mNumOfQueries->Observe(loopDetectionQueries.size());
-    this->mMetrics.mNumOfDetections->Observe(numOfSuccessfulDetections);
+    this->mMetrics.mNumOfQueries->Observe(queries.size());
+    this->mMetrics.mNumOfDetections->Observe(results.size());
 
-    return loopDetectionResults;
-}
-
-/* Find a corresponding pose of the current robot pose
- * from a local grid map */
-bool LoopDetectorCorrelative::FindCorrespondingPose(
-    const GridMap& localMap,
-    const ConstMap& precompMap,
-    const Sensor::ScanDataPtr<double>& scanData,
-    const RobotPose2D<double>& mapLocalScanPose,
-    RobotPose2D<double>& correspondingPose,
-    Eigen::Matrix3d& estimatedCovMat) const
-{
-    /* Just call the scan matcher to find a corresponding pose */
-    const auto matchingSummary = this->mScanMatcher->OptimizePose(
-        localMap, precompMap, scanData, mapLocalScanPose,
-        this->mScoreThreshold, this->mKnownRateThreshold);
-
-    /* Return the result pose and the covariance in a map-local frame */
-    correspondingPose = matchingSummary.mEstimatedPose;
-    estimatedCovMat = matchingSummary.mEstimatedCovariance;
-
-    /* Loop detection fails if the score does not exceed the threshold */
-    if (!matchingSummary.mPoseFound)
-        return false;
-
-    return true;
+    return results;
 }
 
 } /* namespace Mapping */

@@ -69,18 +69,7 @@ public:
 
     /* Find a loop and return a loop constraint */
     LoopDetectionResultVector Detect(
-        const LoopDetectionQueryVector& loopDetectionQueries) override;
-
-private:
-    /* Find a corresponding pose of the current robot pose
-     * from a local grid map */
-    bool FindCorrespondingPose(
-        const GridMap& localMap,
-        const ConstMap& precompMap,
-        const Sensor::ScanDataPtr<double>& scanData,
-        const RobotPose2D<double>& mapLocalScanPose,
-        RobotPose2D<double>& correspondingPose,
-        Eigen::Matrix3d& estimatedCovMat) const;
+        const LoopDetectionQueryVector& queries) override;
 
 private:
     /* Real-time correlative scan matcher */
