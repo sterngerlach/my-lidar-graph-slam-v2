@@ -53,10 +53,11 @@ target_compile_features(lidar_graph_slam PUBLIC cxx_std_17)
 set_target_properties(lidar_graph_slam PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-# if (NEON_TRUE)
-#     message(STATUS "Neon found with compiler flag: -mfpu=neon -D__NEON__")
-#     target_compile_options(lidar_graph_slam PUBLIC -mfpu=neon -D__NEON__)
-# endif (NEON_TRUE)
+if (NEON_TRUE)
+    message(STATUS "Neon found with compiler flag: -mfpu=neon -D__NEON__")
+    target_compile_options(lidar_graph_slam PUBLIC -mfpu=neon -D__NEON__)
+    target_compile_options(lidar_graph_slam PUBLIC -munaligned-access)
+endif (NEON_TRUE)
 
 add_executable(slam_launch
     ${PROJECT_SOURCE_DIR}/src/my_lidar_graph_slam/slam_launcher.cpp)
