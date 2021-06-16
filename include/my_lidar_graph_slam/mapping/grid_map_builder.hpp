@@ -26,17 +26,23 @@ struct GridMapBuilderMetrics
     ~GridMapBuilderMetrics() = default;
 
     /* Total processing time for updating the pose graph */
-    Metric::ValueSequenceBase<int>*   mPoseGraphUpdateTime;
+    Metric::ValueSequenceBase<int>*           mPoseGraphUpdateTime;
     /* Total processing time for updating the local grid map */
-    Metric::ValueSequenceBase<int>*   mLocalMapUpdateTime;
+    Metric::ValueSequenceBase<int>*           mLocalMapUpdateTime;
     /* Total processing time for updating the latest grid map */
-    Metric::ValueSequenceBase<int>*   mLatestMapUpdateTime;
+    Metric::ValueSequenceBase<int>*           mLatestMapUpdateTime;
     /* Travel distance since the last local map is created */
-    Metric::ValueSequenceBase<float>* mLocalMapIntervalTravelDist;
+    Metric::ValueSequenceBase<float>*         mLocalMapIntervalTravelDist;
     /* Number of the local map nodes in the pose graph */
-    Metric::ValueSequenceBase<int>*   mNumOfLocalMapNodes;
+    Metric::ValueSequenceBase<int>*           mNumOfLocalMapNodes;
     /* Number of the edges in the pose graph */
-    Metric::ValueSequenceBase<int>*   mNumOfEdges;
+    Metric::ValueSequenceBase<int>*           mNumOfEdges;
+    /* Total memory consumption for the local grid maps */
+    Metric::ValueSequenceBase<std::uint64_t>* mLocalMapMemoryUsage;
+    /* Total memory consumption for the latest grid map */
+    Metric::ValueSequenceBase<std::uint64_t>* mLatestMapMemoryUsage;
+    /* Total memory consumption for the pose graph */
+    Metric::ValueSequenceBase<std::uint64_t>* mPoseGraphMemoryUsage;
 };
 
 /*
@@ -107,6 +113,14 @@ struct LocalMap final
     LocalMap(LocalMap&&) noexcept = default;
     /* Move assignment operator */
     LocalMap& operator=(LocalMap&&) noexcept = default;
+
+    /* Inspect the memory usage in bytes */
+    inline std::uint64_t InspectMemoryUsage() const {
+        return this->mMap.InspectMemoryUsage() +
+               sizeof(this->mId) +
+               sizeof(this->mScanNodeIdMin) +
+               sizeof(this->mScanNodeIdMax) +
+               sizeof(this->mFinished); }
 
     /* Local map Id */
     const LocalMapId mId;

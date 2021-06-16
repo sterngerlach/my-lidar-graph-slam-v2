@@ -28,7 +28,10 @@ GridMapBuilderMetrics::GridMapBuilderMetrics() :
     mLatestMapUpdateTime(nullptr),
     mLocalMapIntervalTravelDist(nullptr),
     mNumOfLocalMapNodes(nullptr),
-    mNumOfEdges(nullptr)
+    mNumOfEdges(nullptr),
+    mLocalMapMemoryUsage(nullptr),
+    mLatestMapMemoryUsage(nullptr),
+    mPoseGraphMemoryUsage(nullptr)
 {
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
@@ -46,6 +49,15 @@ GridMapBuilderMetrics::GridMapBuilderMetrics() :
         "GridMapBuilder.NumOfLocalMapNodes");
     this->mNumOfEdges = pMetricManager->AddValueSequence<int>(
         "GridMapBuilder.NumOfEdges");
+    this->mLocalMapMemoryUsage =
+        pMetricManager->AddValueSequence<std::uint64_t>(
+            "GridMapBuilder.LocalMapMemoryUsage");
+    this->mLatestMapMemoryUsage =
+        pMetricManager->AddValueSequence<std::uint64_t>(
+            "GridMapBuilder.LatestMapMemoryUsage");
+    this->mPoseGraphMemoryUsage =
+        pMetricManager->AddValueSequence<std::uint64_t>(
+            "GridMapBuilder.PoseGraphMemoryUsage");
 }
 
 /*
@@ -366,6 +378,8 @@ bool GridMapBuilder::UpdatePoseGraph(
     this->mMetrics.mPoseGraphUpdateTime->Observe(timer.ElapsedMicro());
     this->mMetrics.mNumOfLocalMapNodes->Observe(localMapNodes.size());
     this->mMetrics.mNumOfEdges->Observe(poseGraphEdges.size());
+    this->mMetrics.mPoseGraphMemoryUsage->Observe(
+        poseGraph->InspectMemoryUsage());
 
     return localMapInserted;
 }
@@ -469,6 +483,14 @@ void GridMapBuilder::UpdateGridMap(
     /* Update the metrics */
     this->mMetrics.mLocalMapUpdateTime->Observe(timer.ElapsedMicro());
 
+    /* Compute the memory usage for the local grid maps */
+    using IdDataPair = IdMap<LocalMapId, LocalMap>::IdDataPair;
+    const std::uint64_t localMapMemoryUsage = std::accumulate(
+        this->mLocalMaps.begin(), this->mLocalMaps.end(), 0,
+        [](const std::uint64_t memoryUsage, const IdDataPair& pair) {
+            return memoryUsage + pair.mData.InspectMemoryUsage(); });
+    this->mMetrics.mLocalMapMemoryUsage->Observe(localMapMemoryUsage);
+
     return;
 }
 
@@ -504,6 +526,8 @@ void GridMapBuilder::UpdateLatestMap(
 
     /* Update the metrics */
     this->mMetrics.mLatestMapUpdateTime->Observe(timer.ElapsedMicro());
+    this->mMetrics.mLatestMapMemoryUsage->Observe(
+        this->mLatestMap.InspectMemoryUsage());
 
     return;
 }
