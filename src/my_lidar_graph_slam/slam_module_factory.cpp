@@ -100,7 +100,8 @@ std::shared_ptr<Mapping::LidarGraphSlamFrontend> CreateSlamFrontend(
         const std::string localScanMatcherConfigGroup =
             config.get<std::string>("LocalSlam.ScanMatcherConfigGroup");
         pScanMatcher = CreateScanMatcher(
-            jsonSettings, localScanMatcherType, localScanMatcherConfigGroup);
+            jsonSettings, localScanMatcherType,
+            localScanMatcherConfigGroup, "");
     }
 
     /* Create the final scan matcher for local SLAM */
@@ -110,7 +111,7 @@ std::shared_ptr<Mapping::LidarGraphSlamFrontend> CreateSlamFrontend(
         config.get<std::string>("LocalSlam.FinalScanMatcherConfigGroup");
 
     auto pFinalScanMatcher = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "");
 
     /* Load the initial pose */
     const double initialPoseX = config.get<double>("InitialPose.X");

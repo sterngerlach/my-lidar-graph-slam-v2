@@ -91,10 +91,10 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorGridSearch(
     auto pScanMatcher = std::dynamic_pointer_cast<
         Mapping::ScanMatcherGridSearch>(
             CreateScanMatcher(jsonSettings, scanMatcherType,
-                              scanMatcherConfigGroup));
+                              scanMatcherConfigGroup, ""));
     /* Construct a final scan matcher for refinements */
     auto pFinalScanMatcher = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "");
 
     /* Construct a new grid search based loop detector */
     auto pLoopDetector = std::make_unique<Mapping::LoopDetectorGridSearch>(
@@ -135,10 +135,10 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelative(
     auto pScanMatcher = std::dynamic_pointer_cast<
         Mapping::ScanMatcherCorrelative>(
             CreateScanMatcher(jsonSettings, scanMatcherType,
-                              scanMatcherConfigGroup));
+                              scanMatcherConfigGroup, ""));
     /* Construct a final scan matcher for refinements */
     auto pFinalScanMatcher = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "");
 
     /* Construct a real-time correlative loop detector */
     auto pLoopDetector = std::make_unique<Mapping::LoopDetectorCorrelative>(
@@ -180,10 +180,10 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorBranchBound(
     auto pScanMatcher = std::dynamic_pointer_cast<
         Mapping::ScanMatcherBranchBound>(
             CreateScanMatcher(jsonSettings, scanMatcherType,
-                              scanMatcherConfigGroup));
+                              scanMatcherConfigGroup, ""));
     /* Construct a final scan matcher for refinements */
     auto pFinalScanMatcher = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "");
 
     /* Construct a branch-and-bound loop detector object */
     auto pLoopDetector = std::make_unique<Mapping::LoopDetectorBranchBound>(

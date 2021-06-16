@@ -181,7 +181,7 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorCorrelativeFPGA(
         jsonSettings, scanMatcherConfigGroup);
     /* Construct a final scan matcher for refinements */
     auto pFinalScanMatcher = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "");
 
     /* Create a real-time correlative loop detector */
     auto pLoopDetector = std::make_unique<
@@ -223,9 +223,9 @@ std::unique_ptr<Mapping::LoopDetector> CreateLoopDetectorFPGAParallel(
         jsonSettings, scanMatcher1ConfigGroup);
     /* Create a final scan matcher for refinement */
     auto pFinalScanMatcher0 = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "0");
     auto pFinalScanMatcher1 = CreateScanMatcher(
-        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup);
+        jsonSettings, finalScanMatcherType, finalScanMatcherConfigGroup, "1");
 
     /* Create a real-time correlative-based loop detector */
     return std::make_unique<Mapping::LoopDetectorFPGAParallel>(

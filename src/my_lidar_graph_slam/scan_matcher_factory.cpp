@@ -13,7 +13,8 @@ namespace MyLidarGraphSlam {
 /* Create a new branch-and-bound based scan matcher */
 std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherBranchBound(
     const pt::ptree& jsonSettings,
-    const std::string& configGroup)
+    const std::string& configGroup,
+    const std::string& namePostfix)
 {
     /* Load settings for a branch-and-bound based scan matcher */
     const auto& config = jsonSettings.get_child(configGroup);
@@ -48,17 +49,16 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherBranchBound(
         jsonSettings, costType, costConfigGroup);
 
     /* Construct a new branch-and-bound based scan matcher */
-    auto pScanMatcher = std::make_shared<Mapping::ScanMatcherBranchBound>(
-        scanMatcherName, pScoreFunc, pCostFunc,
+    return std::make_shared<Mapping::ScanMatcherBranchBound>(
+        scanMatcherName + namePostfix, pScoreFunc, pCostFunc,
         nodeHeightMax, rangeX, rangeY, rangeTheta);
-
-    return pScanMatcher;
 }
 
 /* Create a new exhaustive grid search based scan matcher */
 std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherGridSearch(
     const pt::ptree& jsonSettings,
-    const std::string& configGroup)
+    const std::string& configGroup,
+    const std::string& namePostfix)
 {
     /* Read settings for a new grid search based scan matcher */
     const auto& config = jsonSettings.get_child(configGroup);
@@ -95,17 +95,16 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherGridSearch(
         jsonSettings, costType, costConfigGroup);
 
     /* Construct a new grid search based scan matcher */
-    auto pScanMatcher = std::make_shared<Mapping::ScanMatcherGridSearch>(
-        scanMatcherName, pScoreFunc, pCostFunc,
+    return std::make_shared<Mapping::ScanMatcherGridSearch>(
+        scanMatcherName + namePostfix, pScoreFunc, pCostFunc,
         rangeX, rangeY, rangeTheta, stepX, stepY, stepTheta);
-
-    return pScanMatcher;
 }
 
 /* Create a greedy endpoint scan matcher */
 std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherHillClimbing(
     const pt::ptree& jsonSettings,
-    const std::string& configGroup)
+    const std::string& configGroup,
+    const std::string& namePostfix)
 {
     /* Load settings for hill-climbing based scan matcher */
     const pt::ptree& config = jsonSettings.get_child(configGroup);
@@ -125,17 +124,16 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherHillClimbing(
         jsonSettings, costType, costConfigGroup);
 
     /* Construct scan matcher */
-    auto pScanMatcher = std::make_shared<Mapping::ScanMatcherHillClimbing>(
-        scanMatcherName, linearStep, angularStep,
+    return std::make_shared<Mapping::ScanMatcherHillClimbing>(
+        scanMatcherName + namePostfix, linearStep, angularStep,
         maxIterations, maxNumOfRefinements, pCostFunc);
-
-    return pScanMatcher;
 }
 
 /* Create a linear solver based scan matcher */
 std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherLinearSolver(
     const pt::ptree& jsonSettings,
-    const std::string& configGroup)
+    const std::string& configGroup,
+    const std::string& namePostfix)
 {
     /* Load settings for linear solver scan matcher */
     const pt::ptree& config = jsonSettings.get_child(configGroup);
@@ -158,17 +156,16 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherLinearSolver(
         CreateCostSquareError(jsonSettings, costConfigGroup));
 
     /* Construct scan matcher */
-    auto pScanMatcher = std::make_shared<Mapping::ScanMatcherLinearSolver>(
-        scanMatcherName, numOfIterationsMax, errorTolerance,
+    return std::make_shared<Mapping::ScanMatcherLinearSolver>(
+        scanMatcherName + namePostfix, numOfIterationsMax, errorTolerance,
         initialLambda, pCostFunc);
-
-    return pScanMatcher;
 }
 
 /* Create a real-time correlative scan matcher */
 std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherCorrelative(
     const pt::ptree& jsonSettings,
-    const std::string& configGroup)
+    const std::string& configGroup,
+    const std::string& namePostfix)
 {
     /* Load settings for real-time correlative scan matcher */
     const pt::ptree& config = jsonSettings.get_child(configGroup);
@@ -188,29 +185,33 @@ std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcherCorrelative(
         jsonSettings, costType, costConfigGroup);
 
     /* Construct the real-time correlative scan matcher */
-    auto pScanMatcher = std::make_shared<Mapping::ScanMatcherCorrelative>(
-        scanMatcherName, pCostFunc, lowResolution,
+    return std::make_shared<Mapping::ScanMatcherCorrelative>(
+        scanMatcherName + namePostfix, pCostFunc, lowResolution,
         rangeX, rangeY, rangeTheta);
-
-    return pScanMatcher;
 }
 
 /* Create a scan matcher */
 std::shared_ptr<Mapping::ScanMatcher> CreateScanMatcher(
     const pt::ptree& jsonSettings,
     const std::string& scanMatcherType,
-    const std::string& configGroup)
+    const std::string& configGroup,
+    const std::string& namePrefix)
 {
     if (scanMatcherType == "BranchBound")
-        return CreateScanMatcherBranchBound(jsonSettings, configGroup);
+        return CreateScanMatcherBranchBound(
+            jsonSettings, configGroup, namePrefix);
     else if (scanMatcherType == "GridSearch")
-        return CreateScanMatcherGridSearch(jsonSettings, configGroup);
+        return CreateScanMatcherGridSearch(
+            jsonSettings, configGroup, namePrefix);
     else if (scanMatcherType == "HillClimbing")
-        return CreateScanMatcherHillClimbing(jsonSettings, configGroup);
+        return CreateScanMatcherHillClimbing(
+            jsonSettings, configGroup, namePrefix);
     else if (scanMatcherType == "LinearSolver")
-        return CreateScanMatcherLinearSolver(jsonSettings, configGroup);
+        return CreateScanMatcherLinearSolver(
+            jsonSettings, configGroup, namePrefix);
     else if (scanMatcherType == "RealTimeCorrelative")
-        return CreateScanMatcherCorrelative(jsonSettings, configGroup);
+        return CreateScanMatcherCorrelative(
+            jsonSettings, configGroup, namePrefix);
 
     return nullptr;
 }
