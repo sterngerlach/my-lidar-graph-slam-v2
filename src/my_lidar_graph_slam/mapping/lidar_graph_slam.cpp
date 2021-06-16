@@ -428,9 +428,8 @@ bool LidarGraphSlam::AppendFirstNodeAndEdge(
         Eigen::DiagonalMatrix<double, 3>(1e-9, 1e-9, 1e-9);
     /* Append a new scan data and create a new pose and an edge */
     const bool localMapInserted = this->mGridMapBuilder->AppendScan(
-        this->mPoseGraph->LocalMapNodes(), this->mPoseGraph->ScanNodes(),
-        this->mPoseGraph->Edges(),
-        initialScanPose, covarianceMatrix, scanData);
+        this->mPoseGraph, initialScanPose,
+        covarianceMatrix, scanData);
     /* Return whether the new local map is created */
     return localMapInserted;
 }
@@ -446,9 +445,8 @@ bool LidarGraphSlam::AppendNodeAndEdge(
     std::unique_lock uniqueLock { this->mMutex };
     /* Append a new scan data and create a new pose and an edge */
     const bool localMapInserted = this->mGridMapBuilder->AppendScan(
-        this->mPoseGraph->LocalMapNodes(), this->mPoseGraph->ScanNodes(),
-        this->mPoseGraph->Edges(),
-        relativeScanPose, scanPoseCovarianceMatrix, scanData);
+        this->mPoseGraph, relativeScanPose,
+        scanPoseCovarianceMatrix, scanData);
     /* Return whether the new local map is created */
     return localMapInserted;
 }
@@ -582,8 +580,7 @@ void LidarGraphSlam::AfterLoopClosure(
      * to the pose graph since the beginning of the loop closure and
      * we do not need to correct the remaining part of the pose graph */
     if (odomEdgeIt == this->mPoseGraph->Edges().cend()) {
-        this->mGridMapBuilder->AfterLoopClosure(
-            this->mPoseGraph->LocalMapNodes(), this->mPoseGraph->ScanNodes());
+        this->mGridMapBuilder->AfterLoopClosure(this->mPoseGraph);
         return;
     }
 
@@ -651,8 +648,7 @@ void LidarGraphSlam::AfterLoopClosure(
     }
 
     /* Rebuild the grid maps */
-    this->mGridMapBuilder->AfterLoopClosure(
-        this->mPoseGraph->LocalMapNodes(), this->mPoseGraph->ScanNodes());
+    this->mGridMapBuilder->AfterLoopClosure(this->mPoseGraph);
 
     return;
 }
@@ -693,9 +689,7 @@ void LidarGraphSlam::GetGlobalMap(
 
     /* Return a new global map and its pose in a world coordinate frame */
     this->mGridMapBuilder->ConstructGlobalMap(
-        this->mPoseGraph->LocalMapNodes(), this->mPoseGraph->ScanNodes(),
-        scanNodeIdMin, scanNodeIdMax,
-        globalPose, globalMap);
+        this->mPoseGraph, scanNodeIdMin, scanNodeIdMax, globalPose, globalMap);
 }
 
 /* Retrieve a collection of local grid maps */
@@ -731,9 +725,7 @@ void LidarGraphSlam::StopBackend()
     std::unique_lock uniqueLock { this->mMutex };
 
     /* Mark the current local grid map as finished */
-    this->mGridMapBuilder->FinishLocalMap(
-        this->mPoseGraph->LocalMapNodes(),
-        this->mPoseGraph->ScanNodes());
+    this->mGridMapBuilder->FinishLocalMap(this->mPoseGraph);
 
     /* Notify the SLAM backend to terminate */
     this->mBackendNotify = true;

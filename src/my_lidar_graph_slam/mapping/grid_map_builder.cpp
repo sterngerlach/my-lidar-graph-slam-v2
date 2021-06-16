@@ -103,37 +103,32 @@ const LocalMap& GridMapBuilder::LatestLocalMap() const
 
 /* Append the new scan data */
 bool GridMapBuilder::AppendScan(
-    IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-    IdMap<NodeId, ScanNode>& scanNodes,
-    std::vector<PoseGraphEdge>& poseGraphEdges,
+    std::shared_ptr<PoseGraph>& poseGraph,
     const RobotPose2D<double>& relativeScanPose,
     const Eigen::Matrix3d& scanPoseCovarianceMatrix,
     const Sensor::ScanDataPtr<double>& scanData)
 {
     /* Update the pose graph and create a new local grid map if necessary */
     const bool localMapInserted = this->UpdatePoseGraph(
-        localMapNodes, scanNodes, poseGraphEdges,
-        relativeScanPose, scanPoseCovarianceMatrix, scanData);
+        poseGraph, relativeScanPose, scanPoseCovarianceMatrix, scanData);
     /* Update the grid map */
-    this->UpdateGridMap(localMapNodes, scanNodes);
+    this->UpdateGridMap(poseGraph);
     /* Return whether the new local map is created */
     return localMapInserted;
 }
 
 /* Re-create the local grid maps and latest map after the loop closure */
 void GridMapBuilder::AfterLoopClosure(
-    const IdMap<LocalMapId, LocalMapNode>& /* localMapNodes */,
-    const IdMap<NodeId, ScanNode>& scanNodes)
+    const std::shared_ptr<PoseGraph>& poseGraph)
 {
     /* Update the accumulated travel distance */
-    this->UpdateAccumTravelDist(scanNodes);
+    this->UpdateAccumTravelDist(poseGraph->ScanNodes());
 }
 
 /* Finish the current local grid map and compute the center position
  * of the local grid map in the map-local coordinate frame */
 void GridMapBuilder::FinishLocalMap(
-    const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-    const IdMap<NodeId, ScanNode>& /* scanNodes */)
+    const std::shared_ptr<PoseGraph>& poseGraph)
 {
     if (this->mLocalMaps.empty())
         return;
@@ -141,7 +136,7 @@ void GridMapBuilder::FinishLocalMap(
     /* Retrieve the latest local map */
     auto& localMap = this->LatestLocalMap();
     /* Retrieve the latest local map node */
-    const auto& localMapNode = localMapNodes.Back();
+    const auto& localMapNode = poseGraph->LocalMapNodes().Back();
     /* Make sure that their Ids are the same */
     Assert(localMap.mId == localMapNode.mLocalMapId);
 
@@ -151,8 +146,7 @@ void GridMapBuilder::FinishLocalMap(
 
 /* Construct the global grid map */
 void GridMapBuilder::ConstructGlobalMap(
-    const IdMap<LocalMapId, LocalMapNode>& /* localMapNodes */,
-    const IdMap<NodeId, ScanNode>& scanNodes,
+    const std::shared_ptr<PoseGraph>& poseGraph,
     const NodeId scanNodeIdMin,
     const NodeId scanNodeIdMax,
     RobotPose2D<double>& globalMapPose,
@@ -160,11 +154,12 @@ void GridMapBuilder::ConstructGlobalMap(
 {
     /* World coordinate pose of the first scan node is used as the map pose
      * The below pose is the origin of the map-local coordinate frame */
-    const RobotPose2D<double> mapPose = scanNodes.Front().mGlobalPose;
+    const RobotPose2D<double> mapPose =
+        poseGraph->ScanNodes().Front().mGlobalPose;
 
     /* Construct the global map */
     GridMap gridMap { this->mResolution, this->mPatchSize, 1.0, 1.0 };
-    this->ConstructMapFromScans(mapPose, gridMap, scanNodes,
+    this->ConstructMapFromScans(mapPose, gridMap, poseGraph->ScanNodes(),
                                 scanNodeIdMin, scanNodeIdMax);
 
     /* Set the result */
@@ -176,16 +171,18 @@ void GridMapBuilder::ConstructGlobalMap(
 
 /* Append a new local map */
 void GridMapBuilder::AppendLocalMap(
-    IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-    IdMap<NodeId, ScanNode>& scanNodes,
-    std::vector<PoseGraphEdge>& poseGraphEdges,
+    std::shared_ptr<PoseGraph>& poseGraph,
     const RobotPose2D<double>& scanPose,
     const Eigen::Matrix3d& scanPoseCovarianceMatrix,
     const NodeId scanNodeId)
 {
     /* The latest local map is marked as finished and the center position
      * of the local map in the map-local coordinate frame is computed */
-    this->FinishLocalMap(localMapNodes, scanNodes);
+    this->FinishLocalMap(poseGraph);
+
+    auto& localMapNodes = poseGraph->LocalMapNodes();
+    auto& scanNodes = poseGraph->ScanNodes();
+    auto& poseGraphEdges = poseGraph->Edges();
 
     /* Determine the Id of the new local map */
     const LocalMapId localMapId = localMapNodes.empty() ?
@@ -277,15 +274,17 @@ void GridMapBuilder::AppendLocalMap(
 /* Update the pose graph, add a new scan node and create a new local grid
  * map (and its corresponding new local map node) if necessary */
 bool GridMapBuilder::UpdatePoseGraph(
-    IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-    IdMap<NodeId, ScanNode>& scanNodes,
-    std::vector<PoseGraphEdge>& poseGraphEdges,
+    std::shared_ptr<PoseGraph>& poseGraph,
     const RobotPose2D<double>& relativeScanPose,
     const Eigen::Matrix3d& scanPoseCovarianceMatrix,
     const Sensor::ScanDataPtr<double>& scanData)
 {
     /* Create the new timer */
     Metric::Timer timer;
+
+    auto& localMapNodes = poseGraph->LocalMapNodes();
+    auto& scanNodes = poseGraph->ScanNodes();
+    auto& poseGraphEdges = poseGraph->Edges();
 
     /* Id of the new scan node to be added */
     const NodeId scanNodeId = scanNodes.empty() ?
@@ -319,8 +318,8 @@ bool GridMapBuilder::UpdatePoseGraph(
      * The pose (in a world coordinate frame) of the new local map is set to
      * the robot pose `scanPose` when the scan data `scanData` is acquired */
     if (localMapInserted)
-        this->AppendLocalMap(localMapNodes, scanNodes, poseGraphEdges,
-                             scanPose, scanPoseCovarianceMatrix, scanNodeId);
+        this->AppendLocalMap(poseGraph, scanPose,
+                             scanPoseCovarianceMatrix, scanNodeId);
 
     /* Make sure that the local maps are not empty for now */
     Assert(!this->mLocalMaps.empty());
@@ -373,8 +372,7 @@ bool GridMapBuilder::UpdatePoseGraph(
 
 /* Update the grid map (list of the local grid maps) */
 void GridMapBuilder::UpdateGridMap(
-    const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-    const IdMap<NodeId, ScanNode>& scanNodes)
+    const std::shared_ptr<PoseGraph>& poseGraph)
 {
     /* Vector for storing missed grid cell indices
      * Specified as static variable to reduce the performance loss
@@ -383,6 +381,9 @@ void GridMapBuilder::UpdateGridMap(
 
     /* Create the timer */
     Metric::Timer timer;
+
+    auto& localMapNodes = poseGraph->LocalMapNodes();
+    auto& scanNodes = poseGraph->ScanNodes();
 
     /* Retrieve the latest local map to which the latest scan is added */
     auto& latestLocalMap = this->LatestLocalMap();

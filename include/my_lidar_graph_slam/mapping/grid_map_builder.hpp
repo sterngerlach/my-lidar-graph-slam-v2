@@ -143,57 +143,40 @@ public:
     ~GridMapBuilder() = default;
 
     /* Append the new scan data */
-    bool AppendScan(
-        IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        IdMap<NodeId, ScanNode>& scanNodes,
-        std::vector<PoseGraphEdge>& poseGraphEdges,
-        const RobotPose2D<double>& relativeScanPose,
-        const Eigen::Matrix3d& scanPoseCovarianceMatrix,
-        const Sensor::ScanDataPtr<double>& scanData);
+    bool AppendScan(std::shared_ptr<PoseGraph>& poseGraph,
+                    const RobotPose2D<double>& relativeScanPose,
+                    const Eigen::Matrix3d& scanPoseCovarianceMatrix,
+                    const Sensor::ScanDataPtr<double>& scanData);
 
     /* Re-create the local grid maps and latest map after the loop closure */
-    void AfterLoopClosure(
-        const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        const IdMap<NodeId, ScanNode>& scanNodes);
+    void AfterLoopClosure(const std::shared_ptr<PoseGraph>& poseGraph);
 
     /* Finish the current local grid map and compute the center position
      * of the local grid map in the map-local coordinate frame */
-    void FinishLocalMap(
-        const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        const IdMap<NodeId, ScanNode>& scanNodes);
+    void FinishLocalMap(const std::shared_ptr<PoseGraph>& poseGraph);
 
     /* Construct the global map */
-    void ConstructGlobalMap(
-        const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        const IdMap<NodeId, ScanNode>& scanNodes,
-        const NodeId scanNodeIdMin,
-        const NodeId scanNodeIdMax,
-        RobotPose2D<double>& globalMapPose,
-        GridMap& globalMap);
+    void ConstructGlobalMap(const std::shared_ptr<PoseGraph>& poseGraph,
+                            const NodeId scanNodeIdMin,
+                            const NodeId scanNodeIdMax,
+                            RobotPose2D<double>& globalMapPose,
+                            GridMap& globalMap);
 
     /* Append a new local map */
-    void AppendLocalMap(
-        IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        IdMap<NodeId, ScanNode>& scanNodes,
-        std::vector<PoseGraphEdge>& poseGraphEdges,
-        const RobotPose2D<double>& scanPose,
-        const Eigen::Matrix3d& scanPoseCovarianceMatrix,
-        const NodeId scanNodeId);
+    void AppendLocalMap(std::shared_ptr<PoseGraph>& poseGraph,
+                        const RobotPose2D<double>& scanPose,
+                        const Eigen::Matrix3d& scanPoseCovarianceMatrix,
+                        const NodeId scanNodeId);
 
     /* Update the pose graph, add a new scan node and create a new local grid
      * map (and its corresponding new local map node) if necessary */
-    bool UpdatePoseGraph(
-        IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        IdMap<NodeId, ScanNode>& scanNodes,
-        std::vector<PoseGraphEdge>& poseGraphEdges,
-        const RobotPose2D<double>& relativeScanPose,
-        const Eigen::Matrix3d& scanPoseCovarianceMatrix,
-        const Sensor::ScanDataPtr<double>& scanData);
+    bool UpdatePoseGraph(std::shared_ptr<PoseGraph>& poseGraph,
+                         const RobotPose2D<double>& relativeScanPose,
+                         const Eigen::Matrix3d& scanPoseCovarianceMatrix,
+                         const Sensor::ScanDataPtr<double>& scanData);
 
     /* Update the grid map (list of the local grid maps) */
-    void UpdateGridMap(
-        const IdMap<LocalMapId, LocalMapNode>& localMapNodes,
-        const IdMap<NodeId, ScanNode>& scanNodes);
+    void UpdateGridMap(const std::shared_ptr<PoseGraph>& poseGraph);
 
     /* Update the grid map with the latest scans */
     void UpdateLatestMap(const IdMap<NodeId, ScanNode>& scanNodes);
