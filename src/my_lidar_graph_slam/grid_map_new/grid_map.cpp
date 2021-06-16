@@ -827,5 +827,28 @@ BoundingBox<int> GridMap<T>::CroppedBoundingBoxInBlocks() const
     return croppedBox;
 }
 
+/* Inspect the memory usage in bytes */
+template <typename T>
+std::uint64_t GridMap<T>::InspectMemoryUsage() const
+{
+    std::uint64_t memoryUsage = 0;
+
+    memoryUsage += sizeof(this->mLog2BlockSize) +
+                   sizeof(this->mBlockSize) +
+                   sizeof(this->mBlockRows) +
+                   sizeof(this->mBlockCols) +
+                   sizeof(this->mBlocks) +
+                   sizeof(this->mGeometry);
+
+    const T* block = this->Block();
+
+    /* Compute the memory usage for blocks */
+    for (int row = 0; row < this->mBlockRows; ++row)
+        for (int col = 0; col < this->mBlockCols; ++col, ++block)
+            memoryUsage += block->InspectMemoryUsage();
+
+    return memoryUsage;
+}
+
 } /* namespace GridMapNew */
 } /* namespace MyLidarGraphSlam */

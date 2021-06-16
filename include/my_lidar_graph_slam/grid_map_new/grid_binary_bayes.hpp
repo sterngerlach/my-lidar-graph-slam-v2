@@ -146,6 +146,9 @@ public:
     /* Update the grid value given an observation (without input checks) */
     void UpdateUnchecked(const int row, const int col, const double prob);
 
+    /* Inspect the memory usage in bytes */
+    std::uint64_t InspectMemoryUsage() const;
+
 private:
     /* Allocate the storage for the internal values */
     void Allocate();

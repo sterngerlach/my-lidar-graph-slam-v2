@@ -219,6 +219,9 @@ public:
     /* Compute the bounding box of the cropped grid map in blocks */
     BoundingBox<int> CroppedBoundingBoxInBlocks() const;
 
+    /* Inspect the memory usage in bytes */
+    std::uint64_t InspectMemoryUsage() const;
+
 private:
     /* Reset to the initial state */
     void Reset();

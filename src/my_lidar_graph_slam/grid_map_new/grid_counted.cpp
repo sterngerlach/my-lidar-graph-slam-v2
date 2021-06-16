@@ -304,6 +304,25 @@ void GridCounted::UpdateUnchecked(
     *gridCell = ProbabilityToValue(prob);
 }
 
+/* Inspect the memory usage in bytes */
+std::uint64_t GridCounted::InspectMemoryUsage() const
+{
+    std::uint64_t memoryUsage = 0;
+    const int numOfValues = this->IsAllocated() ?
+                            (1 << (this->mLog2Size << 1)) : 0;
+
+    memoryUsage += sizeof(this->mLog2Size) +
+                   sizeof(this->mSize) +
+                   sizeof(this->mValues) +
+                   sizeof(this->mHits) +
+                   sizeof(this->mCounts) +
+                   sizeof(std::uint16_t) * numOfValues +
+                   sizeof(std::uint32_t) * numOfValues +
+                   sizeof(std::uint32_t) * numOfValues;
+
+    return memoryUsage;
+}
+
 /* Convert the internal value to the probability value */
 double GridCounted::ValueToProbability(const std::uint16_t value)
 {

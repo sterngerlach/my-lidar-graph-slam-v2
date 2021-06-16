@@ -260,6 +260,21 @@ void GridConstant::CopyValuesU8x4(
     }
 }
 
+/* Inspect the memory usage in bytes */
+std::uint64_t GridConstant::InspectMemoryUsage() const
+{
+    std::uint64_t memoryUsage = 0;
+    const int numOfValues = this->IsAllocated() ?
+                            (1 << (this->mLog2Size << 1)) : 0;
+
+    memoryUsage += sizeof(this->mLog2Size) +
+                   sizeof(this->mSize) +
+                   sizeof(this->mValues) +
+                   sizeof(std::uint16_t) * numOfValues;
+
+    return memoryUsage;
+}
+
 /* Convert the internal value to the probability value */
 double GridConstant::ValueToProbability(const std::uint16_t value)
 {

@@ -147,6 +147,9 @@ public:
     /* Update the grid value given an observation (hit or miss) */
     void UpdateUnchecked(const int row, const int col, const bool hit);
 
+    /* Inspect the memory usage in bytes */
+    std::uint64_t InspectMemoryUsage() const;
+
 private:
     /* Allocate the storage for the internal values */
     void Allocate();
