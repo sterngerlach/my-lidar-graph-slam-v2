@@ -38,7 +38,8 @@ private:
                 const std::size_t queryBeginIdx,
                 const std::size_t queryEndIdx,
                 const LoopDetectionQueryVector& queries,
-                LoopDetectionResultVector& results);
+                LoopDetectionResultVector& results,
+                std::vector<int>& times);
 
 private:
     /* Total number of the real-time correlative-based scan matcher

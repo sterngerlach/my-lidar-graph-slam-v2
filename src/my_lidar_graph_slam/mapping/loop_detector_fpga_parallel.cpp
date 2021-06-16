@@ -35,13 +35,15 @@ LoopDetectionResultVector LoopDetectorFPGAParallel::Detect(
     /* Perform the loop detections */
     LoopDetectionResultVector results;
     LoopDetectionResultVector results1;
+    std::vector<int> times;
+    std::vector<int> times1;
 
     /* Start a sub-thread to process the second half of the queries */
     auto subThread = std::thread([&]() {
         this->Detect(1, queries.size() / 2, queries.size(),
-                     queries, results1); });
+                     queries, results1, times1); });
     /* Start to process the first half of the queries */
-    this->Detect(0, 0, queries.size() / 2, queries, results);
+    this->Detect(0, 0, queries.size() / 2, queries, results, times);
 
     /* Wait for the sub-thread to finish the job */
     if (subThread.joinable())
@@ -57,6 +59,11 @@ LoopDetectionResultVector LoopDetectorFPGAParallel::Detect(
     this->mMetrics.mNumOfQueries->Observe(queries.size());
     this->mMetrics.mNumOfDetections->Observe(results.size());
 
+    for (const auto& time : times)
+        this->mMetrics.mLoopDetectionTime->Observe(time);
+    for (const auto& time : times1)
+        this->mMetrics.mLoopDetectionTime->Observe(time);
+
     return results;
 }
 
@@ -66,7 +73,8 @@ void LoopDetectorFPGAParallel::Detect(
     const std::size_t queryBeginIdx,
     const std::size_t queryEndIdx,
     const LoopDetectionQueryVector& queries,
-    LoopDetectionResultVector& results)
+    LoopDetectionResultVector& results,
+    std::vector<int>& times)
 {
     /* Create the timer */
     Metric::Timer timer;
@@ -129,7 +137,7 @@ void LoopDetectorFPGAParallel::Detect(
                              finalSummary.mEstimatedCovariance);
 
         /* Measure the processing time for the loop detection */
-        this->mMetrics.mLoopDetectionTime->Observe(timer.ElapsedMicro());
+        times.push_back(timer.ElapsedMicro());
         /* Stop the timer */
         timer.Stop();
     }
