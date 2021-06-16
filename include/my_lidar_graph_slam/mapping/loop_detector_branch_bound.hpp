@@ -29,13 +29,15 @@ struct LoopDetectorBranchBoundMetrics
     ~LoopDetectorBranchBoundMetrics() = default;
 
     /* Total processing time for grid map precomputations */
-    Metric::ValueSequenceBase<int>* mInputSetupTime;
+    Metric::ValueSequenceBase<int>*           mInputSetupTime;
     /* Total processing time for loop detection */
-    Metric::ValueSequenceBase<int>* mLoopDetectionTime;
+    Metric::ValueSequenceBase<int>*           mLoopDetectionTime;
     /* Number of the loop detection queries */
-    Metric::ValueSequenceBase<int>* mNumOfQueries;
+    Metric::ValueSequenceBase<int>*           mNumOfQueries;
     /* Number of the successful loop detections */
-    Metric::ValueSequenceBase<int>* mNumOfDetections;
+    Metric::ValueSequenceBase<int>*           mNumOfDetections;
+    /* Total memory consumption for the precomputed grid maps */
+    Metric::ValueSequenceBase<std::uint64_t>* mPrecompMapMemoryUsage;
 };
 
 class LoopDetectorBranchBound final : public LoopDetector
@@ -51,6 +53,14 @@ public:
         PrecomputedMapStack(const LocalMapId& localMapId,
                             std::vector<ConstMap>&& precompMaps) :
             mId(localMapId), mMaps(std::move(precompMaps)) { }
+
+        /* Inspect the memory usage in bytes */
+        inline std::uint64_t InspectMemoryUsage() const {
+            const std::uint64_t mapMemoryUsage = std::accumulate(
+                this->mMaps.begin(), this->mMaps.end(), 0,
+                [](const std::uint64_t memoryUsage, const ConstMap& constMap) {
+                    return memoryUsage + constMap.InspectMemoryUsage(); });
+            return sizeof(this->mId) + sizeof(this->mMaps) + mapMemoryUsage; }
 
         /* Id of the local grid map */
         const LocalMapId            mId;

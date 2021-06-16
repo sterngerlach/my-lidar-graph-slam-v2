@@ -27,13 +27,15 @@ struct LoopDetectorCorrelativeMetrics
     ~LoopDetectorCorrelativeMetrics() = default;
 
     /* Total processing time for grid map precomputations */
-    Metric::ValueSequenceBase<int>* mInputSetupTime;
+    Metric::ValueSequenceBase<int>*           mInputSetupTime;
     /* Total processing time for loop detection */
-    Metric::ValueSequenceBase<int>* mLoopDetectionTime;
+    Metric::ValueSequenceBase<int>*           mLoopDetectionTime;
     /* Number of the loop detection queries */
-    Metric::ValueSequenceBase<int>* mNumOfQueries;
+    Metric::ValueSequenceBase<int>*           mNumOfQueries;
     /* Number of the successful loop detections */
-    Metric::ValueSequenceBase<int>* mNumOfDetections;
+    Metric::ValueSequenceBase<int>*           mNumOfDetections;
+    /* Total memory consumption for the precomputed grid maps */
+    Metric::ValueSequenceBase<std::uint64_t>* mPrecompMapMemoryUsage;
 };
 
 class LoopDetectorCorrelative final : public LoopDetector
@@ -49,6 +51,10 @@ public:
         PrecomputedMapStack(const LocalMapId& localMapId,
                             ConstMap&& precompMap) :
             mId(localMapId), mMap(std::move(precompMap)) { }
+
+        /* Inspect the memory usage in bytes */
+        inline std::uint64_t InspectMemoryUsage() const {
+            return this->mMap.InspectMemoryUsage() + sizeof(this->mId); }
 
         /* Id of the local grid map */
         const LocalMapId mId;

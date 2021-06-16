@@ -17,7 +17,8 @@ LoopDetectorBranchBoundMetrics::LoopDetectorBranchBoundMetrics(
     mInputSetupTime(nullptr),
     mLoopDetectionTime(nullptr),
     mNumOfQueries(nullptr),
-    mNumOfDetections(nullptr)
+    mNumOfDetections(nullptr),
+    mPrecompMapMemoryUsage(nullptr)
 {
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
@@ -31,6 +32,9 @@ LoopDetectorBranchBoundMetrics::LoopDetectorBranchBoundMetrics(
         loopDetectorName + ".NumOfQueries");
     this->mNumOfDetections = pMetricManager->AddValueSequence<int>(
         loopDetectorName + ".NumOfDetections");
+    this->mPrecompMapMemoryUsage =
+        pMetricManager->AddValueSequence<std::uint64_t>(
+            loopDetectorName + ".PrecompMapMemoryUsage");
 }
 
 /* Constructor */
@@ -139,6 +143,14 @@ LoopDetectionResultVector LoopDetectorBranchBound::Detect(
     /* Update the metrics */
     this->mMetrics.mNumOfQueries->Observe(queries.size());
     this->mMetrics.mNumOfDetections->Observe(results.size());
+
+    /* Update the memory usage for the precomputed grid maps */
+    using IdDataPair = IdMap<LocalMapId, PrecomputedMapStack>::IdDataPair;
+    const std::uint64_t mapMemoryUsage = std::accumulate(
+        this->mPrecompMaps.begin(), this->mPrecompMaps.end(), 0,
+        [](const std::uint64_t memoryUsage, const IdDataPair& pair) {
+            return memoryUsage + pair.mData.InspectMemoryUsage(); });
+    this->mMetrics.mPrecompMapMemoryUsage->Observe(mapMemoryUsage);
 
     return results;
 }
