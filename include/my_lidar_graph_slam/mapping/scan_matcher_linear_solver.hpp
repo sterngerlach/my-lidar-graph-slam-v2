@@ -21,11 +21,11 @@ struct ScanMatcherLinearSolverMetrics
     ~ScanMatcherLinearSolverMetrics() = default;
 
     /* Total processing time for the optimization */
-    Metric::DistributionBase*         mOptimizationTime;
+    Metric::ValueSequenceBase<int>*   mOptimizationTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*         mDiffTranslation;
+    Metric::ValueSequenceBase<float>* mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*         mDiffRotation;
+    Metric::ValueSequenceBase<float>* mDiffRotation;
     /* Total number of the iterations */
     Metric::ValueSequenceBase<int>*   mNumOfIterations;
     /* Initial normalized cost value */

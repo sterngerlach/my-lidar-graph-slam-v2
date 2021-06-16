@@ -25,15 +25,14 @@ ScanMatcherLinearSolverMetrics::ScanMatcherLinearSolverMetrics(
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    /* Register the distribution metrics */
-    this->mOptimizationTime = pMetricManager->AddDistribution(
+    /* Register the value sequence metrics */
+    this->mOptimizationTime = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".OptimizationTime");
-    this->mDiffTranslation = pMetricManager->AddDistribution(
+    this->mDiffTranslation = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".DiffTranslation");
-    this->mDiffRotation = pMetricManager->AddDistribution(
+    this->mDiffRotation = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".DiffRotation");
 
-    /* Register the value sequence metrics */
     this->mNumOfIterations = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".NumOfIterations");
     this->mInitialCost = pMetricManager->AddValueSequence<float>(

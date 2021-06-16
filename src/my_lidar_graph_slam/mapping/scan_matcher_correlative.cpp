@@ -34,36 +34,34 @@ ScanMatcherCorrelativeMetrics::ScanMatcherCorrelativeMetrics(
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    /* Register the counter metrics */
-    this->mNumOfIgnoredNodes = pMetricManager->AddCounter(
-        scanMatcherName + ".NumOfIgnoredNodes");
-    this->mNumOfProcessedNodes = pMetricManager->AddCounter(
-        scanMatcherName + ".NumOfProcessedNodes");
-
-    /* Register the distribution metrics */
-    this->mInputSetupTime = pMetricManager->AddDistribution(
+    /* Register the value sequence metrics */
+    this->mInputSetupTime = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".InputSetupTime");
-    this->mOptimizationTime = pMetricManager->AddDistribution(
+    this->mOptimizationTime = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".OptimizationTime");
-    this->mDiffTranslation = pMetricManager->AddDistribution(
+    this->mDiffTranslation = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".DiffTranslation");
-    this->mDiffRotation = pMetricManager->AddDistribution(
+    this->mDiffRotation = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".DiffRotation");
 
-    this->mWinSizeX = pMetricManager->AddDistribution(
+    this->mWinSizeX = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".WinSizeX");
-    this->mWinSizeY = pMetricManager->AddDistribution(
+    this->mWinSizeY = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".WinSizeY");
-    this->mWinSizeTheta = pMetricManager->AddDistribution(
+    this->mWinSizeTheta = pMetricManager->AddValueSequence<int>(
         scanMatcherName + ".WinSizeTheta");
-    this->mStepSizeX = pMetricManager->AddDistribution(
+    this->mStepSizeX = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".StepSizeX");
-    this->mStepSizeY = pMetricManager->AddDistribution(
+    this->mStepSizeY = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".StepSizeY");
-    this->mStepSizeTheta = pMetricManager->AddDistribution(
+    this->mStepSizeTheta = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".StepSizeTheta");
 
-    /* Register the value sequence metrics */
+    this->mNumOfIgnoredNodes = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".NumOfIgnoredNodes");
+    this->mNumOfProcessedNodes = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".NumOfProcessedNodes");
+
     this->mScoreValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".ScoreValue");
     this->mCostValue = pMetricManager->AddValueSequence<float>(
@@ -232,8 +230,8 @@ ScanMatchingSummary ScanMatcherCorrelative::OptimizePose(
     this->mMetrics.mStepSizeX->Observe(stepX);
     this->mMetrics.mStepSizeY->Observe(stepY);
     this->mMetrics.mStepSizeTheta->Observe(stepTheta);
-    this->mMetrics.mNumOfIgnoredNodes->Increment(numOfIgnoredNodes);
-    this->mMetrics.mNumOfProcessedNodes->Increment(numOfProcessedNodes);
+    this->mMetrics.mNumOfIgnoredNodes->Observe(numOfIgnoredNodes);
+    this->mMetrics.mNumOfProcessedNodes->Observe(numOfProcessedNodes);
     this->mMetrics.mScoreValue->Observe(scoreMax);
     this->mMetrics.mCostValue->Observe(normalizedCost);
     this->mMetrics.mNumOfScans->Observe(scanData->NumOfScans());

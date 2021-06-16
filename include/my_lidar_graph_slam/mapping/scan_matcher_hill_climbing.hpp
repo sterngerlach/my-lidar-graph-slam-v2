@@ -20,11 +20,11 @@ struct ScanMatcherHillClimbingMetrics
     ~ScanMatcherHillClimbingMetrics() = default;
 
     /* Total processing time for the optimization */
-    Metric::DistributionBase*         mOptimizationTime;
+    Metric::ValueSequenceBase<int>*   mOptimizationTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*         mDiffTranslation;
+    Metric::ValueSequenceBase<float>* mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*         mDiffRotation;
+    Metric::ValueSequenceBase<float>* mDiffRotation;
     /* Total number of the iterations */
     Metric::ValueSequenceBase<int>*   mNumOfIterations;
     /* Total number of the step size updates */

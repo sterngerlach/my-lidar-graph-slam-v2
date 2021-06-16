@@ -27,45 +27,45 @@ struct ScanMatcherFPGAMetrics
     ~ScanMatcherFPGAMetrics() = default;
 
     /* Total processing time for setting up the input */
-    Metric::DistributionBase*         mInputSetupTime;
+    Metric::ValueSequenceBase<int>*   mInputSetupTime;
     /* Total processing time for setting up the scan matcher IP core */
-    Metric::DistributionBase*         mSetupIPTime;
+    Metric::ValueSequenceBase<int>*   mSetupIPTime;
     /* Total processing time for sending the scan data */
-    Metric::DistributionBase*         mScanSendTime;
+    Metric::ValueSequenceBase<int>*   mScanSendTime;
     /* Total processing time for sending the grid map data */
-    Metric::DistributionBase*         mMapSendTime;
+    Metric::ValueSequenceBase<int>*   mMapSendTime;
     /* Total processing time for the calculation on the FPGA device */
-    Metric::DistributionBase*         mOptimizationTime;
+    Metric::ValueSequenceBase<int>*   mOptimizationTime;
     /* Total processing time for waiting for the scan matcher IP core */
-    Metric::DistributionBase*         mWaitIPTime;
+    Metric::ValueSequenceBase<int>*   mWaitIPTime;
     /* Total processing time for the scan matching */
-    Metric::DistributionBase*         mScanMatchingTime;
+    Metric::ValueSequenceBase<int>*   mScanMatchingTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*         mDiffTranslation;
+    Metric::ValueSequenceBase<float>* mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*         mDiffRotation;
+    Metric::ValueSequenceBase<float>* mDiffRotation;
     /* Size of the search window along the X-axis */
-    Metric::DistributionBase*         mWinSizeX;
+    Metric::ValueSequenceBase<int>*   mWinSizeX;
     /* Size of the search window along the Y-axis */
-    Metric::DistributionBase*         mWinSizeY;
+    Metric::ValueSequenceBase<int>*   mWinSizeY;
     /* Size of the search window along the Theta-axis */
-    Metric::DistributionBase*         mWinSizeTheta;
+    Metric::ValueSequenceBase<int>*   mWinSizeTheta;
     /* Step size along the X-axis */
-    Metric::DistributionBase*         mStepSizeX;
+    Metric::ValueSequenceBase<float>* mStepSizeX;
     /* Step size along the Y-axis */
-    Metric::DistributionBase*         mStepSizeY;
+    Metric::ValueSequenceBase<float>* mStepSizeY;
     /* Step size along the Theta-axis */
-    Metric::DistributionBase*         mStepSizeTheta;
+    Metric::ValueSequenceBase<float>* mStepSizeTheta;
     /* Width of the transferred grid map (in the number of the grid cells) */
-    Metric::HistogramBase*            mMapSizeX;
+    Metric::ValueSequenceBase<int>*   mMapSizeX;
     /* Height of the transferred grid map (in the number of the grid cells) */
-    Metric::HistogramBase*            mMapSizeY;
+    Metric::ValueSequenceBase<int>*   mMapSizeY;
     /* Number of the transferred grid cell chunks in the grid map */
-    Metric::CounterBase*              mMapChunks;
+    Metric::ValueSequenceBase<int>*   mMapChunks;
     /* Number of the scan data transfer skips */
-    Metric::CounterBase*              mScanTransferSkip;
+    Metric::ValueSequenceBase<char>*  mScanTransferSkip;
     /* Number of the grid map transfer skips */
-    Metric::CounterBase*              mMapTransferSkip;
+    Metric::ValueSequenceBase<char>*  mMapTransferSkip;
     /* Normalized score value of the best solution */
     Metric::ValueSequenceBase<float>* mScoreValue;
     /* Normalized cost value of the best solution */

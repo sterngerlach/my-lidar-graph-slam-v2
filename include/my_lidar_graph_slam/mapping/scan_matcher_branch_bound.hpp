@@ -27,29 +27,29 @@ struct ScanMatcherBranchBoundMetrics
     ~ScanMatcherBranchBoundMetrics() = default;
 
     /* Total processing time for setting up the input */
-    Metric::DistributionBase*         mInputSetupTime;
+    Metric::ValueSequenceBase<int>*   mInputSetupTime;
     /* Total processing time for the optimization */
-    Metric::DistributionBase*         mOptimizationTime;
+    Metric::ValueSequenceBase<int>*   mOptimizationTime;
     /* Distance between the initial pose and the final pose */
-    Metric::DistributionBase*         mDiffTranslation;
+    Metric::ValueSequenceBase<float>* mDiffTranslation;
     /* Absolute difference between the initial angle and the final angle */
-    Metric::DistributionBase*         mDiffRotation;
+    Metric::ValueSequenceBase<float>* mDiffRotation;
     /* Size of the search window along the X-axis */
-    Metric::DistributionBase*         mWinSizeX;
+    Metric::ValueSequenceBase<int>*   mWinSizeX;
     /* Size of the search window along the Y-axis */
-    Metric::DistributionBase*         mWinSizeY;
+    Metric::ValueSequenceBase<int>*   mWinSizeY;
     /* Size of the search window along the Theta-axis */
-    Metric::DistributionBase*         mWinSizeTheta;
+    Metric::ValueSequenceBase<int>*   mWinSizeTheta;
     /* Step size along the X-axis */
-    Metric::DistributionBase*         mStepSizeX;
+    Metric::ValueSequenceBase<float>* mStepSizeX;
     /* Step size along the Y-axis */
-    Metric::DistributionBase*         mStepSizeY;
+    Metric::ValueSequenceBase<float>* mStepSizeY;
     /* Step size along the Theta-axis */
-    Metric::DistributionBase*         mStepSizeTheta;
-    /* Total number of the ignored nodes */
-    Metric::CounterBase*              mNumOfIgnoredNodes;
-    /* Total number of the processed nodes */
-    Metric::CounterBase*              mNumOfProcessedNodes;
+    Metric::ValueSequenceBase<float>* mStepSizeTheta;
+    /* Number of the ignored nodes */
+    Metric::ValueSequenceBase<int>*   mNumOfIgnoredNodes;
+    /* Number of the processed nodes */
+    Metric::ValueSequenceBase<int>*   mNumOfProcessedNodes;
     /* Normalized score value of the best solution */
     Metric::ValueSequenceBase<float>* mScoreValue;
     /* Normalized cost value of the best solution */

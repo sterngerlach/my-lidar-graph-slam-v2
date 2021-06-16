@@ -45,42 +45,52 @@ ScanMatcherFPGAMetrics::ScanMatcherFPGAMetrics(
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    const auto addCounter = [&](const std::string& metricName) {
-        return pMetricManager->AddCounter(scanMatcherName + metricName); };
-    const auto addDist = [&](const std::string& metricName) {
-        return pMetricManager->AddDistribution(scanMatcherName + metricName); };
-
-    /* Register the counter metrics */
-    this->mMapChunks = addCounter(".MapChunks");
-    this->mScanTransferSkip = addCounter(".ScanTransferSkip");
-    this->mMapTransferSkip = addCounter(".MapTransferSkip");
-
-    /* Register the distribution metrics */
-    this->mInputSetupTime = addDist(".InputSetupTime");
-    this->mSetupIPTime = addDist(".SetupIPTime");
-    this->mScanSendTime = addDist(".ScanSendTime");
-    this->mMapSendTime = addDist(".MapSendTime");
-    this->mOptimizationTime = addDist(".OptimizationTime");
-    this->mWaitIPTime = addDist(".WaitIPTime");
-    this->mScanMatchingTime = addDist(".ScanMatchingTime");
-    this->mDiffTranslation = addDist(".DiffTranslation");
-    this->mDiffRotation = addDist(".DiffRotation");
-    this->mWinSizeX = addDist(".WinSizeX");
-    this->mWinSizeY = addDist(".WinSizeY");
-    this->mWinSizeTheta = addDist(".WinSizeTheta");
-    this->mStepSizeX = addDist(".StepSizeX");
-    this->mStepSizeY = addDist(".StepSizeY");
-    this->mStepSizeTheta = addDist(".StepSizeTheta");
-
-    /* Register the histogram metrics */
-    const Metric::BucketBoundaries mapSizeBuckets =
-        Metric::Histogram::CreateFixedWidthBoundaries(0.0, 400.0, 20.0);
-    this->mMapSizeX = pMetricManager->AddHistogram(
-        scanMatcherName + ".MapSizeX", mapSizeBuckets);
-    this->mMapSizeY = pMetricManager->AddHistogram(
-        scanMatcherName + ".MapSizeY", mapSizeBuckets);
-
     /* Register the value sequence metrics */
+    this->mInputSetupTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".InputSetupTime");
+    this->mSetupIPTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".SetupIPTime");
+    this->mScanSendTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".ScanSendTime");
+    this->mMapSendTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".MapSendTime");
+    this->mOptimizationTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".OptimizationTime");
+    this->mWaitIPTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".WaitIPTime");
+    this->mScanMatchingTime = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".ScanMatchingTime");
+
+    this->mDiffTranslation = pMetricManager->AddValueSequence<float>(
+        scanMatcherName + ".DiffTranslation");
+    this->mDiffRotation = pMetricManager->AddValueSequence<float>(
+        scanMatcherName + ".DiffRotation");
+
+    this->mWinSizeX = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".WinSizeX");
+    this->mWinSizeY = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".WinSizeY");
+    this->mWinSizeTheta = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".WinSizeTheta");
+    this->mStepSizeX = pMetricManager->AddValueSequence<float>(
+        scanMatcherName + ".StepSizeX");
+    this->mStepSizeY = pMetricManager->AddValueSequence<float>(
+        scanMatcherName + ".StepSizeY");
+    this->mStepSizeTheta = pMetricManager->AddValueSequence<float>(
+        scanMatcherName + ".StepSizeTheta");
+
+    this->mMapSizeX = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".MapSizeX");
+    this->mMapSizeY = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".MapSizeY");
+
+    this->mMapChunks = pMetricManager->AddValueSequence<int>(
+        scanMatcherName + ".MapChunks");
+    this->mScanTransferSkip = pMetricManager->AddValueSequence<char>(
+        scanMatcherName + ".ScanTransferSkip");
+    this->mMapTransferSkip = pMetricManager->AddValueSequence<char>(
+        scanMatcherName + ".MapTransferSkip");
+
     this->mScoreValue = pMetricManager->AddValueSequence<float>(
         scanMatcherName + ".ScoreValue");
     this->mCostValue = pMetricManager->AddValueSequence<float>(
@@ -571,6 +581,9 @@ void ScanMatcherCorrelativeFPGA::SendScanData(
     /* Wait for the data transfer to complete by polling the status register
      * of the AXI DMA IP core */
     this->mAxiDma->SendChannel().Wait();
+
+    /* Update the metric */
+    this->mMetrics.mScanTransferSkip->Observe(false);
 }
 
 /* Send the grid map through AXI DMA */
@@ -594,8 +607,8 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
         this->mAxiDma->SendChannel().Wait();
 
         /* Update the metrics */
-        this->mMetrics.mMapChunks->Increment(0);
-        this->mMetrics.mMapTransferSkip->Increment();
+        this->mMetrics.mMapChunks->Observe(0);
+        this->mMetrics.mMapTransferSkip->Observe(true);
 
         return;
     }
@@ -628,8 +641,8 @@ void ScanMatcherCorrelativeFPGA::SendGridMap(
 
     /* Update the metrics */
     const int numOfChunks = desiredBox.Height() * chunkCols;
-    this->mMetrics.mMapChunks->Increment(numOfChunks);
-    this->mMetrics.mMapTransferSkip->Increment(0);
+    this->mMetrics.mMapChunks->Observe(numOfChunks);
+    this->mMetrics.mMapTransferSkip->Observe(false);
 }
 
 /* Receive the result through AXI DMA */
