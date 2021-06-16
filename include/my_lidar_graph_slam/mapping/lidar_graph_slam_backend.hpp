@@ -26,7 +26,7 @@ struct BackendMetrics
     ~BackendMetrics() = default;
 
     /* Total processing time of the SLAM backend */
-    Metric::CounterBase*            mProcessTime;
+    Metric::ValueSequenceBase<int>* mProcessTime;
     /* Total processing time of the one step of the SLAM backend */
     Metric::ValueSequenceBase<int>* mProcessStepTime;
     /* Total processing time for setting up the loop search */

@@ -28,36 +28,34 @@ FrontendMetrics::FrontendMetrics() :
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
     /* Register the counter metrics */
-    this->mInputScanDataCount =
-        pMetricManager->AddCounter("Frontend.InputScanDataCount");
-    this->mProcessCount =
-        pMetricManager->AddCounter("Frontend.ProcessCount");
-    this->mProcessTime =
-        pMetricManager->AddCounter("Frontend.ProcessTime");
-
-    /* Register the distribution metrics */
-    this->mProcessScanTime =
-        pMetricManager->AddDistribution("Frontend.ProcessScanTime");
-    this->mScanDataSetupTime =
-        pMetricManager->AddDistribution("Frontend.ScanDataSetupTime");
-    this->mScanMatchingTime =
-        pMetricManager->AddDistribution("Frontend.ScanMatchingTime");
-    this->mFinalScanMatchingTime =
-        pMetricManager->AddDistribution("Frontend.FinalScanMatchingTime");
-    this->mDataUpdateTime =
-        pMetricManager->AddDistribution("Frontend.DataUpdateTime");
-    this->mIntervalTravelDist =
-        pMetricManager->AddDistribution("Frontend.IntervalTravelDist");
-    this->mIntervalAngle =
-        pMetricManager->AddDistribution("Frontend.IntervalAngle");
-    this->mIntervalTime =
-        pMetricManager->AddDistribution("Frontend.IntervalTime");
-    this->mNumOfScans =
-        pMetricManager->AddDistribution("Frontend.NumOfScans");
+    this->mInputScanDataCount = pMetricManager->AddCounter(
+        "Frontend.InputScanDataCount");
+    this->mProcessCount = pMetricManager->AddCounter(
+        "Frontend.ProcessCount");
 
     /* Register the value sequence metrics */
-    this->mProcessFrame =
-        pMetricManager->AddValueSequence<int>("Frontend.ProcessFrame");
+    this->mProcessTime = pMetricManager->AddValueSequence<int>(
+        "Frontend.ProcessTime");
+    this->mProcessScanTime = pMetricManager->AddValueSequence<int>(
+        "Frontend.ProcessScanTime");
+    this->mScanDataSetupTime = pMetricManager->AddValueSequence<int>(
+        "Frontend.ScanDataSetupTime");
+    this->mScanMatchingTime = pMetricManager->AddValueSequence<int>(
+        "Frontend.ScanMatchingTime");
+    this->mFinalScanMatchingTime = pMetricManager->AddValueSequence<int>(
+        "Frontend.FinalScanMatchingTime");
+    this->mDataUpdateTime = pMetricManager->AddValueSequence<int>(
+        "Frontend.DataUpdateTime");
+    this->mIntervalTravelDist = pMetricManager->AddValueSequence<float>(
+        "Frontend.IntervalTravelDist");
+    this->mIntervalAngle = pMetricManager->AddValueSequence<float>(
+        "Frontend.IntervalAngle");
+    this->mIntervalTime = pMetricManager->AddValueSequence<float>(
+        "Frontend.IntervalTime");
+    this->mNumOfScans = pMetricManager->AddValueSequence<int>(
+        "Frontend.NumOfScans");
+    this->mProcessFrame = pMetricManager->AddValueSequence<int>(
+        "Frontend.ProcessFrame");
 }
 
 /* Constructor */
@@ -148,7 +146,7 @@ bool LidarGraphSlamFrontend::ProcessScan(
 
     if (!mapUpdateNeeded) {
         /* Update the metrics */
-        this->mMetrics.mProcessTime->Increment(outerTimer.ElapsedMicro());
+        this->mMetrics.mProcessTime->Observe(outerTimer.ElapsedMicro());
         return false;
     }
 
@@ -305,7 +303,7 @@ bool LidarGraphSlamFrontend::ProcessScan(
 
     /* Update the metrics */
     this->mMetrics.mProcessCount->Increment();
-    this->mMetrics.mProcessTime->Increment(outerTimer.ElapsedMicro());
+    this->mMetrics.mProcessTime->Observe(outerTimer.ElapsedMicro());
     this->mMetrics.mProcessScanTime->Observe(outerTimer.ElapsedMicro());
     this->mMetrics.mIntervalTravelDist->Observe(this->mAccumulatedTravelDist);
     this->mMetrics.mIntervalAngle->Observe(this->mAccumulatedAngle);

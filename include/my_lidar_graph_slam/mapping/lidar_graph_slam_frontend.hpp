@@ -28,31 +28,31 @@ struct FrontendMetrics
     ~FrontendMetrics() = default;
 
     /* Total number of the input scan data */
-    Metric::CounterBase*            mInputScanDataCount;
+    Metric::CounterBase*              mInputScanDataCount;
     /* Total number of the processed scan data */
-    Metric::CounterBase*            mProcessCount;
+    Metric::CounterBase*              mProcessCount;
     /* Total processing time of the SLAM frontend */
-    Metric::CounterBase*            mProcessTime;
+    Metric::ValueSequenceBase<int>*   mProcessTime;
     /* Total processing time for the scan data */
-    Metric::DistributionBase*       mProcessScanTime;
+    Metric::ValueSequenceBase<int>*   mProcessScanTime;
     /* Total processing time for setting up the scan data */
-    Metric::DistributionBase*       mScanDataSetupTime;
+    Metric::ValueSequenceBase<int>*   mScanDataSetupTime;
     /* Total processing time for the scan matching */
-    Metric::DistributionBase*       mScanMatchingTime;
+    Metric::ValueSequenceBase<int>*   mScanMatchingTime;
     /* Total processing time for the final scan matching */
-    Metric::DistributionBase*       mFinalScanMatchingTime;
+    Metric::ValueSequenceBase<int>*   mFinalScanMatchingTime;
     /* Total processing time for updating the grid map and the pose graph */
-    Metric::DistributionBase*       mDataUpdateTime;
+    Metric::ValueSequenceBase<int>*   mDataUpdateTime;
     /* Accumulated travel distance between the processed scans */
-    Metric::DistributionBase*       mIntervalTravelDist;
+    Metric::ValueSequenceBase<float>* mIntervalTravelDist;
     /* Difference of the robot pose angle between the processed scans */
-    Metric::DistributionBase*       mIntervalAngle;
+    Metric::ValueSequenceBase<float>* mIntervalAngle;
     /* Time between the processed scans */
-    Metric::DistributionBase*       mIntervalTime;
+    Metric::ValueSequenceBase<float>* mIntervalTime;
     /* Number of the scan points for each scan data */
-    Metric::DistributionBase*       mNumOfScans;
+    Metric::ValueSequenceBase<int>*   mNumOfScans;
     /* Frame number of the processed scan data */
-    Metric::ValueSequenceBase<int>* mProcessFrame;
+    Metric::ValueSequenceBase<int>*   mProcessFrame;
 };
 
 class LidarGraphSlamFrontend

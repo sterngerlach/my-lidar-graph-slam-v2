@@ -33,17 +33,15 @@ GridMapBuilderMetrics::GridMapBuilderMetrics() :
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    /* Register the distribution metrics */
-    this->mPoseGraphUpdateTime = pMetricManager->AddDistribution(
-        "GridMapBuilder.PoseGraphUpdateTime");
-    this->mLocalMapUpdateTime = pMetricManager->AddDistribution(
-        "GridMapBuilder.LocalMapUpdateTime");
-    this->mLatestMapUpdateTime = pMetricManager->AddDistribution(
-        "GridMapBuilder.LatestMapUpdateTime");
-    this->mLocalMapIntervalTravelDist = pMetricManager->AddDistribution(
-        "GridMapBuilder.LocalMapIntervalTravelDist");
-
     /* Register the value sequence metrics */
+    this->mPoseGraphUpdateTime = pMetricManager->AddValueSequence<int>(
+        "GridMapBuilder.PoseGraphUpdateTime");
+    this->mLocalMapUpdateTime = pMetricManager->AddValueSequence<int>(
+        "GridMapBuilder.LocalMapUpdateTime");
+    this->mLatestMapUpdateTime = pMetricManager->AddValueSequence<int>(
+        "GridMapBuilder.LatestMapUpdateTime");
+    this->mLocalMapIntervalTravelDist = pMetricManager->AddValueSequence<float>(
+        "GridMapBuilder.LocalMapIntervalTravelDist");
     this->mNumOfLocalMapNodes = pMetricManager->AddValueSequence<int>(
         "GridMapBuilder.NumOfLocalMapNodes");
     this->mNumOfEdges = pMetricManager->AddValueSequence<int>(

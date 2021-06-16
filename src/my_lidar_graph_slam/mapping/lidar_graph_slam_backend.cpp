@@ -25,10 +25,9 @@ BackendMetrics::BackendMetrics() :
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    /* Register the counter metrics */
-    this->mProcessTime = pMetricManager->AddCounter("Backend.ProcessTime");
-
     /* Register the value sequence metrics */
+    this->mProcessTime = pMetricManager->AddValueSequence<int>(
+        "Backend.ProcessTime");
     this->mProcessStepTime = pMetricManager->AddValueSequence<int>(
         "Backend.ProcessStepTime");
     this->mLoopSearchSetupTime = pMetricManager->AddValueSequence<int>(
@@ -109,7 +108,7 @@ void LidarGraphSlamBackend::RunStep(LidarGraphSlam* const pParent)
 
     if (searchHint.mLocalMapNodes.empty() || searchHint.mScanNodes.empty()) {
         /* Update the metrics */
-        this->mMetrics.mProcessTime->Increment(outerTimer.ElapsedMicro());
+        this->mMetrics.mProcessTime->Observe(outerTimer.ElapsedMicro());
         this->mMetrics.mEndAtLoopSearchSetup->Observe(this->mProcessCount);
         return;
     }
@@ -123,7 +122,7 @@ void LidarGraphSlamBackend::RunStep(LidarGraphSlam* const pParent)
 
     if (loopCandidates.empty()) {
         /* Update the metrics */
-        this->mMetrics.mProcessTime->Increment(outerTimer.ElapsedMicro());
+        this->mMetrics.mProcessTime->Observe(outerTimer.ElapsedMicro());
         this->mMetrics.mEndAtLoopSearch->Observe(this->mProcessCount);
         return;
     }
@@ -146,7 +145,7 @@ void LidarGraphSlamBackend::RunStep(LidarGraphSlam* const pParent)
 
     if (loopDetectionResults.empty()) {
         /* Update the metrics */
-        this->mMetrics.mProcessTime->Increment(outerTimer.ElapsedMicro());
+        this->mMetrics.mProcessTime->Observe(outerTimer.ElapsedMicro());
         this->mMetrics.mEndAtLoopDetection->Observe(this->mProcessCount);
         return;
     }
@@ -193,7 +192,7 @@ void LidarGraphSlamBackend::RunStep(LidarGraphSlam* const pParent)
 
     /* Update the metrics */
     this->mMetrics.mPoseGraphUpdateTime->Observe(timer.ElapsedMicro());
-    this->mMetrics.mProcessTime->Increment(outerTimer.ElapsedMicro());
+    this->mMetrics.mProcessTime->Observe(outerTimer.ElapsedMicro());
     this->mMetrics.mProcessStepTime->Observe(outerTimer.ElapsedMicro());
     this->mMetrics.mEndAtLoopClosure->Observe(this->mProcessCount);
 }
