@@ -54,6 +54,9 @@ public:
     inline const std::vector<PoseGraphEdge>& Edges() const
     { return this->mEdges; }
 
+    /* Inspect the memory usage in bytes */
+    std::uint64_t InspectMemoryUsage() const;
+
 private:
     /* Map of the local map nodes */
     IdMap<LocalMapId, LocalMapNode> mLocalMapNodes;
