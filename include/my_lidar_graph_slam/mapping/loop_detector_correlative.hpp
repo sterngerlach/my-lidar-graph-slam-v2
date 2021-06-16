@@ -27,9 +27,9 @@ struct LoopDetectorCorrelativeMetrics
     ~LoopDetectorCorrelativeMetrics() = default;
 
     /* Total processing time for grid map precomputations */
-    Metric::DistributionBase*       mInputSetupTime;
+    Metric::ValueSequenceBase<int>* mInputSetupTime;
     /* Total processing time for loop detection */
-    Metric::DistributionBase*       mLoopDetectionTime;
+    Metric::ValueSequenceBase<int>* mLoopDetectionTime;
     /* Number of the loop detection queries */
     Metric::ValueSequenceBase<int>* mNumOfQueries;
     /* Number of the successful loop detections */

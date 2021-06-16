@@ -22,13 +22,11 @@ LoopDetectorCorrelativeMetrics::LoopDetectorCorrelativeMetrics(
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    /* Register the distribution metrics */
-    this->mInputSetupTime = pMetricManager->AddDistribution(
-        loopDetectorName + ".InputSetupTime");
-    this->mLoopDetectionTime = pMetricManager->AddDistribution(
-        loopDetectorName + ".LoopDetectionTime");
-
     /* Register the value sequence metrics */
+    this->mInputSetupTime = pMetricManager->AddValueSequence<int>(
+        loopDetectorName + ".InputSetupTime");
+    this->mLoopDetectionTime = pMetricManager->AddValueSequence<int>(
+        loopDetectorName + ".LoopDetectionTime");
     this->mNumOfQueries = pMetricManager->AddValueSequence<int>(
         loopDetectorName + ".NumOfQueries");
     this->mNumOfDetections = pMetricManager->AddValueSequence<int>(

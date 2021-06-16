@@ -21,11 +21,9 @@ LoopDetectorGridSearchMetrics::LoopDetectorGridSearchMetrics(
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
 
-    /* Register the distribution metrics */
-    this->mLoopDetectionTime = pMetricManager->AddDistribution(
-        loopDetectorName + ".LoopDetectionTime");
-
     /* Register the value sequence metrics */
+    this->mLoopDetectionTime = pMetricManager->AddValueSequence<int>(
+        loopDetectorName + ".LoopDetectionTime");
     this->mNumOfQueries = pMetricManager->AddValueSequence<int>(
         loopDetectorName + ".NumOfQueries");
     this->mNumOfDetections = pMetricManager->AddValueSequence<int>(
