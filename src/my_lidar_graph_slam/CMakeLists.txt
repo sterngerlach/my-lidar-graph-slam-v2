@@ -7,6 +7,7 @@ target_sources(lidar_graph_slam PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/fpga_module_factory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector_factory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/loss_function_factory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/memory_usage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pose_graph_optimizer_factory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/scan_filter_factory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/scan_matcher_factory.cpp
