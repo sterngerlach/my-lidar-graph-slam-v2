@@ -22,7 +22,10 @@ FrontendMetrics::FrontendMetrics() :
     mDataUpdateTime(nullptr),
     mIntervalTravelDist(nullptr),
     mIntervalAngle(nullptr),
-    mIntervalTime(nullptr)
+    mIntervalTime(nullptr),
+    mNumOfScans(nullptr),
+    mProcessFrame(nullptr),
+    mPhysicalMemoryUsage(nullptr)
 {
     /* Retrieve the metrics manager instance */
     auto* const pMetricManager = Metric::MetricManager::Instance();
@@ -56,6 +59,9 @@ FrontendMetrics::FrontendMetrics() :
         "Frontend.NumOfScans");
     this->mProcessFrame = pMetricManager->AddValueSequence<int>(
         "Frontend.ProcessFrame");
+    this->mPhysicalMemoryUsage =
+        pMetricManager->AddValueSequence<std::uint64_t>(
+            "Frontend.PhysicalMemoryUsage");
 }
 
 /* Constructor */
@@ -311,6 +317,7 @@ bool LidarGraphSlamFrontend::ProcessScan(
     this->mMetrics.mNumOfScans->Observe(scanData->NumOfScans());
     this->mMetrics.mProcessFrame->Observe(
         this->mMetrics.mInputScanDataCount->Value() - 1);
+    this->mMetrics.mPhysicalMemoryUsage->Observe(GetPhysicalMemoryUsage());
 
     /* Update miscellaneous parameters */
     this->mProcessCount += 1;

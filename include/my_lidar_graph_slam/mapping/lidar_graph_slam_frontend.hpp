@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "my_lidar_graph_slam/memory_usage.hpp"
 #include "my_lidar_graph_slam/point.hpp"
 #include "my_lidar_graph_slam/pose.hpp"
 #include "my_lidar_graph_slam/util.hpp"
@@ -28,31 +29,33 @@ struct FrontendMetrics
     ~FrontendMetrics() = default;
 
     /* Total number of the input scan data */
-    Metric::CounterBase*              mInputScanDataCount;
+    Metric::CounterBase*                      mInputScanDataCount;
     /* Total number of the processed scan data */
-    Metric::CounterBase*              mProcessCount;
+    Metric::CounterBase*                      mProcessCount;
     /* Total processing time of the SLAM frontend */
-    Metric::ValueSequenceBase<int>*   mProcessTime;
+    Metric::ValueSequenceBase<int>*           mProcessTime;
     /* Total processing time for the scan data */
-    Metric::ValueSequenceBase<int>*   mProcessScanTime;
+    Metric::ValueSequenceBase<int>*           mProcessScanTime;
     /* Total processing time for setting up the scan data */
-    Metric::ValueSequenceBase<int>*   mScanDataSetupTime;
+    Metric::ValueSequenceBase<int>*           mScanDataSetupTime;
     /* Total processing time for the scan matching */
-    Metric::ValueSequenceBase<int>*   mScanMatchingTime;
+    Metric::ValueSequenceBase<int>*           mScanMatchingTime;
     /* Total processing time for the final scan matching */
-    Metric::ValueSequenceBase<int>*   mFinalScanMatchingTime;
+    Metric::ValueSequenceBase<int>*           mFinalScanMatchingTime;
     /* Total processing time for updating the grid map and the pose graph */
-    Metric::ValueSequenceBase<int>*   mDataUpdateTime;
+    Metric::ValueSequenceBase<int>*           mDataUpdateTime;
     /* Accumulated travel distance between the processed scans */
-    Metric::ValueSequenceBase<float>* mIntervalTravelDist;
+    Metric::ValueSequenceBase<float>*         mIntervalTravelDist;
     /* Difference of the robot pose angle between the processed scans */
-    Metric::ValueSequenceBase<float>* mIntervalAngle;
+    Metric::ValueSequenceBase<float>*         mIntervalAngle;
     /* Time between the processed scans */
-    Metric::ValueSequenceBase<float>* mIntervalTime;
+    Metric::ValueSequenceBase<float>*         mIntervalTime;
     /* Number of the scan points for each scan data */
-    Metric::ValueSequenceBase<int>*   mNumOfScans;
+    Metric::ValueSequenceBase<int>*           mNumOfScans;
     /* Frame number of the processed scan data */
-    Metric::ValueSequenceBase<int>*   mProcessFrame;
+    Metric::ValueSequenceBase<int>*           mProcessFrame;
+    /* Total physical memory usage in bytes */
+    Metric::ValueSequenceBase<std::uint64_t>* mPhysicalMemoryUsage;
 };
 
 class LidarGraphSlamFrontend
