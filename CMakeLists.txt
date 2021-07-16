@@ -64,3 +64,12 @@ add_executable(slam_launch
 target_link_libraries(slam_launch lidar_graph_slam)
 set_target_properties(slam_launch PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+if (PROFILE)
+    message(STATUS "Profiling using gprof (-pg)")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+else()
+    message(STATUS "Profiling not enabled")
+endif()
