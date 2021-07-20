@@ -469,14 +469,14 @@ void GridMapBuilder::UpdateGridMap(
 
         /* Update occupancy probability values for missed grid cells */
         for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-            localMap.Update(missedGridCellIndices[j].mY,
-                            missedGridCellIndices[j].mX,
-                            this->mProbMiss);
+            localMap.UpdateOddsUnchecked(missedGridCellIndices[j].mY,
+                                         missedGridCellIndices[j].mX,
+                                         this->mOddsMiss);
 
         /* Update occupancy probability values for hit grid cell */
-        localMap.Update(hitGridCellIdx.mY,
-                        hitGridCellIdx.mX,
-                        this->mProbHit);
+        localMap.UpdateOddsUnchecked(hitGridCellIdx.mY,
+                                     hitGridCellIdx.mX,
+                                     this->mOddsHit);
     }
 
     /* Update the scan Id information of the local map */
@@ -639,12 +639,6 @@ void GridMapBuilder::ConstructMapFromScans(
         localHitPoints.emplace(scanNodeId, std::move(nodeLocalHitPoints));
     }
 
-    /* Expand the bounding box to avoid floating-point errors */
-    localMinPos.mX -= gridMap.Resolution();
-    localMinPos.mY -= gridMap.Resolution();
-    localMaxPos.mX += gridMap.Resolution();
-    localMaxPos.mY += gridMap.Resolution();
-
     /* Create a new grid map that contains all scan points */
     const BoundingBox<double> boundingBox { localMinPos, localMaxPos };
     gridMap.Resize(boundingBox);
@@ -692,14 +686,14 @@ void GridMapBuilder::ConstructMapFromScans(
 
             /* Update occupancy probability values for missed grid cells */
             for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-                gridMap.Update(missedGridCellIndices[j].mY,
-                               missedGridCellIndices[j].mX,
-                               this->mProbMiss);
+                gridMap.UpdateOddsUnchecked(missedGridCellIndices[j].mY,
+                                            missedGridCellIndices[j].mX,
+                                            this->mOddsMiss);
 
             /* Update occupancy probability values for hit grid cell */
-            gridMap.Update(hitGridCellIdx.mY,
-                           hitGridCellIdx.mX,
-                           this->mProbHit);
+            gridMap.UpdateOddsUnchecked(hitGridCellIdx.mY,
+                                        hitGridCellIdx.mX,
+                                        this->mOddsHit);
         }
     }
 
@@ -787,13 +781,6 @@ void GridMapBuilder::ConstructMapFromAllScans(
         }
     }
 
-    /* Expand the grid map bounding box to prevent out-of-bound memory accesses
-     * caused by floating-point errors */
-    localMinPos.mX -= gridMap.Resolution();
-    localMinPos.mY -= gridMap.Resolution();
-    localMaxPos.mX += gridMap.Resolution();
-    localMaxPos.mY += gridMap.Resolution();
-
     /* Create a new grid map that contains all scan points */
     const BoundingBox<double> boundingBox { localMinPos, localMaxPos };
     gridMap.Resize(boundingBox);
@@ -824,14 +811,14 @@ void GridMapBuilder::ConstructMapFromAllScans(
 
             /* Update occupancy probability values for missed grid cells */
             for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-                gridMap.Update(missedGridCellIndices[j].mY,
-                               missedGridCellIndices[j].mX,
-                               this->mProbMiss);
+                gridMap.UpdateOddsUnchecked(missedGridCellIndices[j].mY,
+                                            missedGridCellIndices[j].mX,
+                                            this->mOddsMiss);
 
             /* Update occupancy probability values for the hit grid cell */
-            gridMap.Update(hitGridCellIdx.mY,
-                           hitGridCellIdx.mX,
-                           this->mProbHit);
+            gridMap.UpdateOddsUnchecked(hitGridCellIdx.mY,
+                                        hitGridCellIdx.mX,
+                                        this->mOddsHit);
         }
     }
 
