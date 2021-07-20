@@ -175,14 +175,6 @@ public:
     /* Maximum probability value */
     static constexpr double ProbabilityMax = 1.0 - ProbabilityMin;
 
-private:
-    /* Lookup table for converting from internal values to
-     * corresponding probability values */
-    static const std::vector<double> ValueToProbabilityLookup;
-    /* Lookup table for converting from internal values to
-     * corresponding odds */
-    static const std::vector<double> ValueToOddsLookup;
-
     /* Convert the internal value to the probability value */
     static double ValueToProbability(const std::uint16_t value);
     /* Convert the probability value to the internal value */
@@ -192,6 +184,14 @@ private:
     static double ProbabilityToOdds(const double prob);
     /* Compute the probability value from the odds */
     static double OddsToProbability(const double odds);
+
+private:
+    /* Lookup table for converting from internal values to
+     * corresponding probability values */
+    static const std::vector<double> ValueToProbabilityLookup;
+    /* Lookup table for converting from internal values to
+     * corresponding odds */
+    static const std::vector<double> ValueToOddsLookup;
 
 private:
     /* Base-2 logarithm of the size of this grid */
