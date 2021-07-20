@@ -120,27 +120,27 @@ public:
     /* Set the internal value of the grid cell (do nothing) */
     void SetValue(const int /* row */, const int /* col */,
                   const std::uint16_t /* value */) {
-        XAssert(false, "GridCounted::SetValue() is not implemented"); }
+        XAssert(false, "SetValue() is not implemented"); }
     /* Set the internal value of the grid cell (do nothing) */
     void SetValueUnchecked(const int /* row */, const int /* col */,
                            const std::uint16_t /* value */) {
-        XAssert(false, "GridCounted::SetValue() is not implemented"); }
+        XAssert(false, "SetValueUnchecked() is not implemented"); }
 
     /* Set the probability value of the grid cell (do nothing) */
     void SetProbability(const int /* row */, const int /* col */,
                         const double /* prob */) {
-        XAssert(false, "GridCounted::SetValue() is not implemented"); }
+        XAssert(false, "SetProbability() is not implemented"); }
     /* Set the probability value of the grid cell (do nothing) */
     void SetProbabilityUnchecked(const int /* row */, const int /* col */,
                                  const double /* prob */) {
-        XAssert(false, "GridCounted::SetValue() is not implemented"); }
+        XAssert(false, "SetProbabilityUnchecked() is not implemented"); }
 
     /* Fill all grid values with the given internal value (do nothing) */
     void FillValue(const std::uint16_t /* value */) {
-        XAssert(false, "GridCounted::SetValue() is not implemented"); }
+        XAssert(false, "FillValue() is not implemented"); }
     /* Fill all grid values with the given probability value (do nothing) */
     void FillProbability(const double /* prob */) {
-        XAssert(false, "GridCounted::SetValue() is not implemented"); }
+        XAssert(false, "FillProbability() is not implemented"); }
 
     /* Update the grid value given an observation (hit or miss) */
     void Update(const int row, const int col, const bool hit);
