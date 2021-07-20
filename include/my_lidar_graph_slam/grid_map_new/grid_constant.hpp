@@ -147,6 +147,15 @@ public:
     inline void UpdateUnchecked(const int row, const int col,
                                 const double prob);
 
+    /* Update the grid value given an odds */
+    inline void UpdateOdds(const int /* row */, const int /* col */,
+                           const double /* odds */) {
+        XAssert(false, "UpdateOdds() is not implemented"); }
+    /* Update the grid value given an odds (without input checks) */
+    inline void UpdateOddsUnchecked(const int /* row */, const int /* col */,
+                                    const double /* prob */) {
+        XAssert(false, "UpdateOddsUnchecked() is not implemented"); }
+
     /* Inspect the memory usage in bytes */
     std::uint64_t InspectMemoryUsage() const;
 

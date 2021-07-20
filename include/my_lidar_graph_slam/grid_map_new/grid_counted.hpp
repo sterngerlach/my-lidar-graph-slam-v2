@@ -147,6 +147,15 @@ public:
     /* Update the grid value given an observation (hit or miss) */
     void UpdateUnchecked(const int row, const int col, const bool hit);
 
+    /* Update the grid value given an odds (not implemented) */
+    inline void UpdateOdds(const int /* row */, const int /* col */,
+                           const bool /* hit */) {
+        XAssert(false, "UpdateOdds() is not implemented"); }
+    /* Update the grid value given an odds (not implemented) */
+    inline void UpdateOddsUnchecked(const int /* row */, const int /* col */,
+                                    const bool /* hit */) {
+        XAssert(false, "UpdateOddsUnchecked() is not implemented"); }
+
     /* Inspect the memory usage in bytes */
     std::uint64_t InspectMemoryUsage() const;
 
