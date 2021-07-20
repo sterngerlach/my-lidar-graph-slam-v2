@@ -232,12 +232,6 @@ private:
 
     /* Apply the function for each block */
     void ForEachBlock(std::function<void(T&)> func);
-    /* Apply the function to the grid cell */
-    void Apply(const int row, const int col,
-               std::function<void(T*, int, int)> func);
-    /* Apply the function to the grid cell (without checks) */
-    void ApplyUnchecked(const int row, const int col,
-                        std::function<void(T*, int, int)> func);
 
     /* Copy the internal values to the buffer */
     template <typename U, typename F>
