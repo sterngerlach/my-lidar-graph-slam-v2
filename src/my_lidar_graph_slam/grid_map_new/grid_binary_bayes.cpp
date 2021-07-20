@@ -290,6 +290,36 @@ void GridBinaryBayes::UpdateUnchecked(
     *gridCell = ProbabilityToValue(newProb);
 }
 
+/* Update the grid value given an odds */
+void GridBinaryBayes::UpdateOdds(
+    const int row, const int col, const double odds)
+{
+    Assert(this->IsInside(row, col));
+    this->UpdateOddsUnchecked(row, col, odds);
+}
+
+/* Update the grid value given an odds (without input checks) */
+void GridBinaryBayes::UpdateOddsUnchecked(
+    const int row, const int col, const double odds)
+{
+    /* Get the pointer to the grid cell value */
+    std::uint16_t* gridCell = this->Data(row, col);
+
+    /* Initialize the value if this grid cell is not yet observed */
+    if (*gridCell == UnknownValue) {
+        const double newProb = OddsToProbability(odds);
+        *gridCell = ProbabilityToValue(newProb);
+        return;
+    }
+
+    /* Update the probability value via binary Bayes filter */
+    const double oldOdds = ValueToOddsLookup[*gridCell];
+    const double newProb = OddsToProbability(oldOdds * odds);
+
+    /* Set the new grid cell value */
+    *gridCell = ProbabilityToValue(newProb);
+}
+
 /* Inspect the memory usage in bytes */
 std::uint64_t GridBinaryBayes::InspectMemoryUsage() const
 {

@@ -146,6 +146,11 @@ public:
     /* Update the grid value given an observation (without input checks) */
     void UpdateUnchecked(const int row, const int col, const double prob);
 
+    /* Update the grid value given an odds */
+    void UpdateOdds(const int row, const int col, const double odds);
+    /* Update the grid value given an odds (without input checks) */
+    void UpdateOddsUnchecked(const int row, const int col, const double odds);
+
     /* Inspect the memory usage in bytes */
     std::uint64_t InspectMemoryUsage() const;
 
