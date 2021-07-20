@@ -161,6 +161,13 @@ public:
     void UpdateUnchecked(const int row, const int col,
                          const typename T::ObservationType observation);
 
+    /* Update the grid value given an odds */
+    void UpdateOdds(const int row, const int col,
+                    const typename T::ObservationType odds);
+    /* Update the grid value given an odds (without input checks) */
+    void UpdateOddsUnchecked(const int row, const int col,
+                             const typename T::ObservationType odds);
+
     /* Check if the block index is valid */
     bool IsBlockInside(const int row, const int col) const;
     /* Check if the block is allocated */

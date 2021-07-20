@@ -622,6 +622,40 @@ void GridMap<T>::UpdateUnchecked(const int row, const int col,
     block->UpdateUnchecked(blockOffset.mY, blockOffset.mX, observation);
 }
 
+/* Update the grid value given an odds */
+template <typename T>
+void GridMap<T>::UpdateOdds(const int row, const int col,
+                            const typename T::ObservationType odds)
+{
+    const Point2D<int> blockIdx = this->IndexToBlock(row, col);
+    Assert(this->IsBlockInside(blockIdx.mY, blockIdx.mX));
+
+    const Point2D<int> blockOffset = this->IndexToBlockOffset(row, col);
+    T* block = this->Block(blockIdx.mY, blockIdx.mX);
+
+    /* Allocate and initialize the block if necessary */
+    if (!block->IsAllocated())
+        block->Initialize(this->mLog2BlockSize);
+
+    block->UpdateOddsUnchecked(blockOffset.mY, blockOffset.mX, odds);
+}
+
+/* Update the grid value given an odds (without input checks) */
+template <typename T>
+void GridMap<T>::UpdateOddsUnchecked(const int row, const int col,
+                                     const typename T::ObservationType odds)
+{
+    const Point2D<int> blockIdx = this->IndexToBlock(row, col);
+    const Point2D<int> blockOffset = this->IndexToBlockOffset(row, col);
+    T* block = this->Block(blockIdx.mY, blockIdx.mX);
+
+    /* Allocate and initialize the block if necessary */
+    if (!block->IsAllocated())
+        block->Initialize(this->mLog2BlockSize);
+
+    block->UpdateOddsUnchecked(blockOffset.mY, blockOffset.mX, odds);
+}
+
 /* Check if the block index is valid */
 template <typename T>
 bool GridMap<T>::IsBlockInside(const int row, const int col) const
