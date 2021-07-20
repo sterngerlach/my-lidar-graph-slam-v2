@@ -230,9 +230,6 @@ private:
     /* Release the storage for the blocks */
     void Release();
 
-    /* Apply the function for each block */
-    void ForEachBlock(std::function<void(T&)> func);
-
     /* Copy the internal values to the buffer */
     template <typename U, typename F>
     void CopyValuesInternal(U* buffer, const BoundingBox<int>& boundingBox,

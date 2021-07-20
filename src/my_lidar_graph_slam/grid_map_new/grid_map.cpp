@@ -273,18 +273,12 @@ void GridMap<T>::Release()
 template <typename T>
 void GridMap<T>::ResetValues()
 {
-    const auto resetValues = [](T& block) {
-        if (block.IsAllocated()) block.ResetValues(); };
-    this->ForEachBlock(resetValues);
-}
-
-/* Apply the function for each block */
-template <typename T>
-void GridMap<T>::ForEachBlock(std::function<void(T&)> func)
-{
     const int numOfBlocks = this->mBlockRows * this->mBlockCols;
-    T* blocks = this->mBlocks.get();
-    std::for_each(blocks, blocks + numOfBlocks, func);
+    T* block = this->mBlocks.get();
+
+    for (int i = 0; i < numOfBlocks; ++i, ++block)
+        if (block->IsAllocated())
+            block->ResetValues();
 }
 
 /* Copy the internal values to the buffer */
@@ -574,18 +568,24 @@ void GridMap<T>::SetProbabilityUnchecked(
 template <typename T>
 void GridMap<T>::FillValue(const typename T::ValueType value)
 {
-    const auto fillValue = [value](T& block) {
-        if (block.IsAllocated()) block.FillValue(value); };
-    this->ForEachBlock(fillValue);
+    const int numOfBlocks = this->mBlockRows * this->mBlockCols;
+    T* block = this->mBlocks.get();
+
+    for (int i = 0; i < numOfBlocks; ++i, ++block)
+        if (block->IsAllocated())
+            block->FillValue(value);
 }
 
 /* Fill all grid values with the given probability value */
 template <typename T>
 void GridMap<T>::FillProbability(const typename T::ProbabilityType prob)
 {
-    const auto fillProbability = [prob](T& block) {
-        if (block.IsAllocated()) block.FillProbability(prob); };
-    this->ForEachBlock(fillProbability);
+    const int numOfBlocks = this->mBlockRows * this->mBlockCols;
+    T* block = this->mBlocks.get();
+
+    for (int i = 0; i < numOfBlocks; ++i, ++block)
+        if (block->IsAllocated())
+            block->FillProbability(prob);
 }
 
 /* Update the grid value given an observation */
