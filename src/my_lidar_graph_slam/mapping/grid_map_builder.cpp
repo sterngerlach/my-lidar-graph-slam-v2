@@ -92,6 +92,8 @@ GridMapBuilder::GridMapBuilder(
     mUsableRangeMax(usableRangeMax),
     mProbHit(probHit),
     mProbMiss(probMiss),
+    mOddsHit(GridMap::GridType::ProbabilityToOdds(probHit)),
+    mOddsMiss(GridMap::GridType::ProbabilityToOdds(probMiss)),
     mMetrics()
 {
 }

@@ -307,12 +307,14 @@ private:
     const double                mUsableRangeMin;
     /* Maximum range of the laser scan that is considered valid */
     const double                mUsableRangeMax;
-    /* Occupancy probability value for hit grid cell
-     * Used for calculating the probability value with Binary Bayes Filter */
+    /* Probability for hit grid cells */
     const double                mProbHit;
-    /* Occupancy probability value for missed grid cell
-     * Used for calculating the probability value with Binary Bayes Filter */
+    /* Probability for missed grid cells */
     const double                mProbMiss;
+    /* Odds for hit grid cells */
+    const double                mOddsHit;
+    /* Odds for missed grid cells */
+    const double                mOddsMiss;
     /* Metrics information */
     GridMapBuilderMetrics       mMetrics;
 };
