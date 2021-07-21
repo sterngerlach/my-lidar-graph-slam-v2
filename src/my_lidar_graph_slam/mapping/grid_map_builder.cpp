@@ -467,13 +467,10 @@ void GridMapBuilder::UpdateGridMap(
         this->ComputeMissedIndicesScaled(scaledSensorIdx, scaledHitIdx,
                                          SubpixelScale, missedGridCellIndices);
 
-        /* Update occupancy probability values for missed grid cells */
-        for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-            localMap.UpdateOddsUnchecked(missedGridCellIndices[j].mY,
-                                         missedGridCellIndices[j].mX,
-                                         this->mOddsMiss);
-
-        /* Update occupancy probability values for hit grid cell */
+        /* Update missed grid cells */
+        localMap.UpdateOddsUnchecked(missedGridCellIndices,
+                                     this->mOddsMiss);
+        /* Update hit grid cell */
         localMap.UpdateOddsUnchecked(hitGridCellIdx.mY,
                                      hitGridCellIdx.mX,
                                      this->mOddsHit);
@@ -684,13 +681,10 @@ void GridMapBuilder::ConstructMapFromScans(
                 scaledSensorIdx, scaledHitIdx,
                 SubpixelScale, missedGridCellIndices);
 
-            /* Update occupancy probability values for missed grid cells */
-            for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-                gridMap.UpdateOddsUnchecked(missedGridCellIndices[j].mY,
-                                            missedGridCellIndices[j].mX,
-                                            this->mOddsMiss);
-
-            /* Update occupancy probability values for hit grid cell */
+            /* Update missed grid cells */
+            gridMap.UpdateOddsUnchecked(missedGridCellIndices,
+                                        this->mOddsMiss);
+            /* Update hit grid cell */
             gridMap.UpdateOddsUnchecked(hitGridCellIdx.mY,
                                         hitGridCellIdx.mX,
                                         this->mOddsHit);
@@ -809,13 +803,10 @@ void GridMapBuilder::ConstructMapFromAllScans(
                 scaledSensorIdx, scaledHitIdx,
                 SubpixelScale, missedGridCellIndices);
 
-            /* Update occupancy probability values for missed grid cells */
-            for (std::size_t j = 0; j < missedGridCellIndices.size(); ++j)
-                gridMap.UpdateOddsUnchecked(missedGridCellIndices[j].mY,
-                                            missedGridCellIndices[j].mX,
-                                            this->mOddsMiss);
-
-            /* Update occupancy probability values for the hit grid cell */
+            /* Update missed grid cells */
+            gridMap.UpdateOddsUnchecked(missedGridCellIndices,
+                                        this->mOddsMiss);
+            /* Update hit grid cell */
             gridMap.UpdateOddsUnchecked(hitGridCellIdx.mY,
                                         hitGridCellIdx.mX,
                                         this->mOddsHit);
