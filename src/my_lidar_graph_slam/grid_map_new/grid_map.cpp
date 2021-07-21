@@ -691,6 +691,7 @@ void GridMap<T>::UpdateOddsUnchecked(const std::vector<Point2D<int>>& indices,
     const std::size_t sizeRounded = (indices.size() >> 2) << 2;
     const int mask = (1 << this->mLog2BlockSize) - 1;
     const int32x4_t mask4 = vmovq_n_s32(mask);
+    const int32x4_t shift4 = vmovq_n_s32(-this->mLog2BlockSize);
 
     /* Update each grid cell value using the same odds */
     for (std::size_t i = 0; i < sizeRounded; i += 4) {
@@ -704,8 +705,8 @@ void GridMap<T>::UpdateOddsUnchecked(const std::vector<Point2D<int>>& indices,
 
         /* Compute the block indices and offsets */
         /* These operations do not care about the negative indices */
-        const int32x4_t blockRow4 = vshrq_n_s32(row4, this->mLog2BlockSize);
-        const int32x4_t blockCol4 = vshrq_n_s32(col4, this->mLog2BlockSize);
+        const int32x4_t blockRow4 = vshlq_s32(row4, shift4);
+        const int32x4_t blockCol4 = vshlq_s32(col4, shift4);
         const int32x4_t blockRowOffset4 = vandq_s32(row4, mask4);
         const int32x4_t blockColOffset4 = vandq_s32(col4, mask4);
 
