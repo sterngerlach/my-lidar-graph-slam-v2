@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "my_lidar_graph_slam/grid_map_new/grid_map_interface.hpp"
 #include "my_lidar_graph_slam/point.hpp"
@@ -166,6 +167,13 @@ public:
                     const typename T::ObservationType odds);
     /* Update the grid value given an odds (without input checks) */
     void UpdateOddsUnchecked(const int row, const int col,
+                             const typename T::ObservationType odds);
+
+    /* Update multiple grid values given an odds */
+    void UpdateOdds(const std::vector<Point2D<int>>& indices,
+                    const typename T::ObservationType odds);
+    /* Update multiple grid values given an odds (without input checks) */
+    void UpdateOddsUnchecked(const std::vector<Point2D<int>>& indices,
                              const typename T::ObservationType odds);
 
     /* Check if the block index is valid */

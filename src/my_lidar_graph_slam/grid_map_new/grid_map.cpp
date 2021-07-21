@@ -6,6 +6,10 @@
 #include "my_lidar_graph_slam/grid_map_new/grid_constant.hpp"
 #include "my_lidar_graph_slam/grid_map_new/grid_counted.hpp"
 
+#if (defined __ARM_NEON) || (defined __ARM_NEON__)
+#include <arm_neon.h>
+#endif
+
 namespace MyLidarGraphSlam {
 namespace GridMapNew {
 
@@ -655,6 +659,125 @@ void GridMap<T>::UpdateOddsUnchecked(const int row, const int col,
 
     block->UpdateOddsUnchecked(blockOffset.mY, blockOffset.mX, odds);
 }
+
+/* Update multiple grid values given an odds */
+template <typename T>
+void GridMap<T>::UpdateOdds(const std::vector<Point2D<int>>& indices,
+                            const typename T::ObservationType odds)
+{
+    /* Update each grid cell value using the same odds */
+    for (const auto& idx : indices) {
+        const auto blockIdx = this->IndexToBlock(idx.mY, idx.mX);
+        Assert(this->IsBlockInside(blockIdx.mY, blockIdx.mX));
+
+        const auto blockOffset = this->IndexToBlockOffset(idx.mY, idx.mX);
+        T* block = this->Block(blockIdx.mY, blockIdx.mX);
+
+        /* Allocate and initialize the block if necessary */
+        if (!block->IsAllocated())
+            block->Initialize(this->mLog2BlockSize);
+
+        block->UpdateOddsUnchecked(blockOffset.mY, blockOffset.mX, odds);
+    }
+}
+
+#if (defined __ARM_NEON) || (defined __ARM_NEON__)
+
+/* Update multiple grid values given an odds (without input checks) */
+template <typename T>
+void GridMap<T>::UpdateOddsUnchecked(const std::vector<Point2D<int>>& indices,
+                                     const typename T::ObservationType odds)
+{
+    const std::size_t sizeRounded = (indices.size() >> 2) << 2;
+    const int mask = (1 << this->mLog2BlockSize) - 1;
+    const int32x4_t mask4 = vmovq_n_s32(mask);
+
+    /* Update each grid cell value using the same odds */
+    for (std::size_t i = 0; i < sizeRounded; i += 4) {
+        /* Assume that these indices are valid, i.e.,
+         * 0 <= col < this->mGeometry.mCols and
+         * 0 <= row < this->mGeometry.mRows */
+        const int32x4_t col4 { indices[i].mX, indices[i + 1].mX,
+                               indices[i + 2].mX, indices[i + 3].mX };
+        const int32x4_t row4 { indices[i].mY, indices[i + 1].mY,
+                               indices[i + 2].mY, indices[i + 3].mY };
+
+        /* Compute the block indices and offsets */
+        /* These operations do not care about the negative indices */
+        const int32x4_t blockRow4 = vshrq_n_s32(row4, this->mLog2BlockSize);
+        const int32x4_t blockCol4 = vshrq_n_s32(col4, this->mLog2BlockSize);
+        const int32x4_t blockRowOffset4 = vandq_s32(row4, mask4);
+        const int32x4_t blockColOffset4 = vandq_s32(col4, mask4);
+
+        T* blocks[4] = { this->Block(vgetq_lane_s32(blockRow4, 0),
+                                     vgetq_lane_s32(blockCol4, 0)),
+                         this->Block(vgetq_lane_s32(blockRow4, 1),
+                                     vgetq_lane_s32(blockCol4, 1)),
+                         this->Block(vgetq_lane_s32(blockRow4, 2),
+                                     vgetq_lane_s32(blockCol4, 2)),
+                         this->Block(vgetq_lane_s32(blockRow4, 3),
+                                     vgetq_lane_s32(blockCol4, 3)) };
+
+        /* Allocate and initialize the block if necessary */
+        if (!blocks[0]->IsAllocated())
+            blocks[0]->Initialize(this->mLog2BlockSize);
+        if (!blocks[1]->IsAllocated())
+            blocks[1]->Initialize(this->mLog2BlockSize);
+        if (!blocks[2]->IsAllocated())
+            blocks[2]->Initialize(this->mLog2BlockSize);
+        if (!blocks[3]->IsAllocated())
+            blocks[3]->Initialize(this->mLog2BlockSize);
+
+        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 0),
+                                   vgetq_lane_s32(blockColOffset4, 0), odds);
+        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 1),
+                                   vgetq_lane_s32(blockColOffset4, 1), odds);
+        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 2),
+                                   vgetq_lane_s32(blockColOffset4, 2), odds);
+        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 3),
+                                   vgetq_lane_s32(blockColOffset4, 3), odds);
+    }
+
+    for (std::size_t i = sizeRounded; i < indices.size(); ++i) {
+        const int row = indices[i].mY;
+        const int col = indices[i].mX;
+        const int blockRow = row >> this->mLog2BlockSize;
+        const int blockCol = col >> this->mLog2BlockSize;
+        const int blockRowOffset = row & mask;
+        const int blockColOffset = col & mask;
+
+        T* block = this->Block(blockRow, blockCol);
+
+        /* Allocate and initialize the block if necessary */
+        if (!block->IsAllocated())
+            block->Initialize(this->mLog2BlockSize);
+
+        block->UpdateOddsUnchecked(blockRowOffset, blockColOffset, odds);
+    }
+}
+
+#else
+
+/* Update multiple grid values given an odds (without input checks) */
+template <typename T>
+void GridMap<T>::UpdateOddsUnchecked(const std::vector<Point2D<int>>& indices,
+                                     const typename T::ObservationType odds)
+{
+    /* Update each grid cell value using the same odds */
+    for (const auto& idx : indices) {
+        const auto blockIdx = this->IndexToBlock(idx.mY, idx.mX);
+        const auto blockOffset = this->IndexToBlockOffset(idx.mY, idx.mX);
+        T* block = this->Block(blockIdx.mY, blockIdx.mX);
+
+        /* Allocate and initialize the block if necessary */
+        if (!block->IsAllocated())
+            block->Initialize(this->mLog2BlockSize);
+
+        block->UpdateOddsUnchecked(blockOffset.mY, blockOffset.mX, odds);
+    }
+}
+
+#endif
 
 /* Check if the block index is valid */
 template <typename T>
