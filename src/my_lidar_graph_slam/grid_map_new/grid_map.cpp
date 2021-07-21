@@ -728,14 +728,18 @@ void GridMap<T>::UpdateOddsUnchecked(const std::vector<Point2D<int>>& indices,
         if (!blocks[3]->IsAllocated())
             blocks[3]->Initialize(this->mLog2BlockSize);
 
-        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 0),
-                                   vgetq_lane_s32(blockColOffset4, 0), odds);
-        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 1),
-                                   vgetq_lane_s32(blockColOffset4, 1), odds);
-        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 2),
-                                   vgetq_lane_s32(blockColOffset4, 2), odds);
-        block->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 3),
-                                   vgetq_lane_s32(blockColOffset4, 3), odds);
+        blocks[0]->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 0),
+                                       vgetq_lane_s32(blockColOffset4, 0),
+                                       odds);
+        blocks[1]->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 1),
+                                       vgetq_lane_s32(blockColOffset4, 1),
+                                       odds);
+        blocks[2]->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 2),
+                                       vgetq_lane_s32(blockColOffset4, 2),
+                                       odds);
+        blocks[3]->UpdateOddsUnchecked(vgetq_lane_s32(blockRowOffset4, 3),
+                                       vgetq_lane_s32(blockColOffset4, 3),
+                                       odds);
     }
 
     for (std::size_t i = sizeRounded; i < indices.size(); ++i) {
