@@ -198,6 +198,13 @@ public:
     /* Update the accumulated travel distance after the loop closure */
     void UpdateAccumTravelDist(const IdMap<NodeId, ScanNode>& scanNodes);
 
+    /* Get the grid map resolution */
+    inline double Resolution() const { return this->mResolution; }
+    /* Get the grid block size */
+    inline int BlockSize() const { return this->mPatchSize; }
+    /* Get the subpixel scale used when computing missed grid cell indices */
+    inline int RayCastingSubpixelScale() const { return SubpixelScale; }
+
     /* Retrieve the local grid maps */
     inline const IdMap<LocalMapId, LocalMap>& LocalMaps() const
     { return this->mLocalMaps; }
@@ -228,6 +235,19 @@ public:
     inline NodeId LatestScanIdMin() const { return this->mLatestScanIdMin; }
     /* Get the maximum Id of the latest scan nodes */
     inline NodeId LatestScanIdMax() const { return this->mLatestScanIdMax; }
+
+    /* Get the minimum scan range considered valid when creating a grid map */
+    inline double MinRange() const { return this->mUsableRangeMin; }
+    /* Get the maximum scan range considered valid when creating a grid map */
+    inline double MaxRange() const { return this->mUsableRangeMax; }
+    /* Get the probability for hit grid cells */
+    inline double ProbabilityHit() const { return this->mProbHit; }
+    /* Get the probability for missed grid cells */
+    inline double ProbabilityMiss() const { return this->mProbMiss; }
+    /* Get the odds for hit grid cells */
+    inline double OddsHit() const { return this->mOddsHit; }
+    /* Get the odds for missed grid cells */
+    inline double OddsMiss() const { return this->mOddsMiss; }
 
 private:
     /* Construct the grid map from the specified scans */
