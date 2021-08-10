@@ -1,0 +1,7 @@
+{
+    "Enabled": true,
+    "Server": {
+        "Address": "127.0.0.1",
+        "Port": 1901
+    }
+}
