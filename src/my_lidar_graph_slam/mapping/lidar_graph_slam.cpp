@@ -703,6 +703,70 @@ void LidarGraphSlam::GetLocalMaps(
     localMaps = this->mGridMapBuilder->LocalMaps();
 }
 
+/* Get the robot poses */
+std::vector<Network::TimedPose2D> LidarGraphSlam::GetPoses() const
+{
+    /* Acquire the unique lock */
+    std::unique_lock uniqueLock { this->mMutex };
+
+    std::vector<Network::TimedPose2D> robotPoses;
+    robotPoses.reserve(this->mPoseGraph->ScanNodes().size());
+
+    /* Copy the robot poses */
+    for (const auto& [scanNodeId, scanNode] : this->mPoseGraph->ScanNodes()) {
+        Network::TimedPose2D robotPose;
+        robotPose.mTime = scanNode.mScanData->TimeStamp();
+        robotPose.mPose = scanNode.mGlobalPose;
+        robotPoses.push_back(std::move(robotPose));
+    }
+
+    return robotPoses;
+}
+
+/* Get the latest scan */
+Network::Scan2D LidarGraphSlam::GetLatestScan() const
+{
+    /* Acquire the unique lock */
+    std::unique_lock uniqueLock { this->mMutex };
+
+    /* Copy the latest scan */
+    const auto& latestScanNode = this->mPoseGraph->ScanNodes().Back();
+    const auto& latestScanData = latestScanNode.mScanData;
+
+    Network::Scan2D latestScan;
+    latestScan.mTime = latestScanData->TimeStamp();
+    latestScan.mSensorPose = latestScanData->RelativeSensorPose();
+    latestScan.mMinRange = latestScanData->MinRange();
+    latestScan.mMaxRange = latestScanData->MaxRange();
+    latestScan.mMinAngle = latestScanData->MinAngle();
+    latestScan.mMaxAngle = latestScanData->MaxAngle();
+    latestScan.mRanges = latestScanData->Ranges();
+    latestScan.mAngles = latestScanData->Angles();
+
+    return latestScan;
+}
+
+/* Get the grid map parameters */
+Network::GridMapParams LidarGraphSlam::GetGridMapParams() const
+{
+    /* Acquire the unique lock (not necessary) */
+    std::unique_lock uniqueLock { this->mMutex };
+
+    /* Copy the grid map parameters */
+    Network::GridMapParams params;
+    params.mResolution = this->mGridMapBuilder->Resolution();
+    params.mBlockSize = this->mGridMapBuilder->BlockSize();
+    params.mSubpixelScale = this->mGridMapBuilder->RayCastingSubpixelScale();
+    params.mMinRange = this->mGridMapBuilder->MinRange();
+    params.mMaxRange = this->mGridMapBuilder->MaxRange();
+    params.mProbabilityHit = this->mGridMapBuilder->ProbabilityHit();
+    params.mProbabilityMiss = this->mGridMapBuilder->ProbabilityMiss();
+    params.mOddsHit = this->mGridMapBuilder->OddsHit();
+    params.mOddsMiss = this->mGridMapBuilder->OddsMiss();
+
+    return params;
+}
+
 /* Start the SLAM backend */
 void LidarGraphSlam::StartBackend()
 {

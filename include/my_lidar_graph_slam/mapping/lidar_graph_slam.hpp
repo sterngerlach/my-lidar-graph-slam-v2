@@ -24,6 +24,7 @@
 #include "my_lidar_graph_slam/mapping/pose_graph_optimizer.hpp"
 #include "my_lidar_graph_slam/mapping/scan_interpolator.hpp"
 #include "my_lidar_graph_slam/mapping/scan_matcher.hpp"
+#include "my_lidar_graph_slam/network/data_types.hpp"
 #include "my_lidar_graph_slam/sensor/sensor_data.hpp"
 
 namespace MyLidarGraphSlam {
@@ -156,6 +157,13 @@ public:
                       const NodeId scanNodeIdMax) const;
     /* Retrieve a collection of local grid maps */
     void GetLocalMaps(IdMap<LocalMapId, LocalMap>& localMaps);
+
+    /* Get the robot poses */
+    std::vector<Network::TimedPose2D> GetPoses() const;
+    /* Get the latest scan */
+    Network::Scan2D GetLatestScan() const;
+    /* Get the grid map parameters */
+    Network::GridMapParams GetGridMapParams() const;
 
     /* Start the SLAM backend */
     void StartBackend();
